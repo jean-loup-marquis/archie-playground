@@ -295,7 +295,11 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   **Le bouton d'ajout est seul** : plus de ligne « PNG, JPG or WebP · I'll match its look » en dessous.
   Elle listait des formats qui ne surprennent personne et redisait la promesse de la section.
   **Un ⓘ à côté du TITRE de section**, là où une annotation appartient — et là où il peut cohabiter
-  avec une valeur au lieu de la remplacer. References en a un (« An image I'll use as a reference for
+  avec une valeur au lieu de la remplacer. Branding en a un aussi (« Your Playbook's logo, stamped
+  bottom-right, and its colors in the brief. Each switches on its own. ») — il porte la seule chose
+  que les contrôles ne peuvent plus dire, OÙ la marque atterrit, puisque ça a cessé d'être
+  choisissable ; et il reste utile sur une rangée désactivée, où un Playbook sans logo ni couleurs
+  apprend quand même ce que la section aurait fait. References en a un (« An image I'll use as a reference for
   style, layout and composition. The mode below sets how closely I follow it. » — « match »
   surpromettait et ne disait pas CE QUI est repris ; nommer les trois axes nomme aussi les trois
   modes en dessous, qui sont exactement ceux-là)

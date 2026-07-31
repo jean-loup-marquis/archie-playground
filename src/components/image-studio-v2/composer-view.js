@@ -70,6 +70,13 @@ const VISIBLE_REFS = 3;
 // "reference for style, layout, composition" and not "an image I'll match":
 // "match" overpromises and says nothing about WHAT gets matched. Naming the three
 // things also names the three modes below, which are exactly those axes.
+// Both halves of the section, and the one thing the controls can't say: WHERE the
+// mark lands. That stopped being choosable, so the tooltip is the only place left
+// that states it. Worth carrying on a disabled row too — a Playbook with neither a
+// logo nor colours still gets told what the section would have done.
+const BRANDING_TIP =
+  "Your Playbook's logo, stamped bottom-right, and its colors in the brief. Each switches on its own.";
+
 const REFS_TIP =
   "An image I'll use as a reference for style, layout and composition. The mode below sets how closely I follow it.";
 
@@ -382,6 +389,7 @@ function settingRows(st) {
     settingRow({
       name: "branding",
       label: "Branding",
+      tip: BRANDING_TIP,
       value: brandValue,
       set: branded || tinted,
       disabled: !hasLogo && !hasColors,
