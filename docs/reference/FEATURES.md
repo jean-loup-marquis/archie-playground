@@ -292,6 +292,12 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   le mécanisme généralisé depuis `syncPaletteLine` (voir Branding : le brief n'est écrit qu'à
   l'ouverture et Generate envoie le champ). Conséquence bonus : couper le switch **retire** la ligne,
   là où elle restait avant à décrire une référence hors jeu.
+  **Le corps d'une section a du padding en haut** (8px), pas seulement en bas : l'en-tête apporte 6px
+  des siens, donc 8 + 6 met 14px entre son texte et le premier contrôle, contre 12 jusqu'au filet du
+  dessous — le bloc est optiquement centré et l'en-tête est un poil plus loin de son contenu que ce
+  contenu ne l'est de la section suivante. Il n'y en avait aucun, ce qui laissait le premier contrôle
+  à 6px sous un en-tête dont il se lisait alors comme une partie. Ne coûte rien aux rangées repliées :
+  le DS met `display: none` sur un corps replié, donc le padding ne s'affiche jamais.
   **Hiérarchie : la couleur sépare les rangs, la taille les tient tous sous le titre.** Tout le corps
   d'une section était en 12px/400/gris — le libellé du switch, les libellés de groupe et les notes de
   bas de bloc — donc quatre métiers portaient un seul costume et on ne pouvait pas voir ce qui

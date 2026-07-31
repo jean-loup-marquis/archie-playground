@@ -763,9 +763,16 @@
   font-style: italic;
 }
 
+/* Top padding is SMALLER than the bottom because the header contributes 6px of its
+   own: 8 + 6 puts 14px between the header's text and the first control, against 12
+   to the hairline below — so the block sits optically even, and the header is a
+   touch further from its content than the content is from the next section. It had
+   none at all, which left the first control 6px under a header it then read as part
+   of. Costs the collapsed rows nothing: the DS sets `display: none` on a collapsed
+   body, so the padding never renders. */
 .isv2-acc-body {
   gap: var(--ref-spacing-xs);
-  padding: 0 var(--ref-spacing-xs) var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs) var(--ref-spacing-xs);
 }
 
 .isv2-acc-head .ap-accordion-toggle {
