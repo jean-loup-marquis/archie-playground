@@ -2007,3 +2007,364 @@
     align-self: start;
   }
 }
+
+/* ── Analytics sections (the proof) ────────────────────────────────────────
+   Goals & Objectives · Performance · Top posts. Read-only panels, so they reuse
+   the .recap__panel chrome wholesale and only bring what's genuinely new: the
+   scored objective card, the redrawn widget shell, and the two callouts. */
+
+/* The editable panels get their padding from .recap__row; these hold free-form
+   content, so the body carries it. */
+.recap__panel-body--padded {
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
+}
+
+.recap__panel-lead {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* ── Objective cards ──────────────────────────────────────────────────── */
+.recap__ocards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__ocard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-lg);
+}
+
+.recap__ocard-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* Two lines, always — the metric, bar and comparators below have to line up
+   across cards whether the goal's name wraps or not. */
+.recap__ocard-name {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 2.6em;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-weight: var(--sys-text-style-body-bold-weight);
+  line-height: 1.3;
+  color: var(--ref-color-grey-150);
+}
+
+.recap__ocard-verdict {
+  flex-shrink: 0;
+}
+
+.recap__ocard-metric {
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  font-weight: var(--sys-text-style-h1-weight);
+  line-height: var(--sys-text-style-h1-line-height);
+  color: var(--ref-color-grey-150);
+  font-variant-numeric: tabular-nums;
+}
+
+.recap__ocard-unit {
+  margin-left: var(--ref-spacing-xxxs);
+  font-family: var(--sys-text-style-caption-font-family);
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-weight);
+  color: var(--sys-text-color-light);
+}
+
+/* ── Bullet chart ─────────────────────────────────────────────────────────
+   The track spans 0 → 120% of the target, which fixes the target notch at
+   83.333% and leaves a fifth of the bar to overshoot into. */
+.recap__bullet {
+  position: relative;
+  height: 8px;
+  margin-top: var(--ref-spacing-xxxs);
+  background: var(--ref-color-grey-10);
+  border-radius: var(--app-radius-pill);
+}
+
+.recap__bullet-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--sys-color-accent-light-text);
+  border-radius: inherit;
+}
+
+.recap__bullet-target {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  left: 83.333%;
+  width: 2px;
+  background: var(--ref-color-grey-100);
+  transform: translateX(-50%);
+}
+
+/* A downward cap on the notch, so it reads as a target marker rather than a
+   second segment of the bar. */
+.recap__bullet-target::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  border-top: 5px solid var(--ref-color-grey-100);
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  transform: translateX(-50%);
+}
+
+.recap__bullet-goal {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Comparators ──────────────────────────────────────────────────────────
+   Baseline and benchmark get identical treatment: neither is the real number,
+   they answer the same question against a different reference. */
+.recap__compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  margin-top: var(--ref-spacing-xxxs);
+  padding-top: var(--ref-spacing-xxs);
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.recap__compare-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.recap__compare-row i {
+  font-size: var(--sys-icon-css-xs);
+}
+
+.recap__compare-val {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-100);
+  font-variant-numeric: tabular-nums;
+}
+
+.recap__compare-row.is-up i,
+.recap__compare-row.is-up .recap__compare-val {
+  color: var(--ref-color-green-150);
+}
+
+/* ── Placeholders (add an objective / pin a widget) ───────────────────── */
+.recap__ocard--add,
+.recap__widget-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-sm);
+  background: none;
+  border: 1px dashed var(--ref-color-grey-20);
+  border-radius: var(--app-radius-lg);
+  font-family: inherit;
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--sys-text-color-light);
+  cursor: pointer;
+  transition:
+    border-color var(--ref-animation-short),
+    color var(--ref-animation-short);
+}
+
+.recap__ocard--add:hover,
+.recap__widget-add:hover {
+  border-color: var(--ref-color-electric-blue-20);
+  background: var(--ref-color-electric-blue-05);
+  color: var(--sys-color-accent-light-text);
+}
+
+.recap__ocard--add:focus-visible,
+.recap__widget-add:focus-visible {
+  outline: 2px solid var(--sys-color-accent-light-text);
+  outline-offset: 2px;
+}
+
+.recap__ocard-add-sub {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-weight);
+}
+
+/* ── Performance: the pinned mini report ──────────────────────────────── */
+.recap__gate {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* Flex, not grid: a widget's size is a share of the row, and a lone widget
+   shouldn't stretch to fill it (flex-grow stays 0). */
+.recap__widgets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__widget,
+.recap__widget-add {
+  flex: 0 1 calc(25% - var(--ref-spacing-sm));
+  min-width: 150px;
+  height: 168px;
+}
+
+.recap__widget--small {
+  flex-basis: calc(50% - var(--ref-spacing-sm));
+}
+
+.recap__widget--medium {
+  flex-basis: calc(75% - var(--ref-spacing-sm));
+}
+
+.recap__widget--large {
+  flex-basis: 100%;
+}
+
+/* The widget shell, redrawn from the Report Studio card: a framed tile with its
+   title in a head strip and the metric centred in the body. */
+.recap__widget {
+  display: flex;
+  flex-direction: column;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-lg);
+}
+
+.recap__widget-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-sm);
+}
+
+/* Two lines, reserved. A quarter-row tile is ~190px wide, so "Avg reach per
+   post" on one line would ellipsis into "Avg reach p…" — and reserving both
+   lines keeps every head the same height, which is what lines the metrics up
+   across a row. */
+.recap__widget-title {
+  display: -webkit-box;
+  flex: 1;
+  min-width: 0;
+  min-height: calc(2 * var(--sys-text-style-caption-line-height));
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* The one widget action that matters here. Hidden until the tile is hovered or
+   holds focus, so a report of five tiles isn't five trash icons. */
+.recap__widget-unpin {
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--ref-animation-short);
+}
+
+.recap__widget:hover .recap__widget-unpin,
+.recap__widget:focus-within .recap__widget-unpin {
+  opacity: 1;
+}
+
+.recap__widget-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-sm);
+  text-align: center;
+}
+
+.recap__widget-value {
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  font-weight: var(--sys-text-style-h1-weight);
+  line-height: var(--sys-text-style-h1-line-height);
+  color: var(--ref-color-grey-150);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reserved for two lines too — "across 2 tracked links" wraps at tile width, and
+   without the reservation that one tile's metric would sit a line higher than
+   its neighbours'. */
+.recap__widget-caption {
+  min-height: calc(2 * var(--sys-text-style-caption-line-height));
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* ── Agorapulse callout ───────────────────────────────────────────────── */
+.recap__connect {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-sm);
+  background: var(--app-surface-subtle);
+  border-radius: var(--app-radius-lg);
+}
+
+.recap__connect-text {
+  flex: 1;
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--sys-text-color-default);
+}
+
+@media (max-width: 720px) {
+  .recap__connect {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* ── Top posts: the board, in a narrower column ───────────────────────────
+   The winner board was tuned for the session screen, which is ~250px wider than
+   the Playbook's content column. At minmax(300px) it collapses to one card per
+   row, and a 585px-wide winner card is mostly empty space — the pull-quote
+   clamps long before the fixed 400px row is filled. Two narrower columns read
+   the way the board was designed to. */
+.recap__panel--topposts .top-posts-grid {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+/* The board brings its own top margin for the session screen, where it follows a
+   step heading; here the panel body's gap already spaces it off the lead. */
+.recap__panel--topposts .top-posts-board {
+  margin-top: 0;
+}

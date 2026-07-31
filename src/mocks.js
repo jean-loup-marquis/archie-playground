@@ -1979,6 +1979,96 @@ for (const ctx of contexts) {
   }
 }
 
+// ---- Playbook analytics (the proof behind the declared goals) --------------
+//
+// A Playbook declares its goals in `objective` ("Brand awareness", "Lead
+// generation"…). This is what each of those goals looks like once measured, so
+// the analytics section proves the fact sheet rather than declaring anything of
+// its own — change a Playbook's goals and its cards change with them.
+//
+// One metric per goal, and the full proof triplet each card renders:
+//   target    → `goal` + `progress` (% of goal, drives the bullet chart)
+//   baseline  → `variationPercent` vs the previous 30 days (0 reads as "flat")
+//   benchmark → `benchmarkVsIndustry` vs the industry median
+// `value` and `goal` are pre-formatted: a prototype never computes, it shows.
+const OBJECTIVE_METRICS = {
+  "Brand awareness": {
+    metric: "reach",
+    value: "18,400",
+    goal: "20,000",
+    progress: 92,
+    variationPercent: 12,
+    status: "on-track",
+    benchmarkLabel: "industry median 14,200",
+    benchmarkVsIndustry: "+30%",
+    benchmarkAhead: true,
+  },
+  "Lead generation": {
+    metric: "CTA clicks",
+    value: "126",
+    goal: "150",
+    progress: 84,
+    variationPercent: 8,
+    status: "on-track",
+    benchmarkLabel: "industry median 140",
+    benchmarkVsIndustry: "−10%",
+    benchmarkAhead: false,
+  },
+  "Community building": {
+    metric: "engagement rate",
+    value: "4.1%",
+    goal: "5.0%",
+    progress: 82,
+    variationPercent: 0,
+    status: "watch",
+    benchmarkLabel: "industry median 3.2%",
+    benchmarkVsIndustry: "+0.9pt",
+    benchmarkAhead: true,
+  },
+  "Build personal brand": {
+    metric: "new followers",
+    value: "1,240",
+    goal: "1,500",
+    progress: 83,
+    variationPercent: 6,
+    status: "on-track",
+    benchmarkLabel: "industry median 980",
+    benchmarkVsIndustry: "+27%",
+    benchmarkAhead: true,
+  },
+};
+
+// The measured cards for one Playbook, in the order it declares its goals. A
+// goal with no metric behind it is skipped rather than faked — the "Add an
+// objective" placeholder is what invites the user to wire one up.
+export function objectiveCardsFor(context) {
+  const goals = Array.isArray(context?.objective) ? context.objective : [];
+  return goals
+    .filter((label) => OBJECTIVE_METRICS[label])
+    .map((label) => ({ objective: label, ...OBJECTIVE_METRICS[label] }));
+}
+
+// The widget shelf of the embedded mini report. `size` is the width a widget
+// takes in the grid — a quarter row up to the full row, the four sizes a real
+// Report Studio widget can take. `pinned` seeds the initial report; the rest
+// are what "Pin a widget" reaches for, in order.
+export const PINNABLE_WIDGETS = [
+  {
+    id: "avg-reach",
+    title: "Avg reach per post",
+    value: "2,050",
+    caption: "9 posts published",
+    size: "mini",
+    pinned: true,
+  },
+  { id: "eng-rate", title: "Engagement rate", value: "4.1%", caption: "last 30 days", size: "mini", pinned: true },
+  { id: "cta", title: "CTA clicks", value: "126", caption: "across 2 tracked links", size: "mini", pinned: true },
+  { id: "followers", title: "Follower growth", value: "+1,240", caption: "last 30 days", size: "small", pinned: true },
+  { id: "reach", title: "Reach", value: "18,400", caption: "last 30 days", size: "mini" },
+  { id: "views", title: "Video views", value: "9,320", caption: "last 30 days", size: "mini" },
+  { id: "mentions", title: "Mentions", value: "312", caption: "last 30 days", size: "mini" },
+];
+
 // ---- Topics (the dossiers Agorapulse listening produced) -------------------
 //
 // One topic = a claim Archie can defend: a headline, a written analysis, and the

@@ -129,4 +129,18 @@ export const FLAGS = Object.freeze([
       "profiles, auto-extracted favicon), Archie can discover more from the " +
       "brand's market, and each one is editable in its own modal.",
   },
+  {
+    id: "playbookAnalytics",
+    label: "Playbook analytics",
+    default: true,
+    hides:
+      "When OFF, hides the three analytics sections of a Playbook and their " +
+      "rail entries: Goals & Objectives (each declared goal as a measured " +
+      "card — value, bullet chart against the target, baseline and industry " +
+      "comparators), Performance (the pinned-widget mini report + the " +
+      "Agorapulse callout) and Top posts (the repurposing board). The " +
+      "Playbook falls back to a pure fact sheet. Never shown in the " +
+      "onboarding recap regardless of the flag — a Playbook that was just " +
+      "analysed has nothing to measure yet.",
+  },
 ]);

@@ -1,8 +1,8 @@
 // Shared Playbook view + per-section editor. Renders a product-grade detail
 // surface — a compact identity header, a sticky section-nav rail with quick
-// facts, and three section panels (Audience & goals · Voice & style · Brand) —
-// plus the inline per-section edit machine. Driven by a `cfg` adapter so the
-// same surface powers two contexts:
+// facts, and the section panels (Audience · Voice & style · Brand, then the
+// read-only analytics sections) — plus the inline per-section edit machine.
+// Driven by a `cfg` adapter so the same surface powers two contexts:
 //   • onboarding (welcome-alt-recap) — a context-builder DRAFT, with a
 //     staged loader and a "Save and start" finish.
 //   • library (/playbook/:id)        — a saved Context, in the app shell,
@@ -19,6 +19,8 @@ import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mo
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=16";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=34";
+import { objectiveCardsFor, PINNABLE_WIDGETS, topPosts } from "./mocks.js?v=63";
+import { renderTopPostsBoard, SORTS, PERIODS } from "./components/top-post-card.js?v=74";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -34,9 +36,10 @@ const LINE_FIELDS = [
   { key: "closingPatterns", label: "Closing patterns", placeholder: "A line that often ends a post…" },
 ];
 
-// Competitors is appended LAST on purpose: the panel renderers address the
-// first three positionally (SECTIONS[0..2]), and it reads as the least core
-// section — market context after audience, voice and brand.
+// Two groups, in this order: the FACT SHEET (editable, `scope` set) then the
+// PROOF (read-only, `analytics: true`). Competitors closes the fact sheet — it
+// reads as the least core of the four, market context after audience, voice and
+// brand.
 //
 // A Playbook is a FACT SHEET: every section answers "who are you?" — brand,
 // audience, voice, who you compete with. Operational config (which listening
@@ -44,12 +47,26 @@ const LINE_FIELDS = [
 // feature, not here — see screens/topics.js. That's why there's no Topics
 // section: it was tried, and a grid of switches read as a settings panel wedged
 // into a profile.
+//
+// The analytics sections don't break that rule, they lean on it: each one
+// measures something the fact sheet declares (the objective cards ARE
+// `objective`, rendered as proof), and none of them declares anything of its
+// own. They're read-only for the same reason — `scope: null`, so no edit pencil.
 const SECTIONS = [
-  { id: "pbk-sec-goals", scope: "goals", icon: "ap-icon-target", title: "Audience & goals" },
+  { id: "pbk-sec-goals", scope: "goals", icon: "ap-icon-target", title: "Audience" },
   { id: "pbk-sec-voice", scope: "voice", icon: "ap-icon-quote", title: "Voice & style" },
   { id: "pbk-sec-brand", scope: "brand", icon: "ap-icon-image", title: "Brand" },
   { id: "pbk-sec-competitors", scope: "competitors", icon: "ap-icon-buildings", title: "Competitors" },
+  { id: "pbk-sec-objectives", scope: null, icon: "ap-icon-target", title: "Goals & Objectives", analytics: true },
+  { id: "pbk-sec-performance", scope: null, icon: "ap-icon-bar-graph", title: "Performance", analytics: true },
+  { id: "pbk-sec-topposts", scope: null, icon: "ap-icon-star", title: "Top posts", analytics: true },
 ];
+
+// Panels look themselves up by id rather than by position, so the array above
+// can be reordered without silently re-pointing a renderer at the wrong head.
+function sectionById(id) {
+  return SECTIONS.find((s) => s.id === id);
+}
 
 // Competitors are gated behind a feature flag (default OFF). When OFF the
 // section and its rail entry disappear; the underlying data still rides along
@@ -58,10 +75,21 @@ function competitorsOn() {
   return isFlagOn("playbookCompetitors");
 }
 
+// Analytics are library-only: the onboarding recap shows a Playbook that was
+// just analysed, which by definition has published nothing and measured
+// nothing. A pinned report there would be inventing proof.
+function analyticsOn() {
+  return cfg?.mode === "library" && isFlagOn("playbookAnalytics");
+}
+
 // The sections this Playbook actually shows — drives the rail nav and the
 // panels, so gating happens in one place.
 function sectionsFor() {
-  return competitorsOn() ? SECTIONS : SECTIONS.filter((s) => s.scope !== "competitors");
+  return SECTIONS.filter((s) => {
+    if (s.scope === "competitors") return competitorsOn();
+    if (s.analytics) return analyticsOn();
+    return true;
+  });
 }
 
 // Edit-mode guidance. Surfaced only while a section is being edited (one at a
@@ -132,6 +160,8 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let scrollSpy = null; // IntersectionObserver for the section-nav active state
+let pinnedIds = null; // ids of the widgets in the Performance mini report, in order
+let topPostsView = null; // { sort, period } for the Top posts board
 
 // ── Public API ───────────────────────────────────────────────────────────
 
@@ -161,6 +191,8 @@ export function mount(target, config) {
   cmpModalIndex = null;
   cmpScanning = false;
   cmpScanFoundNone = false;
+  pinnedIds = PINNABLE_WIDGETS.filter((w) => w.pinned).map((w) => w.id);
+  topPostsView = { sort: SORTS[0].key, period: PERIODS[0].key };
 
   if (cfg.loader && !cfg.skipLoader) {
     phase = "loading";
@@ -407,6 +439,12 @@ function voiceEntry(data) {
 
 // ── Shared bits ──────────────────────────────────────────────────────────
 
+// Lazily imported so the view doesn't pull the toast component in just to sit
+// there — same shape as the screens that use it.
+function toast(message) {
+  import("./components/toast.js?v=20").then(({ showToast }) => showToast(message));
+}
+
 function editActionButtons() {
   return `
     <button type="button" class="ap-button ghost grey recap__edit-cancel" data-recap-cancel>
@@ -431,7 +469,7 @@ function renderPanelHead(section, edit, extraAction = "") {
     <header class="recap__panel-head">
       <span class="recap__panel-icon"><i class="${section.icon}" aria-hidden="true"></i></span>
       <h2 class="recap__panel-title">${esc(section.title)}</h2>
-      ${edit ? panelEditActions() : `${extraAction}${panelPen(section.scope)}`}
+      ${edit ? panelEditActions() : `${extraAction}${section.scope ? panelPen(section.scope) : ""}`}
     </header>
   `;
 }
@@ -966,7 +1004,7 @@ function renderLanguagePicker(data) {
 }
 
 function renderGoalsPanel(data, edit) {
-  const section = SECTIONS[0];
+  const section = sectionById("pbk-sec-goals");
   let body;
   if (edit) {
     body = [
@@ -1044,7 +1082,7 @@ function renderVoiceLangSwitcher(data) {
 }
 
 function renderVoicePanel(data, edit) {
-  const section = SECTIONS[1];
+  const section = sectionById("pbk-sec-voice");
   const manual = data.voiceMode === "manual";
   const ve = voiceEntry(data);
   let body;
@@ -1114,7 +1152,7 @@ function renderVoicePanel(data, edit) {
 }
 
 function renderBrandPanel(data, edit) {
-  const section = SECTIONS[2];
+  const section = sectionById("pbk-sec-brand");
   const colors = visualColors(data);
   let body;
   if (edit) {
@@ -1357,7 +1395,7 @@ function renderCompetitorScan() {
 }
 
 function renderCompetitorsPanel(data, edit) {
-  const section = SECTIONS[3];
+  const section = sectionById("pbk-sec-competitors");
   const list = competitorList(data);
   // Index into the full array, so accept/dismiss/remove stay index-addressed
   // while the two states render in separate groups.
@@ -1579,6 +1617,170 @@ function renderCompetitorModal(data) {
   </div>`;
 }
 
+// ── Analytics panels (the proof) ────────────────────────────────────────
+//
+// Read-only, library-only, flag-gated. Three sections that measure what the
+// fact sheet declares: the goals as scored cards, the metrics as a pinned mini
+// report, the winning posts as something to reuse.
+
+const MAX_PINS = 5;
+
+// A section lead — one line under the head saying what the section proves.
+function renderPanelLead(text) {
+  return `<p class="recap__panel-lead">${esc(text)}</p>`;
+}
+
+// The bullet chart: how far the metric got, against where it should be.
+//
+// The track runs 0 → 120% of the target, which is what puts the target notch at
+// a fixed 83.333% and leaves room to overshoot it visibly. So a value at 100% of
+// goal lands exactly on the notch, and the fill is progress ÷ 1.2.
+function renderBullet(o) {
+  return `
+    <div class="recap__bullet" role="img" aria-label="${o.progress}% of goal">
+      <span class="recap__bullet-fill" style="width: ${(o.progress / 1.2).toFixed(2)}%"></span>
+      <span class="recap__bullet-target" title="Goal ${esc(o.goal)}"></span>
+    </div>
+    <span class="recap__bullet-goal">${o.progress}% of goal · ${esc(o.goal)}</span>`;
+}
+
+// One comparator row. Same treatment for both lenses (baseline and benchmark) on
+// purpose: neither is the "real" number, they answer the same question — am I
+// ahead? — against a different reference.
+function renderCompareRow({ ahead, icon, value, context, title = "" }) {
+  return `
+    <span class="recap__compare-row ${ahead ? "is-up" : ""}" ${title ? `title="${esc(title)}"` : ""}>
+      <i class="${icon}" aria-hidden="true"></i>
+      <span class="recap__compare-val">${esc(value)}</span>
+      <span class="recap__compare-ctx">${esc(context)}</span>
+    </span>`;
+}
+
+function renderObjectiveCard(o) {
+  const up = o.variationPercent > 0;
+  return `
+    <article class="recap__ocard">
+      <div class="recap__ocard-head">
+        <span class="recap__ocard-name">${esc(o.objective)}</span>
+        <span class="ap-status ${o.status === "on-track" ? "green" : "grey"} recap__ocard-verdict">${o.status === "on-track" ? "On track" : "Watch"}</span>
+      </div>
+      <span class="recap__ocard-metric">${esc(o.value)}<span class="recap__ocard-unit">${esc(o.metric)}</span></span>
+      ${renderBullet(o)}
+      <div class="recap__compare">
+        ${renderCompareRow({
+          ahead: up,
+          icon: up ? "ap-icon-arrow-up" : "ap-icon-arrow-right",
+          value: up ? `+${o.variationPercent}%` : "flat",
+          context: "vs last 30 days",
+        })}
+        ${renderCompareRow({
+          ahead: o.benchmarkAhead,
+          icon: o.benchmarkAhead ? "ap-icon-arrow-up" : "ap-icon-arrow-down",
+          value: o.benchmarkVsIndustry,
+          context: "vs industry median",
+          title: o.benchmarkLabel,
+        })}
+      </div>
+    </article>`;
+}
+
+function renderObjectivesPanel(data) {
+  const section = sectionById("pbk-sec-objectives");
+  const cards = objectiveCardsFor(data).map(renderObjectiveCard).join("");
+  return `
+    <section class="recap__panel" id="${section.id}">
+      ${renderPanelHead(section, false)}
+      <div class="recap__panel-body recap__panel-body--padded">
+        ${renderPanelLead("How this Playbook proves the goals it was set up to serve")}
+        <div class="recap__ocards">
+          ${cards}
+          <button type="button" class="recap__ocard recap__ocard--add" data-recap-add-objective>
+            <i class="ap-icon-plus" aria-hidden="true"></i>
+            <span>Add an objective</span>
+            <span class="recap__ocard-add-sub">Pick metrics + set a goal</span>
+          </button>
+        </div>
+      </div>
+    </section>`;
+}
+
+// The pinned widgets, in pin order. Unknown ids are dropped rather than
+// rendered empty — pinnedIds is state, PINNABLE_WIDGETS is the truth.
+function pinnedWidgets() {
+  return (pinnedIds || []).map((id) => PINNABLE_WIDGETS.find((w) => w.id === id)).filter(Boolean);
+}
+
+// The widget shell, redrawn. A real Report Studio widget is an Angular
+// component with a resize handle and an action toolbar; what the report reads as
+// is the frame, the title and the width — so that's what this rebuilds, plus the
+// one action that matters here (unpin), revealed on hover.
+function renderWidget(w) {
+  return `
+    <div class="recap__widget recap__widget--${w.size}">
+      <div class="recap__widget-head">
+        <span class="recap__widget-title">${esc(w.title)}</span>
+        <button
+          type="button"
+          class="ap-icon-button transparent recap__widget-unpin"
+          data-recap-unpin="${esc(w.id)}"
+          title="Unpin"
+          aria-label="Unpin ${esc(w.title)}"
+        ><i class="ap-icon-trash"></i></button>
+      </div>
+      <div class="recap__widget-body">
+        <span class="recap__widget-value">${esc(w.value)}</span>
+        <span class="recap__widget-caption">${esc(w.caption)}</span>
+      </div>
+    </div>`;
+}
+
+function renderPerformancePanel() {
+  const section = sectionById("pbk-sec-performance");
+  const pinned = pinnedWidgets();
+  const canPin = pinned.length < MAX_PINS && pinned.length < PINNABLE_WIDGETS.length;
+  return `
+    <section class="recap__panel" id="${section.id}">
+      ${renderPanelHead(section, false)}
+      <div class="recap__panel-body recap__panel-body--padded">
+        ${renderPanelLead("Key metrics tracked for this Playbook · last 30 days")}
+        <p class="recap__gate">
+          <i class="ap-icon-lock-on" aria-hidden="true"></i>
+          ${pinned.length}/${MAX_PINS} pinned · full report in Agorapulse
+        </p>
+        <div class="recap__widgets">
+          ${pinned.map(renderWidget).join("")}
+          ${
+            canPin
+              ? `<button type="button" class="recap__widget-add" data-recap-pin>
+                   <i class="ap-icon-plus" aria-hidden="true"></i><span>Pin a widget</span>
+                 </button>`
+              : ""
+          }
+        </div>
+        <div class="recap__connect">
+          <p class="recap__connect-text">
+            See the full proof — every objective, unlimited history, per-link detail and export — in Agorapulse.
+          </p>
+          <button type="button" class="ap-button stroked blue" data-recap-connect><span>Connect Agorapulse</span></button>
+        </div>
+      </div>
+    </section>`;
+}
+
+// Top posts leans entirely on the board the milker already ships — same cards,
+// same Period/Sort toolbar, same 20-post cap. Nothing to redraw here.
+function renderTopPostsPanel() {
+  const section = sectionById("pbk-sec-topposts");
+  return `
+    <section class="recap__panel recap__panel--topposts" id="${section.id}">
+      ${renderPanelHead(section, false)}
+      <div class="recap__panel-body recap__panel-body--padded">
+        ${renderPanelLead("Reuse your best-performing posts to keep proving your goals")}
+        ${renderTopPostsBoard({ posts: topPosts, sort: topPostsView.sort, period: topPostsView.period })}
+      </div>
+    </section>`;
+}
+
 // ── Header + rail ──────────────────────────────────────────────────────
 
 function renderHeader(data) {
@@ -1733,6 +1935,9 @@ function paint() {
         ${renderVoicePanel(data, scope === "voice")}
         ${renderBrandPanel(data, scope === "brand")}
         ${competitorsOn() ? renderCompetitorsPanel(data, scope === "competitors") : ""}
+        ${analyticsOn() ? renderObjectivesPanel(data) : ""}
+        ${analyticsOn() ? renderPerformancePanel() : ""}
+        ${analyticsOn() ? renderTopPostsPanel() : ""}
       </div>
     </div>
     ${renderRefModal(data)}
@@ -1927,6 +2132,56 @@ function onClick(event) {
   // Header star → toggle default (library mode).
   if (event.target.closest("[data-recap-toggle-default]")) {
     cfg.onToggleDefault?.();
+    return;
+  }
+
+  // ── Analytics sections ──
+  // All of these repaint in place: they sit far down the page, and a plain
+  // paint() would rebuild the scroll container and throw the reader back to the
+  // top of the Playbook.
+  if (event.target.closest("[data-recap-pin]")) {
+    const next = PINNABLE_WIDGETS.find((w) => !pinnedIds.includes(w.id));
+    if (next && pinnedIds.length < MAX_PINS) {
+      pinnedIds = [...pinnedIds, next.id];
+      repaintPreservingScroll();
+    }
+    return;
+  }
+
+  const unpin = event.target.closest("[data-recap-unpin]");
+  if (unpin) {
+    pinnedIds = pinnedIds.filter((id) => id !== unpin.dataset.recapUnpin);
+    repaintPreservingScroll();
+    return;
+  }
+
+  const sortBtn = event.target.closest("[data-top-post-sort]");
+  if (sortBtn) {
+    topPostsView.sort = sortBtn.dataset.topPostSort;
+    repaintPreservingScroll();
+    return;
+  }
+
+  const periodBtn = event.target.closest("[data-top-post-period]");
+  if (periodBtn) {
+    topPostsView.period = periodBtn.dataset.topPostPeriod;
+    repaintPreservingScroll();
+    return;
+  }
+
+  const repurpose = event.target.closest("[data-top-post-repurpose]");
+  if (repurpose) {
+    toast("Repurposing is wired up in the chat — pick this winner from a conversation.");
+    return;
+  }
+
+  if (event.target.closest("[data-recap-add-objective]")) {
+    toast("Picking metrics for a new objective isn't built yet.");
+    return;
+  }
+
+  if (event.target.closest("[data-recap-connect]")) {
+    toast("Connecting Agorapulse isn't part of this prototype.");
     return;
   }
 
