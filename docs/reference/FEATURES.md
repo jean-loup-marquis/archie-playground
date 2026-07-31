@@ -295,8 +295,10 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   **Le bouton d'ajout est seul** : plus de ligne « PNG, JPG or WebP · I'll match its look » en dessous.
   Elle listait des formats qui ne surprennent personne et redisait la promesse de la section.
   **Un ⓘ à côté du TITRE de section**, là où une annotation appartient — et là où il peut cohabiter
-  avec une valeur au lieu de la remplacer. References en a un (« An image I'll match when I
-  generate — from your brand book, or one you add. The mode below sets how closely I follow it. »)
+  avec une valeur au lieu de la remplacer. References en a un (« An image I'll use as a reference for
+  style, layout and composition. The mode below sets how closely I follow it. » — « match »
+  surpromettait et ne disait pas CE QUI est repris ; nommer les trois axes nomme aussi les trois
+  modes en dessous, qui sont exactement ceux-là)
   tout en gardant son résumé `Acme · Style only` : les vignettes montrent QUELLE image, jamais
   pourquoi la section existe. Titre et icône partagent un wrapper (`.isv2-acc-label`) qui prend
   l'espace libre, donc la valeur et le chevron gardent le bord droit exactement comme avant — le DS

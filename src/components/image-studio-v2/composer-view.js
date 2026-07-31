@@ -66,8 +66,12 @@ const VISIBLE_REFS = 3;
 
 // What the section is FOR, in the header's tooltip — the tiles show you which
 // image, never why the section exists or what picking one changes.
+//
+// "reference for style, layout, composition" and not "an image I'll match":
+// "match" overpromises and says nothing about WHAT gets matched. Naming the three
+// things also names the three modes below, which are exactly those axes.
 const REFS_TIP =
-  "An image I'll match when I generate — from your brand book, or one you add. The mode below sets how closely I follow it.";
+  "An image I'll use as a reference for style, layout and composition. The mode below sets how closely I follow it.";
 
 const BRAND_GROUP = "Brand book";
 const CUSTOM_GROUP = "Custom";
