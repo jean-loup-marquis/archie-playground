@@ -519,18 +519,34 @@ export function setPromptSilent(sessionId, text) {
 }
 
 // Same deal for the text to render: typing must not re-render the settings (the
-// row would be rebuilt under the caret). The header's value catches up on blur,
-// via commitRenderText.
+// row would be rebuilt under the caret).
+//
+// NOT truncated at MAX_RENDER_TEXT any more, and neither is the field. The cap was
+// enforced three times over — `maxlength` on the textarea plus a slice in each of
+// these — which made going over impossible and left a permanent counter as the only
+// way to know the limit existed. It is a legibility limit, not a data one: 90
+// characters is roughly what still reads in a generated image, and past it the type
+// just comes out small. So the field takes whatever you write and says so, and what
+// you wrote is what gets baked.
 export function setRenderTextSilent(sessionId, text) {
   const s = states.get(sessionId);
-  if (s) s.renderText = String(text || "").slice(0, MAX_RENDER_TEXT);
+  if (s) s.renderText = String(text || "");
 }
 
 export function commitRenderText(sessionId, text) {
   const s = states.get(sessionId);
   if (!s) return;
-  s.renderText = String(text || "").slice(0, MAX_RENDER_TEXT);
+  s.renderText = String(text || "");
   notify(sessionId);
+}
+
+/** The over-limit line, or "" while the text fits. Here rather than in a view
+    because both the first render and every keystroke ask for it, from two
+    different modules, and they must not word it differently. */
+export function renderTextOverMessage(text) {
+  const over = (text || "").length - MAX_RENDER_TEXT;
+  if (over <= 0) return "";
+  return `${over} character${over > 1 ? "s" : ""} over — long text comes out small in the image.`;
 }
 
 export function setEditPromptSilent(sessionId, text) {

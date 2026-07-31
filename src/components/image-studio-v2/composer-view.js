@@ -39,8 +39,8 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=34";
-import { KEY } from "./context.js?v=32";
-import * as imageStudio from "../../image-studio.js?v=68";
+import { KEY } from "./context.js?v=33";
+import * as imageStudio from "../../image-studio.js?v=69";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why
@@ -677,8 +677,15 @@ function brandingPreview(st) {
     </div>`;
 }
 
-// Text in image — a plain DS textarea field. The counter is a live node the input
-// handler writes into (typing must not re-render the panel, or the caret dies).
+// Text in image — a plain DS textarea field, and nothing under it until something
+// is wrong. The permanent `54/90` counter was a meter for a limit you hit once in
+// twenty drafts, sitting in a panel that is short of room; now the field says
+// nothing while the text fits and raises a DS form message when it doesn't.
+//
+// The message node is always in the DOM, hidden inline, because typing must not
+// re-render the panel (the row would be rebuilt under the caret) — the input handler
+// writes into it. Inline `display`, not `[hidden]`: `.ap-form-message` carries
+// `display: flex`, which beats the attribute.
 //
 // The line that used to sit beside the counter — naming the OTHER thing the user
 // might have meant, the movable text overlay in Edit — is now the header's info
@@ -694,11 +701,9 @@ const RENDER_TEXT_TIP = "For a text box you can move, use Add text in Edit.";
 function renderTextBody(st) {
   const text = st.renderText || "";
   return `<div class="ap-textarea-field narrow isv2-textfield">
-      <textarea data-img-render-text rows="2" maxlength="${imageStudio.MAX_RENDER_TEXT}" placeholder="${escapeHtml(RENDER_TEXT_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
+      <textarea data-img-render-text rows="2" placeholder="${escapeHtml(RENDER_TEXT_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
     </div>
-    <p class="isv2-sheet-hint isv2-textfield-foot">
-      <span class="isv2-textfield-count" data-img-render-text-count>${text.length}/${imageStudio.MAX_RENDER_TEXT}</span>
-    </p>`;
+    <p class="ap-form-message error" data-img-render-text-msg role="status"${imageStudio.renderTextOverMessage(text) ? "" : ` style="display:none"`}>${escapeHtml(imageStudio.renderTextOverMessage(text))}</p>`;
 }
 
 function imageTypeBody(st) {

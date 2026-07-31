@@ -313,8 +313,21 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   `title` ne fait jamais. `aria-hidden`, parce
   que l'en-tête de rangée est un `<button>` : un élément focusable dedans serait un contrôle dans un
   contrôle. Prix payé : cette phrase portait un lien vivant vers l'onglet Edit ; un `title` ne peut
-  pas contenir de lien, donc le chemin est l'onglet Edit de l'en-tête de la modale. Le compteur de
-  caractères reste, désormais aligné à droite sous le champ.
+  pas contenir de lien, donc le chemin est l'onglet Edit de l'en-tête de la modale. **Plus de compteur permanent** : le champ ne dit rien tant que le
+  texte tient, et lève un `.ap-form-message error` du DS quand il dépasse (« 14 characters over —
+  long text comes out small in the image. »). Un `54/90` permanent était une jauge pour une limite
+  qu'on touche une fois sur vingt drafts, dans un panneau à court de place. Le plafond était
+  d'ailleurs appliqué **trois fois** — `maxlength` sur le textarea plus un `slice` dans chacun des
+  deux setters — donc dépasser était impossible et le compteur était la seule façon de savoir que la
+  limite existait. C'est une limite de LISIBILITÉ, pas de données : 90 caractères est à peu près ce
+  qui reste lisible dans une image générée, et au-delà la typo sort juste plus petite. Le champ prend
+  donc ce qu'on écrit, le dit, et ce qu'on a écrit est ce qui est cuit dans l'image. Le nœud du
+  message est toujours dans le DOM, masqué en inline — taper ne doit pas re-rendre le panneau (la
+  rangée serait reconstruite sous le curseur), donc le handler d'input écrit dedans ; et `display`
+  inline plutôt que `[hidden]`, parce que `.ap-form-message` porte `display: flex`, qui bat
+  l'attribut. La copie vit dans `renderTextOverMessage` (moteur), pas dans une vue : le premier rendu
+  et chaque frappe la demandent depuis deux modules différents et ne doivent pas la formuler
+  autrement. **v1 garde son compteur** et son `maxlength` — seul le champ de v2 est permissif.
   **Le corps d'une section a du padding en haut** (8px), pas seulement en bas : l'en-tête apporte 6px
   des siens, donc 8 + 6 met 14px entre son texte et le premier contrôle, contre 12 jusqu'au filet du
   dessous — le bloc est optiquement centré et l'en-tête est un poil plus loin de son contenu que ce

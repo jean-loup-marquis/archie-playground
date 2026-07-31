@@ -1020,21 +1020,6 @@
   resize: vertical;
 }
 
-/* The counter is the only thing left down here — the sentence that used to share
-   the row is the header's info tooltip now — so it goes back under the field's
-   right edge, where a character count belongs. `space-between` was there to hold
-   the two apart and, with one child, just parked it on the left. */
-.isv2-textfield-foot {
-  align-items: flex-start;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xxs);
-}
-
-.isv2-textfield-count {
-  flex: 0 0 auto;
-  font-variant-numeric: tabular-nums;
-}
-
 .isv2-chip-group {
   display: flex;
   flex-wrap: wrap;
