@@ -730,7 +730,20 @@
    values with a caption each: you scanned "Any / Any / 1:1 · Square" and had to
    work back to what each one was setting. The name of the thing is what you look
    for; what it's currently set to is what you read once you've found it. */
+/* Title and its info icon, as one group that takes the row's free space — so the
+   value and the chevron keep the right edge and the icon stays glued to the words
+   it annotates. The DS puts `flex: 1` on the title itself, which pushed anything
+   after it to the far side of the row. */
+.isv2-acc-label {
+  flex: 1;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
 .isv2-acc-title {
+  flex: 0 1 auto;
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--sys-text-color-default);
 }
@@ -785,7 +798,7 @@
    would otherwise clip it, the trap this file's own comments record hitting three
    times. */
 .isv2-acc-info {
-  margin-left: auto;
+  flex: 0 0 auto;
   color: var(--ref-color-grey-60);
   font-size: var(--sys-icon-css-sm, 16px);
   cursor: help;

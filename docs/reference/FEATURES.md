@@ -294,6 +294,13 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   là où elle restait avant à décrire une référence hors jeu.
   **Le bouton d'ajout est seul** : plus de ligne « PNG, JPG or WebP · I'll match its look » en dessous.
   Elle listait des formats qui ne surprennent personne et redisait la promesse de la section.
+  **Un ⓘ à côté du TITRE de section**, là où une annotation appartient — et là où il peut cohabiter
+  avec une valeur au lieu de la remplacer. References en a un (« An image I'll match when I
+  generate — from your brand book, or one you add. The mode below sets how closely I follow it. »)
+  tout en gardant son résumé `Acme · Style only` : les vignettes montrent QUELLE image, jamais
+  pourquoi la section existe. Titre et icône partagent un wrapper (`.isv2-acc-label`) qui prend
+  l'espace libre, donc la valeur et le chevron gardent le bord droit exactement comme avant — le DS
+  met `flex: 1` sur le titre lui-même, ce qui poussait tout ce qui le suit à l'autre bout.
   **« Text in image » : un ⓘ à la place de la valeur d'en-tête.** La section est dépliée par défaut,
   donc l'en-tête affichait une copie tronquée des mots posés juste en dessous. L'icône dépense cette
   place sur ce que le corps ne peut pas dire — l'autre chose que l'utilisateur pourrait vouloir, le

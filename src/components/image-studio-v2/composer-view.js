@@ -64,6 +64,11 @@ Composition focus: The transition point of the arrow where order turns into digi
 // gap. Kept next to the CSS that sizes them: change one, change the other.
 const VISIBLE_REFS = 3;
 
+// What the section is FOR, in the header's tooltip — the tiles show you which
+// image, never why the section exists or what picking one changes.
+const REFS_TIP =
+  "An image I'll match when I generate — from your brand book, or one you add. The mode below sets how closely I follow it.";
+
 const BRAND_GROUP = "Brand book";
 const CUSTOM_GROUP = "Custom";
 
@@ -120,22 +125,26 @@ export function toolPalette(st) {
 // stand-in for it.
 function settingRow({ name, label, value, tip = "", body, open, set = false, disabled = false, pinned = false }) {
   const expanded = pinned || (open && !disabled);
-  // `tip` puts an info icon in the value slot instead of a value. For a row whose
-  // body ALREADY shows its setting in full — the text field, which is open by
-  // default — the header value was a truncated second copy of the words sitting
-  // right underneath it. The icon spends that space on something the body can't
-  // say instead. aria-hidden because the row's header is a <button>: a focusable
-  // element inside it would be a control inside a control, and folding the
-  // sentence into the button's accessible name would make its label a paragraph.
-  // `data-tooltip` is the DS tooltip (components/tooltip.js), not a native title —
-  // it mounts on <body> so the panel's own scroll box can't clip it, and tabbing to
-  // the header shows it, which a title never does.
-  const head = `<span class="ap-accordion-title isv2-acc-title">${escapeHtml(label)}</span>
-      ${
-        tip
-          ? `<i class="ap-icon-info isv2-acc-info" data-tooltip="${escapeHtml(tip)}" aria-hidden="true"></i>`
-          : `<span class="isv2-acc-value${set ? " is-set" : ""}">${escapeHtml(value)}</span>`
-      }`;
+  // `tip` is an info icon beside the TITLE — where an annotation belongs, and where
+  // it can sit next to a value rather than instead of one (References has both: a
+  // summary worth reading and a section worth explaining).
+  //
+  // Title and icon share a wrapper that takes the free space, so everything after
+  // it — the value, the chevron — keeps the right edge exactly as before. Without
+  // it the DS's `flex: 1` on the title pushed the icon to the far side, and moving
+  // that flex onto the icon's row would have stranded the chevron.
+  //
+  // aria-hidden because the row's header is a <button>: a focusable element inside
+  // it would be a control inside a control, and folding the sentence into the
+  // button's accessible name would make its label a paragraph. `data-tooltip` is the
+  // DS tooltip (components/tooltip.js), not a native title — it mounts on <body> so
+  // the panel's own scroll box can't clip it, and tabbing to the header shows it,
+  // which a title never does.
+  const head = `<span class="isv2-acc-label">
+        <span class="ap-accordion-title isv2-acc-title">${escapeHtml(label)}</span>
+        ${tip ? `<i class="ap-icon-info isv2-acc-info" data-tooltip="${escapeHtml(tip)}" aria-hidden="true"></i>` : ""}
+      </span>
+      ${value ? `<span class="isv2-acc-value${set ? " is-set" : ""}">${escapeHtml(value)}</span>` : ""}`;
   return `<div class="ap-accordion isv2-acc${expanded ? "" : " collapsed"}${disabled ? " is-disabled" : ""}${pinned ? " isv2-acc--pinned" : ""}">
     ${
       pinned
@@ -326,6 +335,7 @@ function settingRows(st) {
     settingRow({
       name: "refs",
       label: "References",
+      tip: REFS_TIP,
       value: refSummary(picked, st),
       set: !!picked,
       pinned: true,
