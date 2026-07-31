@@ -1,14 +1,14 @@
 import { route, setAfterRender, start } from "./router.js?v=30";
 import { isFlagOn } from "./feature-flags.js?v=16";
 import { initArchieLoader } from "./archie-loader.js?v=2";
-import { initTopbar, renderTopbar } from "./components/topbar.js?v=288";
-import { initSidebar, renderSidebar } from "./components/sidebar.js?v=258";
-import { init as initRightPanel } from "./components/right-panel.js?v=425";
+import { initTopbar, renderTopbar } from "./components/topbar.js?v=289";
+import { initSidebar, renderSidebar } from "./components/sidebar.js?v=259";
+import { init as initRightPanel } from "./components/right-panel.js?v=426";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=62";
 import { init as initBugReportModal } from "./components/bug-report-modal.js?v=24";
 import { init as initFeedbackModal } from "./components/feedback-modal.js?v=26";
-import { init as initImageStudioModal } from "./components/image-studio/index.js?v=80";
-import { init as initImageStudioV2Modal } from "./components/image-studio-v2/index.js?v=58";
+import { init as initImageStudioModal } from "./components/image-studio/index.js?v=81";
+import { init as initImageStudioV2Modal } from "./components/image-studio-v2/index.js?v=59";
 import { init as initVideoClipsModal } from "./components/video-clips-modal.js?v=62";
 import { init as initChatPickerModal } from "./components/chat-picker-modal.js?v=68";
 import { init as initAddSourceModal } from "./components/add-source-modal.js?v=69";
@@ -20,21 +20,22 @@ import { init as initSaveFolderModal } from "./components/save-folder-modal.js?v
 import { init as initAnalyzeProfilesModal } from "./components/analyze-profiles-modal.js?v=21";
 import { init as initFillDocumentModal } from "./components/fill-document-modal.js?v=5";
 import { init as initSearchModal } from "./components/search-modal.js?v=16";
+import { init as initTooltip } from "./components/tooltip.js?v=1";
 import {
   init as initConversationStatusCard,
   render as renderConversationStatusCard,
-} from "./components/conversation-status-card.js?v=218";
+} from "./components/conversation-status-card.js?v=219";
 import { renderDashboard } from "./screens/dashboard.js?v=59";
-import { renderSession } from "./screens/session.js?v=510";
-import { renderContexts } from "./screens/contexts.js?v=250";
-import { renderConnectors } from "./screens/connectors.js?v=189";
-import { renderTopics } from "./screens/topics.js?v=57";
-import { renderTopicsSettings } from "./screens/topics-settings.js?v=49";
+import { renderSession } from "./screens/session.js?v=511";
+import { renderContexts } from "./screens/contexts.js?v=251";
+import { renderConnectors } from "./screens/connectors.js?v=190";
+import { renderTopics } from "./screens/topics.js?v=58";
+import { renderTopicsSettings } from "./screens/topics-settings.js?v=50";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=4";
 // Settings route removed — the prototype Admin controls moved to the sidebar
 // cog popover (see admin-menu.js + sidebar.js); Social accounts page dropped.
-import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=245";
-import { renderPlaybook } from "./screens/playbook.js?v=256";
+import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=246";
+import { renderPlaybook } from "./screens/playbook.js?v=257";
 import * as __capAddSource from "./components/add-source-modal.js?v=69";
 import * as __capBug from "./components/bug-report-modal.js?v=24";
 import * as __capFeedback from "./components/feedback-modal.js?v=26";
@@ -45,7 +46,7 @@ import {
   openIdeas as __capOpenIdeas,
   openSources as __capOpenSources,
   openContextBriefPanel as __capOpenContextPanel,
-} from "./components/right-panel.js?v=425";
+} from "./components/right-panel.js?v=426";
 
 // Route table.
 // Every screen is responsible for calling renderTopbar() itself so the crumb
@@ -72,6 +73,9 @@ route("/welcome-alt/recap", renderWelcomeAltRecap);
 // Swap every spinner in the app for the animated network-assemble mark
 // (sweeps the DOM now + watches for loaders added by later renders).
 initArchieLoader();
+// Document-delegated, so every `[data-tooltip]` rendered by any screen — now or
+// after the next route change — is live without registering anything.
+initTooltip();
 initTopbar();
 renderTopbar();
 initSidebar();

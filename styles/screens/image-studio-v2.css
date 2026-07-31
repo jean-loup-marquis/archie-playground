@@ -780,10 +780,10 @@
    row; `margin-left: auto` because it replaces a flex item that was right-aligned
    by its own `text-align`, which an icon has no text to obey.
  *
-   `title`, not `.ap-tooltip`: the DS tooltip is absolutely positioned and driven by
-   an Angular directive, and the panel is an `overflow-y: auto` box — a positioned
-   tooltip inside it gets clipped by the scroll container, which is the trap this
-   file's own comments record hitting three times. */
+   The tooltip is the real `.ap-tooltip`, shown by components/tooltip.js — which
+   mounts it on <body> precisely because this panel is an `overflow-y: auto` box and
+   would otherwise clip it, the trap this file's own comments record hitting three
+   times. */
 .isv2-acc-info {
   margin-left: auto;
   color: var(--ref-color-grey-60);

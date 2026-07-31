@@ -127,10 +127,13 @@ function settingRow({ name, label, value, tip = "", body, open, set = false, dis
   // say instead. aria-hidden because the row's header is a <button>: a focusable
   // element inside it would be a control inside a control, and folding the
   // sentence into the button's accessible name would make its label a paragraph.
+  // `data-tooltip` is the DS tooltip (components/tooltip.js), not a native title —
+  // it mounts on <body> so the panel's own scroll box can't clip it, and tabbing to
+  // the header shows it, which a title never does.
   const head = `<span class="ap-accordion-title isv2-acc-title">${escapeHtml(label)}</span>
       ${
         tip
-          ? `<i class="ap-icon-info isv2-acc-info" title="${escapeHtml(tip)}" aria-hidden="true"></i>`
+          ? `<i class="ap-icon-info isv2-acc-info" data-tooltip="${escapeHtml(tip)}" aria-hidden="true"></i>`
           : `<span class="isv2-acc-value${set ? " is-set" : ""}">${escapeHtml(value)}</span>`
       }`;
   return `<div class="ap-accordion isv2-acc${expanded ? "" : " collapsed"}${disabled ? " is-disabled" : ""}${pinned ? " isv2-acc--pinned" : ""}">

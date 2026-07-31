@@ -297,10 +297,20 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   **« Text in image » : un ⓘ à la place de la valeur d'en-tête.** La section est dépliée par défaut,
   donc l'en-tête affichait une copie tronquée des mots posés juste en dessous. L'icône dépense cette
   place sur ce que le corps ne peut pas dire — l'autre chose que l'utilisateur pourrait vouloir, le
-  bloc de texte déplaçable d'Edit — via l'attribut `title` natif. **Pas `.ap-tooltip`** : le tooltip
-  DS est en position absolue et piloté par une directive Angular, et le panneau est une boîte
-  `overflow-y: auto` — un tooltip positionné dedans se ferait couper par le conteneur de scroll, le
-  piège que les commentaires de ce fichier ont noté avoir rencontré trois fois. `aria-hidden`, parce
+  bloc de texte déplaçable d'Edit — via le **vrai `.ap-tooltip`**
+  (`components/tooltip.js`). Le DS livre toute l'apparence — surface, radius, typo, la flèche et ses
+  huit classes de placement — mais aucun moyen de s'afficher : il est positionné par une directive
+  Angular, et CSS-UI n'a pas de déclencheur au survol. Ce module est cette directive. Il monte le
+  tooltip sur `<body>`, et c'est tout l'intérêt : la classe est en `position: absolute`, donc rendu
+  sur place il se ferait couper par le conteneur de scroll le plus proche — et le panneau est
+  justement une boîte `overflow-y: auto` (le piège que les commentaires de ce fichier ont noté avoir
+  rencontré trois fois). `position: fixed` ne sauve pas non plus : le panneau est `transform`é, ce
+  qui en fait le bloc conteneur des descendants fixes et rend le clipping. Délégué sur `document`
+  (`[data-tooltip]`), donc tout ce que n'importe quel écran rend ensuite est vivant sans rien
+  enregistrer ; un seul tooltip à la fois, et il ne survit jamais à son ancre — scroll (en capture,
+  car le scroll qui compte est celui d'un panneau et ne bulle pas), Échap, sortie du pointeur ou du
+  focus le retirent. Le focus qui atterrit sur un élément CONTENANT une ancre l'affiche, ce qu'un
+  `title` ne fait jamais. `aria-hidden`, parce
   que l'en-tête de rangée est un `<button>` : un élément focusable dedans serait un contrôle dans un
   contrôle. Prix payé : cette phrase portait un lien vivant vers l'onglet Edit ; un `title` ne peut
   pas contenir de lien, donc le chemin est l'onglet Edit de l'en-tête de la modale. Le compteur de
