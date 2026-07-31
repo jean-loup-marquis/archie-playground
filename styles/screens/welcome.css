@@ -2231,11 +2231,16 @@
   gap: var(--ref-spacing-sm);
 }
 
-.recap__widget,
-.recap__widget-add {
+.recap__widget {
   flex: 0 1 calc(25% - var(--ref-spacing-sm));
   min-width: 150px;
   height: 168px;
+}
+
+/* The placeholder is a <summary> inside the picker's <details>, which carries the
+   tile's flex sizing — so it just fills its host. */
+.recap__widget-add {
+  height: 100%;
 }
 
 .recap__widget--small {
@@ -2251,8 +2256,10 @@
 }
 
 /* The widget shell, redrawn from the Report Studio card: a framed tile with its
-   title in a head strip and the metric centred in the body. */
+   title in a head strip and the metric centred in the body. Relative so the
+   floating action toolbar anchors to the tile, not to whatever holds it. */
 .recap__widget {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--app-surface);
@@ -2285,17 +2292,138 @@
   color: var(--sys-text-color-light);
 }
 
-/* The one widget action that matters here. Hidden until the tile is hovered or
-   holds focus, so a report of five tiles isn't five trash icons. */
-.recap__widget-unpin {
-  flex-shrink: 0;
+/* Size + unpin, in a toolbar that FLOATS on the tile's top edge rather than
+   sitting inside the head — same as the canvas toolbar, and for the same reason:
+   a 150px-wide tile has no room to give two buttons, so the title would be
+   clipped to make space for them. Hidden until the tile is hovered or holds
+   focus (a report of five tiles shouldn't read as ten icons), and kept up while
+   its dropdown is open so the popover can't yank its own trigger away. */
+.recap__widget-actions {
+  position: absolute;
+  top: 0;
+  right: var(--ref-spacing-xxs);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--ref-spacing-xxxs);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  box-shadow: var(--app-shadow-subtle);
   opacity: 0;
+  transform: translateY(-50%);
   transition: opacity var(--ref-animation-short);
 }
 
-.recap__widget:hover .recap__widget-unpin,
-.recap__widget:focus-within .recap__widget-unpin {
+.recap__widget:hover .recap__widget-actions,
+.recap__widget:focus-within .recap__widget-actions,
+.recap__widget-actions:has([open]) {
   opacity: 1;
+}
+
+/* ── Quick-edit size dropdown ─────────────────────────────────────────────
+   Report Studio's canvas control, rebuilt: a cropper button opening a labelled
+   popover of four width choices. The DS select is full-width by default (it
+   normally wraps a text trigger); here the trigger is an icon button. */
+.recap__size-select {
+  width: auto;
+}
+
+.recap__size-select > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.recap__size-select > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Right-aligned to the TILE, not to the button — the toolbar is inset from the
+   tile's edge, and anchoring to the button pushed the popover that much further
+   over the neighbour for no reason. It still overhangs by the ~32px it is wider
+   than a quarter-row tile, which is what a floating popover does. */
+.recap__size-dropdown {
+  top: calc(100% + var(--ref-spacing-xxs));
+  left: auto;
+  right: calc(-1 * var(--ref-spacing-xxs));
+  width: max-content;
+  padding: var(--ref-spacing-xs);
+}
+
+.recap__sizes {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: var(--ref-spacing-xxs);
+  width: fit-content;
+  margin-top: var(--ref-spacing-xxs);
+}
+
+/* Trimmed from the DS option's text-row padding: these hold a glyph, not a label,
+   and the extra padding pushed the popover wider than the tile it belongs to. */
+.recap__size-option {
+  justify-content: center;
+  padding: var(--ref-spacing-xxs);
+  border-radius: var(--app-radius-sm);
+  cursor: pointer;
+}
+
+/* One coloured cell as wide as the size, then grey quarter-cells for the rest of
+   the row, so all four glyphs span the same width and the choice reads as a
+   share of the row. Cell widths are Report Studio's, at its quick-edit scale. */
+.recap__size-preview {
+  --cell-h: 16px;
+  --cell-gap: 5px;
+
+  display: flex;
+  gap: var(--cell-gap);
+}
+
+.recap__size-cell {
+  height: var(--cell-h);
+  background: var(--ref-color-electric-blue-100);
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.recap__size-cell.is-filler {
+  background: var(--ref-color-grey-20);
+}
+
+.recap__size-cell--mini {
+  width: 11px;
+}
+
+.recap__size-cell--small {
+  width: 27px;
+}
+
+.recap__size-cell--medium {
+  width: 43px;
+}
+
+.recap__size-cell--large {
+  width: 59px;
+}
+
+/* ── Metric picker ────────────────────────────────────────────────────────
+   The placeholder tile IS the trigger, so the flex sizing lives on the
+   <details> and the dashed summary fills it. */
+.recap__pin-select {
+  flex: 0 1 calc(25% - var(--ref-spacing-sm));
+  min-width: 150px;
+  width: auto;
+  height: 168px;
+}
+
+.recap__pin-select > summary {
+  list-style: none;
+}
+
+.recap__pin-select > summary::-webkit-details-marker {
+  display: none;
+}
+
+.recap__pin-dropdown {
+  min-width: 260px;
 }
 
 .recap__widget-body {
@@ -2351,20 +2479,4 @@
     flex-direction: column;
     align-items: stretch;
   }
-}
-
-/* ── Top posts: the board, in a narrower column ───────────────────────────
-   The winner board was tuned for the session screen, which is ~250px wider than
-   the Playbook's content column. At minmax(300px) it collapses to one card per
-   row, and a 585px-wide winner card is mostly empty space — the pull-quote
-   clamps long before the fixed 400px row is filled. Two narrower columns read
-   the way the board was designed to. */
-.recap__panel--topposts .top-posts-grid {
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-}
-
-/* The board brings its own top margin for the session screen, where it follows a
-   step heading; here the panel body's gap already spaces it off the lead. */
-.recap__panel--topposts .top-posts-board {
-  margin-top: 0;
 }

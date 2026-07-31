@@ -2048,25 +2048,72 @@ export function objectiveCardsFor(context) {
     .map((label) => ({ objective: label, ...OBJECTIVE_METRICS[label] }));
 }
 
-// The widget shelf of the embedded mini report. `size` is the width a widget
-// takes in the grid — a quarter row up to the full row, the four sizes a real
-// Report Studio widget can take. `pinned` seeds the initial report; the rest
-// are what "Pin a widget" reaches for, in order.
+// The metric catalogue behind the embedded mini report — what the picker offers
+// and what a pinned widget shows.
+//
+// `size` is the width the widget takes in the grid: a quarter row up to the full
+// row, the four sizes a real Report Studio widget can take. `pinned` seeds the
+// initial report; everything else is what the picker lists.
+//
+// `group` splits the picker the way the metrics actually differ: a profile
+// metric is measured on the account (followers, reach, visits), a post metric on
+// what was published (engagement, clicks, saves). Same split the prototype's
+// objective cards carried but never showed.
+export const WIDGET_METRIC_GROUPS = [
+  { key: "profile", label: "Profile metrics" },
+  { key: "post", label: "Post metrics" },
+];
+
 export const PINNABLE_WIDGETS = [
   {
     id: "avg-reach",
     title: "Avg reach per post",
     value: "2,050",
     caption: "9 posts published",
+    group: "post",
     size: "mini",
     pinned: true,
   },
-  { id: "eng-rate", title: "Engagement rate", value: "4.1%", caption: "last 30 days", size: "mini", pinned: true },
-  { id: "cta", title: "CTA clicks", value: "126", caption: "across 2 tracked links", size: "mini", pinned: true },
-  { id: "followers", title: "Follower growth", value: "+1,240", caption: "last 30 days", size: "small", pinned: true },
-  { id: "reach", title: "Reach", value: "18,400", caption: "last 30 days", size: "mini" },
-  { id: "views", title: "Video views", value: "9,320", caption: "last 30 days", size: "mini" },
-  { id: "mentions", title: "Mentions", value: "312", caption: "last 30 days", size: "mini" },
+  {
+    id: "eng-rate",
+    title: "Engagement rate",
+    value: "4.1%",
+    caption: "last 30 days",
+    group: "post",
+    size: "mini",
+    pinned: true,
+  },
+  {
+    id: "cta",
+    title: "CTA clicks",
+    value: "126",
+    caption: "across 2 tracked links",
+    group: "post",
+    size: "mini",
+    pinned: true,
+  },
+  {
+    id: "followers",
+    title: "Follower growth",
+    value: "+1,240",
+    caption: "last 30 days",
+    group: "profile",
+    size: "small",
+    pinned: true,
+  },
+  { id: "reach", title: "Reach", value: "18,400", caption: "last 30 days", group: "profile", size: "mini" },
+  {
+    id: "profile-visits",
+    title: "Profile visits",
+    value: "3,180",
+    caption: "last 30 days",
+    group: "profile",
+    size: "mini",
+  },
+  { id: "mentions", title: "Mentions", value: "312", caption: "last 30 days", group: "profile", size: "mini" },
+  { id: "views", title: "Video views", value: "9,320", caption: "last 30 days", group: "post", size: "mini" },
+  { id: "saves", title: "Saves", value: "1,204", caption: "last 30 days", group: "post", size: "mini" },
+  { id: "comments", title: "Comments", value: "486", caption: "last 30 days", group: "post", size: "mini" },
 ];
 
 // ---- Topics (the dossiers Agorapulse listening produced) -------------------

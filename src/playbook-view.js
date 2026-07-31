@@ -19,8 +19,7 @@ import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mo
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=16";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=34";
-import { objectiveCardsFor, PINNABLE_WIDGETS, topPosts } from "./mocks.js?v=63";
-import { renderTopPostsBoard, SORTS, PERIODS } from "./components/top-post-card.js?v=74";
+import { objectiveCardsFor, PINNABLE_WIDGETS, WIDGET_METRIC_GROUPS } from "./mocks.js?v=64";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -59,7 +58,6 @@ const SECTIONS = [
   { id: "pbk-sec-competitors", scope: "competitors", icon: "ap-icon-buildings", title: "Competitors" },
   { id: "pbk-sec-objectives", scope: null, icon: "ap-icon-target", title: "Goals & Objectives", analytics: true },
   { id: "pbk-sec-performance", scope: null, icon: "ap-icon-bar-graph", title: "Performance", analytics: true },
-  { id: "pbk-sec-topposts", scope: null, icon: "ap-icon-star", title: "Top posts", analytics: true },
 ];
 
 // Panels look themselves up by id rather than by position, so the array above
@@ -160,8 +158,7 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let scrollSpy = null; // IntersectionObserver for the section-nav active state
-let pinnedIds = null; // ids of the widgets in the Performance mini report, in order
-let topPostsView = null; // { sort, period } for the Top posts board
+let pinnedReport = null; // the Performance mini report: [{ id, size }] in pin order
 
 // ── Public API ───────────────────────────────────────────────────────────
 
@@ -191,8 +188,7 @@ export function mount(target, config) {
   cmpModalIndex = null;
   cmpScanning = false;
   cmpScanFoundNone = false;
-  pinnedIds = PINNABLE_WIDGETS.filter((w) => w.pinned).map((w) => w.id);
-  topPostsView = { sort: SORTS[0].key, period: PERIODS[0].key };
+  pinnedReport = PINNABLE_WIDGETS.filter((w) => w.pinned).map((w) => ({ id: w.id, size: w.size }));
 
   if (cfg.loader && !cfg.skipLoader) {
     phase = "loading";
@@ -1704,28 +1700,84 @@ function renderObjectivesPanel(data) {
     </section>`;
 }
 
-// The pinned widgets, in pin order. Unknown ids are dropped rather than
-// rendered empty — pinnedIds is state, PINNABLE_WIDGETS is the truth.
+// The pinned widgets, in pin order. The report holds which metrics are in it and
+// how wide each one is; PINNABLE_WIDGETS holds what each metric IS. Unknown ids
+// are dropped rather than rendered empty.
 function pinnedWidgets() {
-  return (pinnedIds || []).map((id) => PINNABLE_WIDGETS.find((w) => w.id === id)).filter(Boolean);
+  return (pinnedReport || [])
+    .map((p) => {
+      const entry = PINNABLE_WIDGETS.find((w) => w.id === p.id);
+      return entry ? { ...entry, size: p.size } : null;
+    })
+    .filter(Boolean);
 }
 
-// The widget shell, redrawn. A real Report Studio widget is an Angular
-// component with a resize handle and an action toolbar; what the report reads as
-// is the frame, the title and the width — so that's what this rebuilds, plus the
-// one action that matters here (unpin), revealed on hover.
+// The four widths a Report Studio widget can take, narrowest first — the order
+// the size grid reads in.
+const WIDGET_SIZES = ["mini", "small", "medium", "large"];
+
+// The blue/grey cells that illustrate a width, lifted from Report Studio's
+// `ap-widget-size-preview`: one coloured cell as wide as the chosen size, then
+// grey quarter-cells filling the rest, so every glyph spans the same full row and
+// the choice reads as "how much of the row does this take".
+function renderSizePreview(size) {
+  const idx = WIDGET_SIZES.indexOf(size);
+  const fillers = WIDGET_SIZES.length - 1 - idx;
+  return `
+    <span class="recap__size-preview" aria-hidden="true">
+      <span class="recap__size-cell recap__size-cell--${size}"></span>
+      ${`<span class="recap__size-cell recap__size-cell--mini is-filler"></span>`.repeat(fillers)}
+    </span>`;
+}
+
+// The quick-edit size dropdown, as it works on the canvas today: a cropper
+// icon-button opening a labelled popover with the four widths in a 2×2 grid.
+// Picking one repaints, which closes the <details> — the same reason the real
+// panel closes its overlay on select (resizing moves the widget, and its
+// toolbar with it, so there's no trigger left to chase).
+function renderSizeSelect(w) {
+  const options = WIDGET_SIZES.map(
+    (size) => `
+      <div
+        class="ap-select-option recap__size-option ${size === w.size ? "selected" : ""}"
+        role="option"
+        aria-selected="${size === w.size}"
+        aria-label="${size} width"
+        data-recap-size="${size}"
+        data-recap-size-widget="${esc(w.id)}"
+      >${renderSizePreview(size)}</div>`,
+  ).join("");
+  return `
+    <details class="ap-select recap__size-select">
+      <summary class="ap-icon-button transparent recap__widget-action" title="Size" aria-label="Size">
+        <i class="ap-icon-cropper"></i>
+      </summary>
+      <div class="ap-select-dropdown recap__size-dropdown" role="listbox" aria-label="Size">
+        <span class="ap-select-group-label">Size</span>
+        <div class="recap__sizes">${options}</div>
+      </div>
+    </details>`;
+}
+
+// The widget shell, redrawn. A real Report Studio widget is an Angular component;
+// what the report reads as is the frame, the title, the width and the two
+// controls that change them — so that's what this rebuilds, the controls revealed
+// on hover the way the canvas toolbar is.
 function renderWidget(w) {
   return `
     <div class="recap__widget recap__widget--${w.size}">
-      <div class="recap__widget-head">
-        <span class="recap__widget-title">${esc(w.title)}</span>
+      <div class="recap__widget-actions">
+        ${renderSizeSelect(w)}
         <button
           type="button"
-          class="ap-icon-button transparent recap__widget-unpin"
+          class="ap-icon-button transparent recap__widget-action"
           data-recap-unpin="${esc(w.id)}"
           title="Unpin"
           aria-label="Unpin ${esc(w.title)}"
         ><i class="ap-icon-trash"></i></button>
+      </div>
+      <div class="recap__widget-head">
+        <span class="recap__widget-title">${esc(w.title)}</span>
       </div>
       <div class="recap__widget-body">
         <span class="recap__widget-value">${esc(w.value)}</span>
@@ -1734,10 +1786,44 @@ function renderWidget(w) {
     </div>`;
 }
 
+// The metric picker. Choosing WHICH metric to pin is the actual decision here, so
+// the placeholder tile opens a list rather than silently grabbing the next metric
+// in the shelf: each option names the metric and shows what it currently holds,
+// grouped by what it measures.
+function renderPinPicker(pinnedSet) {
+  const groups = WIDGET_METRIC_GROUPS.map((g) => {
+    const available = PINNABLE_WIDGETS.filter((w) => w.group === g.key && !pinnedSet.has(w.id));
+    if (!available.length) return "";
+    return `
+      <span class="ap-select-group-label">${esc(g.label)}</span>
+      ${available
+        .map(
+          (w) => `
+        <div class="ap-select-option two-lines" role="option" aria-selected="false" data-recap-pin="${esc(w.id)}">
+          <span class="ap-select-option-content">
+            <span class="ap-select-option-title">${esc(w.title)}</span>
+            <span class="ap-select-option-caption">${esc(w.value)} · ${esc(w.caption)}</span>
+          </span>
+        </div>`,
+        )
+        .join("")}`;
+  }).join("");
+  return `
+    <details class="ap-select recap__pin-select">
+      <summary class="recap__widget-add">
+        <i class="ap-icon-plus" aria-hidden="true"></i><span>Pin a metric</span>
+      </summary>
+      <div class="ap-select-dropdown recap__pin-dropdown" role="listbox" aria-label="Metrics you can pin">
+        <div class="ap-select-options">${groups}</div>
+      </div>
+    </details>`;
+}
+
 function renderPerformancePanel() {
   const section = sectionById("pbk-sec-performance");
   const pinned = pinnedWidgets();
-  const canPin = pinned.length < MAX_PINS && pinned.length < PINNABLE_WIDGETS.length;
+  const pinnedSet = new Set(pinned.map((w) => w.id));
+  const canPin = pinned.length < MAX_PINS && pinnedSet.size < PINNABLE_WIDGETS.length;
   return `
     <section class="recap__panel" id="${section.id}">
       ${renderPanelHead(section, false)}
@@ -1749,13 +1835,7 @@ function renderPerformancePanel() {
         </p>
         <div class="recap__widgets">
           ${pinned.map(renderWidget).join("")}
-          ${
-            canPin
-              ? `<button type="button" class="recap__widget-add" data-recap-pin>
-                   <i class="ap-icon-plus" aria-hidden="true"></i><span>Pin a widget</span>
-                 </button>`
-              : ""
-          }
+          ${canPin ? renderPinPicker(pinnedSet) : ""}
         </div>
         <div class="recap__connect">
           <p class="recap__connect-text">
@@ -1763,20 +1843,6 @@ function renderPerformancePanel() {
           </p>
           <button type="button" class="ap-button stroked blue" data-recap-connect><span>Connect Agorapulse</span></button>
         </div>
-      </div>
-    </section>`;
-}
-
-// Top posts leans entirely on the board the milker already ships — same cards,
-// same Period/Sort toolbar, same 20-post cap. Nothing to redraw here.
-function renderTopPostsPanel() {
-  const section = sectionById("pbk-sec-topposts");
-  return `
-    <section class="recap__panel recap__panel--topposts" id="${section.id}">
-      ${renderPanelHead(section, false)}
-      <div class="recap__panel-body recap__panel-body--padded">
-        ${renderPanelLead("Reuse your best-performing posts to keep proving your goals")}
-        ${renderTopPostsBoard({ posts: topPosts, sort: topPostsView.sort, period: topPostsView.period })}
       </div>
     </section>`;
 }
@@ -1937,7 +2003,6 @@ function paint() {
         ${competitorsOn() ? renderCompetitorsPanel(data, scope === "competitors") : ""}
         ${analyticsOn() ? renderObjectivesPanel(data) : ""}
         ${analyticsOn() ? renderPerformancePanel() : ""}
-        ${analyticsOn() ? renderTopPostsPanel() : ""}
       </div>
     </div>
     ${renderRefModal(data)}
@@ -2139,10 +2204,12 @@ function onClick(event) {
   // All of these repaint in place: they sit far down the page, and a plain
   // paint() would rebuild the scroll container and throw the reader back to the
   // top of the Playbook.
-  if (event.target.closest("[data-recap-pin]")) {
-    const next = PINNABLE_WIDGETS.find((w) => !pinnedIds.includes(w.id));
-    if (next && pinnedIds.length < MAX_PINS) {
-      pinnedIds = [...pinnedIds, next.id];
+  const pin = event.target.closest("[data-recap-pin]");
+  if (pin) {
+    const entry = PINNABLE_WIDGETS.find((w) => w.id === pin.dataset.recapPin);
+    const already = pinnedReport.some((p) => p.id === entry?.id);
+    if (entry && !already && pinnedReport.length < MAX_PINS) {
+      pinnedReport = [...pinnedReport, { id: entry.id, size: entry.size }];
       repaintPreservingScroll();
     }
     return;
@@ -2150,28 +2217,18 @@ function onClick(event) {
 
   const unpin = event.target.closest("[data-recap-unpin]");
   if (unpin) {
-    pinnedIds = pinnedIds.filter((id) => id !== unpin.dataset.recapUnpin);
+    pinnedReport = pinnedReport.filter((p) => p.id !== unpin.dataset.recapUnpin);
     repaintPreservingScroll();
     return;
   }
 
-  const sortBtn = event.target.closest("[data-top-post-sort]");
-  if (sortBtn) {
-    topPostsView.sort = sortBtn.dataset.topPostSort;
-    repaintPreservingScroll();
-    return;
-  }
-
-  const periodBtn = event.target.closest("[data-top-post-period]");
-  if (periodBtn) {
-    topPostsView.period = periodBtn.dataset.topPostPeriod;
-    repaintPreservingScroll();
-    return;
-  }
-
-  const repurpose = event.target.closest("[data-top-post-repurpose]");
-  if (repurpose) {
-    toast("Repurposing is wired up in the chat — pick this winner from a conversation.");
+  const sizeOpt = event.target.closest("[data-recap-size]");
+  if (sizeOpt) {
+    const { recapSize: size, recapSizeWidget: id } = sizeOpt.dataset;
+    if (pinnedReport.some((p) => p.id === id && p.size !== size)) {
+      pinnedReport = pinnedReport.map((p) => (p.id === id ? { ...p, size } : p));
+      repaintPreservingScroll();
+    }
     return;
   }
 
