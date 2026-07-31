@@ -19,7 +19,13 @@ import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mo
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=16";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=34";
-import { objectiveCardsFor, PINNABLE_WIDGETS, WIDGET_METRIC_GROUPS } from "./mocks.js?v=64";
+import {
+  chartSeriesFor,
+  objectiveCardsFor,
+  PINNABLE_WIDGETS,
+  WIDGET_CHART_DAYS,
+  WIDGET_METRIC_GROUPS,
+} from "./mocks.js?v=65";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -158,6 +164,7 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let scrollSpy = null; // IntersectionObserver for the section-nav active state
+let reportFitObserver = null; // ResizeObserver keeping the report canvas scaled to its column
 let pinnedReport = null; // the Performance mini report: [{ id, size }] in pin order
 
 // ── Public API ───────────────────────────────────────────────────────────
@@ -219,6 +226,7 @@ export function mount(target, config) {
     stopLoading();
     stopCompetitorScan();
     detachScrollSpy();
+    detachReportFit();
     target.removeEventListener("click", onClickH);
     target.removeEventListener("input", onInputH);
     target.removeEventListener("change", onChangeH);
@@ -1621,6 +1629,16 @@ function renderCompetitorModal(data) {
 
 const MAX_PINS = 5;
 
+// The report is drawn at the width a real canvas has, then scaled down to fit the
+// Playbook's column — which is what the canvas itself does at any zoom below 100%
+// (report-grid puts `transform: scale(zoomLevel)` on the grid, down to 0.2).
+//
+// Scaling rather than squeezing is the whole point: a 12-column grid in a 742px
+// column gives 47px columns, so a 3-column widget comes out 174×152 — portrait,
+// where the real one is 253×152. Drawing at 1056px keeps every proportion inside
+// the widget right and only the final size changes.
+const REPORT_CANVAS_WIDTH = 1056;
+
 // A section lead — one line under the head saying what the section proves.
 function renderPanelLead(text) {
   return `<p class="recap__panel-lead">${esc(text)}</p>`;
@@ -1767,10 +1785,213 @@ function renderSizeSelect(w) {
     </details>`;
 }
 
-// The widget shell, redrawn. A real Report Studio widget is an Angular component;
-// what the report reads as is the frame, the title, the width and the two
-// controls that change them — so that's what this rebuilds, the controls revealed
-// on hover the way the canvas toolbar is.
+// ── The chart ────────────────────────────────────────────────────────────
+//
+// Report Studio draws these with Highcharts, which can't come along: this repo
+// takes no external runtime dependency. So the SVG is written by hand against
+// the options the real chart is configured with (ChartColumnOptions.buildColumn +
+// ChartOptions.DEFAULT_OPTIONS in @agorapulse/ui-charts):
+//
+//   stacked columns, borderWidth 0, maxPointWidth 20
+//   borderRadius { radius: '50%', scope: 'stack', where: 'end' } — only the top
+//     of the whole stack is rounded, middle segments stay square
+//   grid lines + axis lines grey-10, 1px
+//   axis labels grey-85 at 12px, legend items grey-60 at 14px with 10px symbols
+//   series colours by index from the data palette
+const CHART_MAX_BAR = 20;
+const CHART_LABEL_SIZE = 12;
+const CHART_PAD = { top: 8, right: 20, bottom: 22, left: 38 }; // right = chart.spacingRight
+
+// A y-axis that stops on a round number, and the ticks to draw on the way up.
+function chartTicks(max, count = 4) {
+  if (max <= 0) return { top: 1, ticks: [0, 1] };
+  const rough = max / count;
+  const mag = 10 ** Math.floor(Math.log10(rough));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= rough) ?? mag * 10;
+  const top = Math.ceil(max / step) * step;
+  const ticks = [];
+  for (let v = 0; v <= top + 1e-9; v += step) ticks.push(v);
+  return { top, ticks };
+}
+
+// Grouped thousands, matching the axis labels the report renders.
+function chartLabel(v) {
+  return v >= 1000 ? v.toLocaleString("en-US") : String(v);
+}
+
+// A stack's top segment: rounded on the value side only, square where it meets
+// the segment below. Falls back to a plain rect when the segment is shorter than
+// its own corner radius, which is what stops a 2px sliver rendering as a blob.
+//
+// Every argument is a number — formatting happens here, at the end. Formatting on
+// the way in makes `y + h` string concatenation, which silently produces a path
+// full of NaN rather than an error.
+function stackTopPath(x, y, w, h, r) {
+  const f = (n) => n.toFixed(1);
+  const radius = Math.min(r, h);
+  if (radius <= 0.5) {
+    return `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}"></rect>`;
+  }
+  const d = [
+    `M${f(x)} ${f(y + h)}`,
+    `L${f(x)} ${f(y + radius)}`,
+    `Q${f(x)} ${f(y)} ${f(x + radius)} ${f(y)}`,
+    `L${f(x + w - radius)} ${f(y)}`,
+    `Q${f(x + w)} ${f(y)} ${f(x + w)} ${f(y + radius)}`,
+    `L${f(x + w)} ${f(y + h)}`,
+    "Z",
+  ].join(" ");
+  return `<path d="${d}"></path>`;
+}
+
+// `size` decides how many x labels fit — the real chart thins them the same way,
+// it just measures instead of counting.
+function renderChart(series, width, height, xLabelEvery) {
+  const days = WIDGET_CHART_DAYS.length;
+  const plotW = width - CHART_PAD.left - CHART_PAD.right;
+  const plotH = height - CHART_PAD.top - CHART_PAD.bottom;
+  if (plotW <= 0 || plotH <= 0) return "";
+
+  const totals = WIDGET_CHART_DAYS.map((_, i) => series.reduce((sum, s) => sum + (s.data[i] || 0), 0));
+  const { top, ticks } = chartTicks(Math.max(...totals));
+  const y = (v) => CHART_PAD.top + plotH - (v / top) * plotH;
+
+  const slot = plotW / days;
+  const barW = Math.min(CHART_MAX_BAR, slot * 0.72);
+
+  const grid = ticks
+    .map(
+      (t) =>
+        `<line x1="${CHART_PAD.left}" y1="${y(t).toFixed(1)}" x2="${width - CHART_PAD.right}" y2="${y(t).toFixed(1)}"></line>`,
+    )
+    .join("");
+
+  const yLabels = ticks
+    .map(
+      (t) => `<text x="${CHART_PAD.left - 8}" y="${(y(t) + 4).toFixed(1)}" text-anchor="end">${chartLabel(t)}</text>`,
+    )
+    .join("");
+
+  const xLabels = WIDGET_CHART_DAYS.map((d, i) =>
+    i % xLabelEvery
+      ? ""
+      : `<text x="${(CHART_PAD.left + slot * (i + 0.5)).toFixed(1)}" y="${height - 6}" text-anchor="middle">${d}</text>`,
+  ).join("");
+
+  // Bottom-up so the last series with a value owns the rounded cap.
+  const bars = WIDGET_CHART_DAYS.map((_, i) => {
+    const x = CHART_PAD.left + slot * (i + 0.5) - barW / 2;
+    let acc = 0;
+    const stack = series
+      .map((s, si) => {
+        const v = s.data[i] || 0;
+        if (v <= 0) return null;
+        const h = (v / top) * plotH;
+        const segY = y(acc + v);
+        acc += v;
+        return { si, segY, h, isTop: false, color: s.color };
+      })
+      .filter(Boolean);
+    if (stack.length) stack[stack.length - 1].isTop = true;
+    return stack
+      .map(
+        (seg) =>
+          `<g class="recap__chart-series recap__chart-series--${seg.color}">${
+            seg.isTop
+              ? stackTopPath(x, seg.segY, barW, seg.h, barW / 2)
+              : `<rect x="${x.toFixed(1)}" y="${seg.segY.toFixed(1)}" width="${barW.toFixed(1)}" height="${seg.h.toFixed(1)}"></rect>`
+          }</g>`,
+      )
+      .join("");
+  }).join("");
+
+  return `
+    <svg class="recap__chart" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="Daily breakdown by profile">
+      <g class="recap__chart-grid">${grid}</g>
+      <g class="recap__chart-labels" font-size="${CHART_LABEL_SIZE}">${yLabels}${xLabels}</g>
+      <g class="recap__chart-bars">${bars}</g>
+    </svg>`;
+}
+
+// The legend the chart renders under it: a 10px dot plus the series name. The real
+// one paginates when the items don't fit, which is what the "1/3" pager is; how
+// many fit depends on the card's width, so it's driven off the size here.
+function renderChartLegend(series, { columns, visible }) {
+  const shown = series.slice(0, visible);
+  const pages = Math.ceil(series.length / visible);
+  return `
+    <div class="recap__chart-legend" style="--legend-columns: ${columns}">
+      ${shown
+        .map(
+          (s) => `
+        <span class="recap__legend-item">
+          <span class="recap__legend-dot recap__chart-series--${s.color}"></span>
+          <span class="recap__legend-name">${esc(s.name)}</span>
+        </span>`,
+        )
+        .join("")}
+      ${
+        pages > 1
+          ? `<span class="recap__legend-pager" aria-hidden="true">
+               <i class="ap-icon-arrow-up"></i><span>1/${pages}</span><i class="ap-icon-arrow-down"></i>
+             </span>`
+          : ""
+      }
+    </div>`;
+}
+
+// How much room each size gives the chart and its legend. Straight from the four
+// card sizes: the plot gets what's left after the header and the legend.
+const CHART_LAYOUT = {
+  small: { w: 476, h: 150, xLabelEvery: 4, columns: 2, visible: 4 },
+  medium: { w: 724, h: 260, xLabelEvery: 2, columns: 2, visible: 8 },
+  large: { w: 972, h: 330, xLabelEvery: 2, columns: 3, visible: 8 },
+};
+
+// ── The card ─────────────────────────────────────────────────────────────
+
+// S is the overview card: title, the metric, and the variation against the
+// previous period. Not a caption — the real card has no such slot. The variation
+// only goes green when it's positive; flat and negative both stay grey, with the
+// data-stagnate / data-decrease glyph.
+function renderOverviewBody(w) {
+  const v = w.variation;
+  const icon = v > 0 ? "ap-icon-data-increase" : v < 0 ? "ap-icon-data-decrease" : "ap-icon-data-stagnate";
+  return `
+    <div class="recap__overview">
+      <span class="recap__overview-title">
+        ${esc(w.title)}
+        <i class="ap-icon-pen recap__title-pen" aria-hidden="true"></i>
+      </span>
+      <div class="recap__overview-content">
+        <div class="recap__overview-metric">${esc(w.value)}</div>
+        <div class="recap__overview-variation ${v > 0 ? "is-positive" : ""}">
+          <i class="${icon}" aria-hidden="true"></i>
+          <span>${v >= 0 ? "+" : ""}${v}%</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+// M and up is the chart card: an h3 title, then the chart, then the legend.
+function renderChartBody(w) {
+  const layout = CHART_LAYOUT[w.size];
+  const series = chartSeriesFor(w.id, w.total);
+  return `
+    <div class="recap__widget-head">
+      <h3 class="recap__widget-title">${esc(w.title)}</h3>
+      <i class="ap-icon-pen recap__title-pen" aria-hidden="true"></i>
+    </div>
+    <div class="recap__chart-wrapper">
+      ${renderChart(series, layout.w, layout.h, layout.xLabelEvery)}
+    </div>
+    ${renderChartLegend(series, layout)}`;
+}
+
+// The widget card, rebuilt from widget-card.component.{html,scss}: 16px padding,
+// 8px gap, grey-10 border, 8px radius, overflow hidden — and the body it shows
+// depends on the size, the overview at S and the chart above its legend from M up,
+// which is the actual reason the sizes exist.
 function renderWidget(w) {
   return `
     <div class="recap__widget recap__widget--${w.size}">
@@ -1793,13 +2014,7 @@ function renderWidget(w) {
           <i class="ap-icon-more"></i>
         </button>
       </div>
-      <div class="recap__widget-head">
-        <span class="recap__widget-title">${esc(w.title)}</span>
-      </div>
-      <div class="recap__widget-body">
-        <span class="recap__widget-value">${esc(w.value)}</span>
-        <span class="recap__widget-caption">${esc(w.caption)}</span>
-      </div>
+      ${w.size === "mini" ? renderOverviewBody(w) : renderChartBody(w)}
     </div>`;
 }
 
@@ -1819,7 +2034,7 @@ function renderPinPicker(pinnedSet) {
         <div class="ap-select-option two-lines" role="option" aria-selected="false" data-recap-pin="${esc(w.id)}">
           <span class="ap-select-option-content">
             <span class="ap-select-option-title">${esc(w.title)}</span>
-            <span class="ap-select-option-caption">${esc(w.value)} · ${esc(w.caption)}</span>
+            <span class="ap-select-option-caption">${esc(w.value)} · ${w.variation >= 0 ? "+" : ""}${w.variation}%</span>
           </span>
         </div>`,
         )
@@ -1850,9 +2065,13 @@ function renderPerformancePanel() {
           <i class="ap-icon-lock-on" aria-hidden="true"></i>
           ${pinned.length}/${MAX_PINS} pinned · full report in Agorapulse
         </p>
-        <div class="recap__widgets">
-          ${pinned.map(renderWidget).join("")}
-          ${canPin ? renderPinPicker(pinnedSet) : ""}
+        <div class="recap__report-viewport">
+          <div class="recap__report" style="width: ${REPORT_CANVAS_WIDTH}px">
+            <div class="recap__widgets">
+              ${pinned.map(renderWidget).join("")}
+              ${canPin ? renderPinPicker(pinnedSet) : ""}
+            </div>
+          </div>
         </div>
         <div class="recap__connect">
           <p class="recap__connect-text">
@@ -2036,6 +2255,43 @@ function paint() {
 
   portalModal();
   attachScrollSpy();
+  fitReport();
+  attachReportFit();
+}
+
+// Scales the report canvas down to the column it sits in, and gives its viewport
+// the scaled height — a transform doesn't affect layout, so without this the page
+// would reserve the unscaled height and leave a gap under the section.
+function fitReport() {
+  const viewport = mountTarget?.querySelector(".recap__report-viewport");
+  const canvas = viewport?.querySelector(".recap__report");
+  if (!viewport || !canvas) return;
+  // A zero width means we're being measured before layout settles (the recap
+  // reveals from behind a transform). Scaling to 0 there would hide the report
+  // for good if no further resize followed, so keep the scale it already has.
+  const available = viewport.getBoundingClientRect().width;
+  if (!available) return;
+  const scale = Math.min(1, available / REPORT_CANVAS_WIDTH);
+  canvas.style.transform = `scale(${scale})`;
+  viewport.style.height = `${Math.round(canvas.offsetHeight * scale)}px`;
+}
+
+// Observed rather than listening for window resize: the column also changes width
+// when the sidebar collapses or the right panel opens, and an observer fires after
+// layout has settled instead of racing it.
+function attachReportFit() {
+  detachReportFit();
+  const viewport = mountTarget?.querySelector(".recap__report-viewport");
+  if (!viewport || !("ResizeObserver" in window)) return;
+  reportFitObserver = new ResizeObserver(() => fitReport());
+  reportFitObserver.observe(viewport);
+}
+
+function detachReportFit() {
+  if (reportFitObserver) {
+    reportFitObserver.disconnect();
+    reportFitObserver = null;
+  }
 }
 
 // The detail modals (reference image, competitor) are rendered inside the recap

@@ -81,6 +81,23 @@
   --app-radius-pill: 999px;
   --app-radius-circle: 50%;
 
+  /* ── Chart series palette ──────────────────────────────────────────────
+     The ten colours @agorapulse/ui-charts assigns to series by index, in that
+     order. The DS ships them as --ref-color-data-*-100, but only from ui-theme
+     21 — this repo is pinned to 20.3.5, where they don't exist. Mirrored here
+     rather than bumping the DS for one section; when ui-theme moves to 21,
+     delete these and point at the --ref tokens. */
+  --app-chart-cyan: #12aaba;
+  --app-chart-sun: #d98800;
+  --app-chart-peony: #cc2878;
+  --app-chart-lime: #42b85a;
+  --app-chart-iris: #8a62cc;
+  --app-chart-cherry: #cc5040;
+  --app-chart-sky: #3a92e8;
+  --app-chart-tangerine: #dc6a30;
+  --app-chart-emerald: #12a87a;
+  --app-chart-navy: #4a6acc;
+
   /* ── Elevation — popover / modal / card shadows ────────────────────── */
   /* Subtle shadow under existing components (was the archie default). */
   --app-shadow-subtle: 0 1px 2px rgba(33, 46, 68, 0.06);

@@ -2223,6 +2223,23 @@
   color: var(--sys-text-color-light);
 }
 
+/* ── The embedded report ──────────────────────────────────────────────────
+   The canvas is drawn at a real report's width and scaled down to the column,
+   which is what the canvas does at any zoom under 100%. Squeezing a 12-column
+   grid into 742px instead would give 47px columns, and a 3-column widget would
+   come out portrait where the real one is landscape.
+
+   The viewport clips the overhang and carries the SCALED height, set from JS
+   (fitReport) — a transform doesn't affect layout, so nothing else can know how
+   tall the scaled canvas ended up. */
+.recap__report-viewport {
+  overflow: hidden;
+}
+
+.recap__report {
+  transform-origin: top left;
+}
+
 /* The report grid, rebuilt: 12 columns, 40px cells, 16px gutter — so one grid row
    measures 56px, exactly as report-grid.constants.ts sets up GridStack. A widget
    spans the same number of columns and rows, which is why height isn't settable
@@ -2265,49 +2282,27 @@
   height: 100%;
 }
 
-/* The widget shell, redrawn from the Report Studio card: a framed tile with its
-   title in a head strip and the metric centred in the body. Relative so the
-   floating action toolbar anchors to the tile, not to whatever holds it. */
+/* The widget card, from widget-card.component.scss: 16px padding, 8px gap,
+   grey-10 border, sys-border-radius-lg, and overflow hidden so a chart can't
+   spill. Relative so the floating action toolbar anchors to the tile. */
 .recap__widget {
   position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-lg);
-}
-
-.recap__widget-head {
-  display: flex;
-  align-items: center;
   gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-xxs) var(--ref-spacing-sm);
-}
-
-/* Two lines, reserved. A quarter-row tile is ~190px wide, so "Avg reach per
-   post" on one line would ellipsis into "Avg reach p…" — and reserving both
-   lines keeps every head the same height, which is what lines the metrics up
-   across a row. */
-.recap__widget-title {
-  display: -webkit-box;
-  flex: 1;
-  min-width: 0;
-  min-height: calc(2 * var(--sys-text-style-caption-line-height));
+  padding: var(--ref-spacing-sm);
   overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-10);
+  border-radius: var(--sys-border-radius-lg);
 }
 
-/* Size + unpin, in a toolbar that FLOATS on the tile's top edge rather than
-   sitting inside the head — same as the canvas toolbar, and for the same reason:
-   a 150px-wide tile has no room to give two buttons, so the title would be
-   clipped to make space for them. Hidden until the tile is hovered or holds
-   focus (a report of five tiles shouldn't read as ten icons), and kept up while
-   its dropdown is open so the popover can't yank its own trigger away. */
+/* Size + unpin + the rest of the canvas action set, in a toolbar that FLOATS on
+   the tile's top edge rather than sitting inside the head — same as
+   widget-actions-toolbar, and for the same reason: a quarter-row tile has no
+   width to give five buttons, so the title would be clipped to make space.
+   Hidden until the tile is hovered or holds focus, and kept up while its dropdown
+   is open so the popover can't yank its own trigger away. */
 .recap__widget-actions {
   position: absolute;
   top: 0;
@@ -2333,7 +2328,7 @@
 
 /* ── Quick-edit size dropdown ─────────────────────────────────────────────
    Report Studio's canvas control, rebuilt: a cropper button opening a labelled
-   popover of four width choices. The DS select is full-width by default (it
+   popover of four size choices. The DS select is full-width by default (it
    normally wraps a text trigger); here the trigger is an icon button. */
 .recap__size-select {
   width: auto;
@@ -2348,9 +2343,6 @@
   display: none;
 }
 
-/* Right-aligned to the popover's own trigger. The dropdown is wider than a
-   quarter-row tile, so it overhangs its neighbour — which is what the canvas
-   overlay does too. */
 .recap__size-dropdown {
   top: calc(100% + var(--ref-spacing-xxs));
   left: auto;
@@ -2423,55 +2415,226 @@
   width: 59px;
 }
 
-/* ── Metric picker ────────────────────────────────────────────────────────
-   The placeholder tile IS the trigger, so the flex sizing lives on the
-   <details> and the dashed summary fills it. */
-/* Its span is set with the widget sizes above; all that's left is undoing the DS
-   select's full-width default, since the grid decides the width here. */
-.recap__pin-select {
-  width: auto;
-}
-
-.recap__pin-select > summary {
-  list-style: none;
-}
-
-.recap__pin-select > summary::-webkit-details-marker {
-  display: none;
-}
-
-.recap__pin-dropdown {
-  min-width: 260px;
-}
-
-.recap__widget-body {
+/* ── S: the overview card ─────────────────────────────────────────────────
+   widget-card-overview.component.scss, non-centred variant: a 14px grey title
+   over the metric at font-size-xl bold, then the variation. */
+.recap__overview {
   display: flex;
   flex: 1;
   flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  min-height: 0;
+}
+
+.recap__overview-title {
+  flex-shrink: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--ref-color-grey-80);
+}
+
+/* The widget title is editable on the canvas, and the pen that says so sits right
+   after it (widget-editable-title, symbol size xs). */
+.recap__title-pen {
+  flex-shrink: 0;
+  margin-left: var(--ref-spacing-xxxs);
+  font-size: var(--sys-icon-css-xs);
+  color: var(--ref-color-grey-60);
+}
+
+.recap__overview-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-height: 0;
+}
+
+.recap__overview-metric {
+  font-size: var(--ref-font-size-xl);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: var(--ref-font-line-height-lg);
+  color: var(--ref-color-grey-100);
+}
+
+/* Only a rise is green. Flat and falling both stay grey — the glyph carries the
+   direction, the colour is reserved for good news. */
+.recap__overview-variation {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: flex-start;
   align-items: center;
-  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__overview-variation.is-positive {
+  color: var(--ref-color-green-150);
+}
+
+.recap__overview-variation i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* ── M and up: the chart card ─────────────────────────────────────────── */
+.recap__widget-head {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.recap__widget-title {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--sys-text-style-h3-font-family);
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  line-height: var(--sys-text-style-h3-line-height);
+  color: var(--ref-color-grey-100);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recap__chart-wrapper {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.recap__chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* Axis and grid lines: grey-10 at 1px, as ChartOptions.DEFAULT_OPTIONS sets for
+   both axes. */
+.recap__chart-grid line {
+  stroke: var(--ref-color-grey-10);
+  stroke-width: 1;
+}
+
+.recap__chart-labels text {
+  fill: var(--ref-color-grey-80);
+  font-family: var(--ref-font-family);
+}
+
+/* Series colours by index from the chart palette, the same order
+   @agorapulse/ui-charts assigns them in. */
+.recap__chart-series--cyan {
+  fill: var(--app-chart-cyan);
+}
+
+.recap__chart-series--sun {
+  fill: var(--app-chart-sun);
+}
+
+.recap__chart-series--peony {
+  fill: var(--app-chart-peony);
+}
+
+.recap__chart-series--lime {
+  fill: var(--app-chart-lime);
+}
+
+.recap__chart-series--iris {
+  fill: var(--app-chart-iris);
+}
+
+.recap__chart-series--cherry {
+  fill: var(--app-chart-cherry);
+}
+
+.recap__chart-series--sky {
+  fill: var(--app-chart-sky);
+}
+
+.recap__chart-series--tangerine {
+  fill: var(--app-chart-tangerine);
+}
+
+/* ── Chart legend ─────────────────────────────────────────────────────────
+   Highcharts' legend: 10px symbols, grey-60 items at 14px, laid out in as many
+   columns as the card's width allows. */
+.recap__chart-legend {
+  display: grid;
+  flex-shrink: 0;
+  grid-template-columns: repeat(var(--legend-columns, 2), minmax(0, 1fr));
+  gap: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  padding-top: var(--ref-spacing-xxs);
+}
+
+.recap__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--ref-color-grey-60);
+}
+
+.recap__legend-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--app-radius-circle);
+  /* The series classes set `fill` for SVG; the dot is a div, so echo it here. */
+  background: currentcolor;
+}
+
+.recap__legend-dot.recap__chart-series--cyan {
+  background: var(--app-chart-cyan);
+}
+
+.recap__legend-dot.recap__chart-series--sun {
+  background: var(--app-chart-sun);
+}
+
+.recap__legend-dot.recap__chart-series--peony {
+  background: var(--app-chart-peony);
+}
+
+.recap__legend-dot.recap__chart-series--lime {
+  background: var(--app-chart-lime);
+}
+
+.recap__legend-dot.recap__chart-series--iris {
+  background: var(--app-chart-iris);
+}
+
+.recap__legend-dot.recap__chart-series--cherry {
+  background: var(--app-chart-cherry);
+}
+
+.recap__legend-dot.recap__chart-series--sky {
+  background: var(--app-chart-sky);
+}
+
+.recap__legend-dot.recap__chart-series--tangerine {
+  background: var(--app-chart-tangerine);
+}
+
+.recap__legend-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recap__legend-pager {
+  display: flex;
+  align-items: center;
   gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-sm);
-  text-align: center;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-60);
 }
 
-.recap__widget-value {
-  font-family: var(--sys-text-style-h1-font-family);
-  font-size: var(--sys-text-style-h1-size);
-  font-weight: var(--sys-text-style-h1-weight);
-  line-height: var(--sys-text-style-h1-line-height);
-  color: var(--ref-color-grey-150);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Reserved for two lines too — "across 2 tracked links" wraps at tile width, and
-   without the reservation that one tile's metric would sit a line higher than
-   its neighbours'. */
-.recap__widget-caption {
-  min-height: calc(2 * var(--sys-text-style-caption-line-height));
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
+.recap__legend-pager i {
+  font-size: var(--sys-icon-css-xs);
 }
 
 /* ── Agorapulse callout ───────────────────────────────────────────────── */

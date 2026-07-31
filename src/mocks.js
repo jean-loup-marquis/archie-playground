@@ -2069,7 +2069,8 @@ export const PINNABLE_WIDGETS = [
     id: "avg-reach",
     title: "Avg reach per post",
     value: "2,050",
-    caption: "9 posts published",
+    total: 61500,
+    variation: 6.2,
     group: "post",
     size: "mini",
     pinned: true,
@@ -2078,7 +2079,8 @@ export const PINNABLE_WIDGETS = [
     id: "eng-rate",
     title: "Engagement rate",
     value: "4.1%",
-    caption: "last 30 days",
+    total: 3400,
+    variation: 0,
     group: "post",
     size: "mini",
     pinned: true,
@@ -2087,7 +2089,8 @@ export const PINNABLE_WIDGETS = [
     id: "cta",
     title: "CTA clicks",
     value: "126",
-    caption: "across 2 tracked links",
+    total: 126,
+    variation: 8.4,
     group: "post",
     size: "mini",
     pinned: true,
@@ -2096,25 +2099,74 @@ export const PINNABLE_WIDGETS = [
     id: "followers",
     title: "Follower growth",
     value: "+1,240",
-    caption: "last 30 days",
+    total: 1240,
+    variation: 12,
     group: "profile",
     size: "small",
     pinned: true,
   },
-  { id: "reach", title: "Reach", value: "18,400", caption: "last 30 days", group: "profile", size: "mini" },
+  { id: "reach", title: "Reach", value: "18,400", total: 18400, variation: 30.2, group: "profile", size: "mini" },
   {
     id: "profile-visits",
     title: "Profile visits",
     value: "3,180",
-    caption: "last 30 days",
+    total: 3180,
+    variation: -4.8,
     group: "profile",
     size: "mini",
   },
-  { id: "mentions", title: "Mentions", value: "312", caption: "last 30 days", group: "profile", size: "mini" },
-  { id: "views", title: "Video views", value: "9,320", caption: "last 30 days", group: "post", size: "mini" },
-  { id: "saves", title: "Saves", value: "1,204", caption: "last 30 days", group: "post", size: "mini" },
-  { id: "comments", title: "Comments", value: "486", caption: "last 30 days", group: "post", size: "mini" },
+  { id: "mentions", title: "Mentions", value: "312", total: 312, variation: 15.3, group: "profile", size: "mini" },
+  { id: "views", title: "Video views", value: "9,320", total: 9320, variation: -25.1, group: "post", size: "mini" },
+  { id: "saves", title: "Saves", value: "1,204", total: 1204, variation: 2.7, group: "post", size: "mini" },
+  { id: "comments", title: "Comments", value: "486", total: 486, variation: -11.4, group: "post", size: "mini" },
 ];
+
+// The series behind a widget's chart, one per connected profile — what a real
+// widget breaks its metric down by. Names and order mirror the profiles the app
+// already knows about; the colours come from the chart palette, assigned by
+// series index exactly as @agorapulse/ui-charts does.
+export const WIDGET_CHART_SERIES = [
+  { name: "Agorapulse - FB", color: "cyan", weight: 0.02 },
+  { name: "Agorapulse | Social Media Management - IG", color: "sun", weight: 0.14 },
+  { name: "Agorapulse - LK", color: "peony", weight: 0.62 },
+  { name: "Agorapulse France 🇫🇷 - TH", color: "lime", weight: 0.01 },
+  { name: "Agorapulse | Social Media Management - TH", color: "iris", weight: 0.02 },
+  { name: "Agorapulse - TK", color: "cherry", weight: 0.01 },
+  { name: "Agorapulse - X", color: "sky", weight: 0.03 },
+  { name: "Agorapulse - YT", color: "tangerine", weight: 0.15 },
+];
+
+// 30 days of daily values, shaped like a real month: a strong first week that
+// tails off, with a weekly rhythm on top. Deterministic — a prototype that
+// reshuffles its own chart on every repaint is unreadable, and a seeded curve
+// reads truer than random noise anyway.
+function buildChartDays(total, days = 30) {
+  const raw = [];
+  for (let i = 0; i < days; i += 1) {
+    const decay = Math.exp(-i / 7); // the launch week burning off
+    const weekly = 1 + 0.18 * Math.sin((i / 7) * Math.PI * 2); // weekday rhythm
+    const jitter = 1 + 0.12 * Math.sin(i * 2.4); // enough wobble to not read as a curve
+    raw.push(Math.max(0.05, (0.25 + decay) * weekly * jitter));
+  }
+  const sum = raw.reduce((a, b) => a + b, 0);
+  return raw.map((v) => Math.round((v / sum) * total));
+}
+
+// One chart per metric: the metric's total split across the profiles by weight,
+// then across the month by the shared shape. Values are what the bars measure.
+export function chartSeriesFor(widgetId, total) {
+  return WIDGET_CHART_SERIES.map((s) => ({
+    name: s.name,
+    color: s.color,
+    data: buildChartDays(Math.round(total * s.weight)),
+  }));
+}
+
+// The x-axis labels — day/month, the format the report uses for a 30-day range.
+export const WIDGET_CHART_DAYS = Array.from({ length: 30 }, (_, i) => {
+  const day = String(i + 1).padStart(2, "0");
+  return `${day}/07`;
+});
 
 // ---- Topics (the dossiers Agorapulse listening produced) -------------------
 //
