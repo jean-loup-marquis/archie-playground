@@ -929,19 +929,40 @@
   background: var(--comp-action-dropdown-divider-color, var(--ref-color-grey-10));
 }
 
-.isv2-sheet-label {
-  margin: 0;
-  color: var(--sys-text-color-light);
-  font-size: var(--sys-text-style-caption-size);
-}
-
+/* A LABEL, and the panel has exactly one class for it. Dark is the whole
+   distinction: everything in a section body used to be 12px/400/grey — the switch
+   label, the group labels and the footnotes alike — so four different jobs wore one
+   costume and you couldn't tell what titled what from what merely commented on it.
+ *
+   Dark = this names the thing under it. Light (.isv2-sheet-hint) = this is an aside
+   about the thing. One binary, no second font size and no bold: three bold labels
+   stacked in a 212px column would shout over the section's own title, and the
+   panel's whole brief is to stay quiet.
+ *
+   CAPTION-sized, and that part is load-bearing — the switch label was 14px dark
+   once and was heavier than the section's own header row above it, so the control
+   out-shouted the thing it belongs to. Colour is what separates the tiers here;
+   size is what keeps them all under the header. */
+.isv2-sheet-label,
+.isv2-sheet-switch-label,
 .isv2-sheet-hint {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
   margin: 0;
-  color: var(--sys-text-color-light);
   font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+}
+
+/* The one declaration that separates them — they were grouped, which is how four
+   jobs ended up in one costume. */
+.isv2-sheet-label,
+.isv2-sheet-switch-label {
+  color: var(--sys-text-color-default);
+}
+
+.isv2-sheet-hint {
+  color: var(--sys-text-color-light);
 }
 
 /* `.ap-link` is inline-flex — a rigid box on the baseline that won't break with the
@@ -994,29 +1015,21 @@
   gap: var(--ref-spacing-sm);
 }
 
-/* Caption, not body: at 14px dark this label was heavier than the section's own
-   header row above it ("References", 14px light), so the control out-shouted the
-   thing it belongs to. The switch beside it carries the state visually — the words
-   only have to name it. Same size as the group labels below, so the section reads
-   as one flat level of chrome around the tiles, which are the content. */
-.isv2-sheet-switch-label {
-  color: var(--sys-text-color-light);
-  font-family: var(--sys-text-style-caption-font-family);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-}
-
-/* One switch and what it discloses, bound together. Half the accordion body's own
-   gap inside, and more than it between groups: the logo and the colours are two
-   settings that happen to live in one section, and even spacing made them read as
-   four loose rows. */
-.isv2-brandgroup {
+/* A GROUP: several blocks that belong to one beat of a section — a switch and what
+   it discloses, or a pool of images and the button that adds to it. Tighter inside
+   than the accordion body's own 12px, so the section reads as beats rather than as a
+   list of loose rows.
+ *
+   The panel now has two tiers of grouping, and they should stay legible as such:
+   .isv2-block is a label and the one thing it titles (4px), .isv2-group is several
+   of those (8px), the body separates beats (12px). */
+.isv2-group {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
 }
 
-.isv2-brandgroup + .isv2-brandgroup {
+.isv2-group + .isv2-group {
   margin-top: var(--ref-spacing-xxxs);
 }
 
@@ -1268,14 +1281,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
-}
-
-.isv2-refs-group {
-  margin: 0;
-  font-family: var(--sys-text-style-caption-font-family);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
 }
 
 .isv2-ref-remove {

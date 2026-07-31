@@ -475,12 +475,16 @@ function refsBody(st, picked) {
   const dropzone = capped
     ? `<p class="isv2-sheet-hint">Maximum ${imageStudio.MAX_REFS} images. Remove one to add another.</p>`
     : // A button and a line under it, not a dashed drop panel. The panel was a
-      // 64px-tall placeholder for an action that is one click, and it was the
-      // biggest thing in a section whose subject is the images above it. Dropping
-      // still works — `data-img-dropzone` rides on the button, and generate mode
-      // accepts a drop anywhere in the modal anyway (see index.js#onDrop).
+      // 64px-tall placeholder for an action that is one click. Dropping still works —
+      // `data-img-dropzone` rides on the button, and generate mode accepts a drop
+      // anywhere in the modal anyway (see index.js#onDrop).
+      //
+      // GHOST, not stroked: bordered and bold, it was the loudest object in a section
+      // whose subject is the three photographs above it — the only thing with a frame
+      // was the button for adding a fourth. Ghost keeps the size and the hit area and
+      // gives the frame back to the tiles.
       `<div class="isv2-adder">
-        <button type="button" class="ap-button stroked grey" data-img-dropzone data-img-ref-add>
+        <button type="button" class="ap-button ghost grey" data-img-dropzone data-img-ref-add>
           <i class="ap-icon-plus" aria-hidden="true"></i><span>Add an image</span>
         </button>
         <p class="isv2-sheet-hint">PNG, JPG or WebP · I'll match its look</p>
@@ -501,7 +505,7 @@ function refsBody(st, picked) {
         <i aria-hidden="true"></i>
       </label>
     </div>
-    ${on ? `${groups.join("")}${dropzone}${picked ? refModeBlock(st) : ""}` : ""}`;
+    ${on ? `<div class="isv2-group">${groups.join("")}${dropzone}</div>${picked ? refModeBlock(st) : ""}` : ""}`;
 }
 
 // A pool and its label as ONE block. Unwrapped, the body's 12px gap fell between
@@ -509,7 +513,7 @@ function refsBody(st, picked) {
 // grouped: the label read as floating above everything below it rather than as
 // the title of the three tiles it belongs to.
 function refGroup(label, tiles, count) {
-  const head = label ? `<p class="isv2-refs-group">${escapeHtml(label)}</p>` : "";
+  const head = label ? `<p class="isv2-sheet-label">${escapeHtml(label)}</p>` : "";
   // Exactly VISIBLE_REFS tiles fit the panel, which is the problem: with the
   // fourth starting a hair past the edge there is no half-tile peeking to say
   // more exist, and macOS hides its overlay scrollbar until you already scroll.
@@ -536,7 +540,7 @@ function refModeBlock(st) {
   }).join("");
   const hint = imageStudio.REF_MODES.find((m) => m.key === active).hint;
   return `<div class="isv2-block">
-      <p class="isv2-refs-group">How to use it</p>
+      <p class="isv2-sheet-label">How to use it</p>
       <div class="isv2-chip-group">${chips}</div>
       <p class="isv2-sheet-hint">${escapeHtml(hint)}</p>
     </div>`;
@@ -608,7 +612,7 @@ function brandSwitch({ label, hint, hook, on, available, missing, body }) {
   // its children evenly: unwrapped, the gap between a switch and the thing it
   // controls was the same as the gap between the two halves, so the placer read as
   // belonging to the colours row below it as much as to the logo row above.
-  return `<div class="isv2-brandgroup">
+  return `<div class="isv2-group">
     <div class="isv2-sheet-switch">
       <span class="isv2-sheet-switch-label">${escapeHtml(label)}</span>
       <label class="ap-toggle-container" title="${escapeHtml(available ? hint : missing)}">

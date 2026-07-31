@@ -290,6 +290,24 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   le mécanisme généralisé depuis `syncPaletteLine` (voir Branding : le brief n'est écrit qu'à
   l'ouverture et Generate envoie le champ). Conséquence bonus : couper le switch **retire** la ligne,
   là où elle restait avant à décrire une référence hors jeu.
+  **Hiérarchie : la couleur sépare les rangs, la taille les tient tous sous le titre.** Tout le corps
+  d'une section était en 12px/400/gris — le libellé du switch, les libellés de groupe et les notes de
+  bas de bloc — donc quatre métiers portaient un seul costume et on ne pouvait pas voir ce qui
+  titrait quoi. Une seule binaire désormais : **sombre = ça nomme la chose en dessous**
+  (`.isv2-sheet-label`, `.isv2-sheet-switch-label`), **clair = c'est un aparté sur cette chose**
+  (`.isv2-sheet-hint`). Pas de seconde taille ni de gras : trois libellés gras empilés dans une
+  colonne de 212px crieraient par-dessus le titre de la section, et tout le brief du panneau est de
+  rester calme. La taille **caption** est porteuse — ce libellé de switch a été 14px sombre, et il
+  pesait alors plus lourd que la rangée d'en-tête au-dessus de lui.
+  **Trois pas d'espacement, un par tier de regroupement** : 4px libellé → ce qu'il titre
+  (`.isv2-block`), 8px entre blocs d'un même temps (`.isv2-group`, généralisé depuis
+  `.isv2-brandgroup` — Branding avait exactement le même besoin), 12px entre temps (le gap du corps
+  d'accordéon). Avant, les quatre morceaux étaient à 12px les uns des autres, donc le vivier, le
+  bouton d'ajout et le bloc de mode se lisaient comme quatre rangées en vrac.
+  **Le bouton d'ajout est en `ghost`, plus en `stroked`** : bordé et en gras, c'était l'objet le plus
+  fort d'une section dont le sujet est les trois photos au-dessus — la seule chose encadrée était le
+  bouton pour en ajouter une quatrième. Ghost garde la taille et la zone de clic, et rend le cadre
+  aux vignettes.
   **Aucun séparateur à l'intérieur de la section** : un filet entre les vignettes et le bouton
   redessinait exactement la frontière que la fusion venait d'enlever. Les libellés de groupe
   séparent déjà les viviers, et le cadre de la section la sépare déjà de Text in image.
