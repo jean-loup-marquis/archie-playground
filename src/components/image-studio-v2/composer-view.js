@@ -39,8 +39,8 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=34";
-import { KEY } from "./context.js?v=31";
-import * as imageStudio from "../../image-studio.js?v=67";
+import { KEY } from "./context.js?v=32";
+import * as imageStudio from "../../image-studio.js?v=68";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why
@@ -479,12 +479,14 @@ function refsBody(st, picked) {
       // `data-img-dropzone` rides on the button, and generate mode accepts a drop
       // anywhere in the modal anyway (see index.js#onDrop).
       //
-      // GHOST, not stroked: bordered and bold, it was the loudest object in a section
-      // whose subject is the three photographs above it — the only thing with a frame
-      // was the button for adding a fourth. Ghost keeps the size and the hit area and
-      // gives the frame back to the tiles.
+      // STROKED. It was ghost for a moment, to stop it out-shouting the three
+      // photographs above it — but with no border and no fill it stopped reading as
+      // an object at all and floated between the tiles and the mode chips. The
+      // hierarchy problem it was solving is solved better by the label tiers and the
+      // grouping around it, and the DS has no filled grey button (secondary is blue
+      // and orange only), so a border is the way a quiet button stays a button.
       `<div class="isv2-adder">
-        <button type="button" class="ap-button ghost grey" data-img-dropzone data-img-ref-add>
+        <button type="button" class="ap-button stroked grey" data-img-dropzone data-img-ref-add>
           <i class="ap-icon-plus" aria-hidden="true"></i><span>Add an image</span>
         </button>
         <p class="isv2-sheet-hint">PNG, JPG or WebP · I'll match its look</p>

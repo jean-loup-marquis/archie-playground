@@ -133,6 +133,18 @@
    overflow stays VISIBLE: the inspector's flyout sheets have to escape this box,
    and `overflow: auto` on either axis would clip them (see .isv2-panel). */
 .isv2-stage-body {
+  /* The panel's width, and the space the stage reserves for it, in ONE place. They
+     were two hard-coded numbers per breakpoint (284/356, 236/276) that had to be
+     changed together or the image would slide under the panel — exactly the kind of
+     pair that drifts. The inset is the left offset plus the breathing room after it;
+     only that changes at a narrow viewport now.
+   *
+     284 at every width: it is the number `--isv2-tile: 80px` was derived from (three
+     tiles plus two 8px gaps need 256 of the body's inner 260), and the narrow
+     branch's 236 quietly broke that — the third thumbnail was clipped mid-image,
+     which reads as a rendering fault rather than as "scroll for more". */
+  --isv2-panel-w: 284px;
+  --isv2-panel-inset: 72px;
   position: relative; /* the pinned side panels anchor here */
   flex: 1 1 auto;
   min-width: 0;
@@ -151,10 +163,8 @@
 
 /* Reservations, always symmetric: the inspector is the widest thing pinned in
    generate mode, the palette in edit mode. */
-/* 32 edge + panel width + 40 breathing room, so the image never crowds the
-   panel it sits beside. */
 .isv2-stage-body.has-panel {
-  padding-inline: 356px;
+  padding-inline: calc(var(--isv2-panel-w) + var(--isv2-panel-inset));
 }
 
 .isv2-stage-body.has-palette {
@@ -655,7 +665,7 @@
   left: var(--ref-spacing-lg);
   top: 50%;
   transform: translateY(-50%);
-  width: 284px;
+  width: var(--isv2-panel-w);
   max-height: calc(100% - var(--ref-spacing-md) * 2);
   overflow-y: auto;
   /* The sections carry their own padding and their own dividers. */
@@ -1333,11 +1343,14 @@
 
   .isv2-panel {
     left: var(--ref-spacing-sm);
-    width: 236px;
   }
 
-  .isv2-stage-body.has-panel {
-    padding-inline: 276px;
+  /* The panel keeps its width; only the inset tightens — a narrower left offset and
+     less breathing room after it. Shrinking the panel itself cost the thumbnails
+     their row, and the reservation is symmetric, so every pixel taken off the panel
+     only ever bought the image two. */
+  .isv2-stage-body {
+    --isv2-panel-inset: 40px;
   }
 
   .isv2-rail {

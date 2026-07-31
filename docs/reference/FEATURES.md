@@ -272,7 +272,9 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   Des **chips**, le vocabulaire que le panneau parle déjà pour « un parmi quelques-uns » (Type,
   Format et Output sont tous des groupes de chips) — rien de neuf à apprendre, et une seule rangée
   tient dans les 212px du corps. Libellés courts pour cette raison ; « Style only » ratait la rangée
-  de 2,4px, donc c'est **« Style »** et le hint sous les chips porte le « only ». Aucune ambiguïté
+  de 2,4px quand les chips n'avaient que 212px ; le panneau n'a plus qu'une largeur et ils en ont 260,
+  donc **« Style only »** est revenu — le « only » EST le mode, c'est ce qui le sépare de Blend d'un
+  coup d'œil. Aucune ambiguïté
   avec le RÉGLAGE Style deux rangées plus bas : cette rangée est désactivée (« From references »)
   chaque fois que ces chips existent. Le hint est celui du mode ACTIF, la même forme libellé + hint
   que `formatBody` utilise pour « Best for ».
@@ -304,10 +306,21 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   `.isv2-brandgroup` — Branding avait exactement le même besoin), 12px entre temps (le gap du corps
   d'accordéon). Avant, les quatre morceaux étaient à 12px les uns des autres, donc le vivier, le
   bouton d'ajout et le bloc de mode se lisaient comme quatre rangées en vrac.
-  **Le bouton d'ajout est en `ghost`, plus en `stroked`** : bordé et en gras, c'était l'objet le plus
-  fort d'une section dont le sujet est les trois photos au-dessus — la seule chose encadrée était le
-  bouton pour en ajouter une quatrième. Ghost garde la taille et la zone de clic, et rend le cadre
-  aux vignettes.
+  **Le bouton d'ajout reste `stroked`.** Passé en `ghost` un instant pour cesser de crier par-dessus
+  les trois photos au-dessus de lui, il ne se lisait plus comme un objet du tout et flottait entre
+  les vignettes et les chips de mode. Le problème de hiérarchie qu'il réglait est mieux réglé par les
+  tiers de libellés et le regroupement autour de lui, et le DS n'a pas de bouton gris rempli
+  (`secondary` n'existe qu'en bleu et orange) : une bordure est la façon dont un bouton discret reste
+  un bouton.
+  **Une seule largeur de panneau, 284px, à toutes les tailles** (`--isv2-panel-w` sur
+  `.isv2-stage-body`, avec `--isv2-panel-inset` = décalage gauche + respiration). C'était deux nombres
+  codés en dur par breakpoint (284/356 et 236/276) qu'il fallait changer ensemble sous peine de voir
+  l'image glisser sous le panneau. 284 est le nombre dont `--isv2-tile: 80px` est dérivé (trois
+  vignettes plus deux gaps de 8px demandent 256 des 260 intérieurs), et la branche étroite à 236 le
+  cassait en silence : la troisième vignette était coupée en plein milieu, ce qui se lit comme un
+  défaut de rendu et non comme « fais défiler ». Sous 1100px, seul l'inset se resserre. Prix payé à
+  ces largeurs-là : la réservation étant symétrique, les 48px rendus au panneau en coûtent 96 à
+  l'image (440 → 344px à 1035px de viewport). Au-dessus de 1100px, rien ne change.
   **Aucun séparateur à l'intérieur de la section** : un filet entre les vignettes et le bouton
   redessinait exactement la frontière que la fusion venait d'enlever. Les libellés de groupe
   séparent déjà les viviers, et le cadre de la section la sépare déjà de Text in image.

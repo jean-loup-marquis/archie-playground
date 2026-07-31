@@ -95,12 +95,11 @@ export const REF_MODES = [
   },
   {
     key: "style",
-    // "Style", not "Style only": the three chips have 212px of panel and "Style
-    // only" missed one row by 2.4px. The "only" it loses is the whole point of the
-    // mode, so the hint under the chips carries it — and there is no ambiguity with
-    // the Style SETTING two rows down, because that row is disabled whenever these
-    // chips exist ("From references").
-    label: "Style",
+    // "Style only" and not "Style": the "only" IS the mode — it's what separates it
+    // from Blend at a glance. It was briefly shortened because the chips had 212px
+    // and it missed the row by 2.4px; the panel is one width now and they have 260,
+    // so the constraint that forced it is gone.
+    label: "Style only",
     hint: "Palette, texture and treatment only — none of its composition.",
     clause: "its art style only: palette, texture and treatment, none of its composition",
   },
