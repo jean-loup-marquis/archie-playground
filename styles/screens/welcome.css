@@ -2171,9 +2171,8 @@
   color: var(--ref-color-green-150);
 }
 
-/* ── Placeholders (add an objective / pin a widget) ───────────────────── */
-.recap__ocard--add,
-.recap__widget-add {
+/* ── Placeholder (add an objective) ─────────────────────────────────────── */
+.recap__ocard--add {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2193,15 +2192,13 @@
     color var(--ref-animation-short);
 }
 
-.recap__ocard--add:hover,
-.recap__widget-add:hover {
+.recap__ocard--add:hover {
   border-color: var(--ref-color-electric-blue-20);
   background: var(--ref-color-electric-blue-05);
   color: var(--sys-color-accent-light-text);
 }
 
-.recap__ocard--add:focus-visible,
-.recap__widget-add:focus-visible {
+.recap__ocard--add:focus-visible {
   outline: 2px solid var(--sys-color-accent-light-text);
   outline-offset: 2px;
 }
@@ -2223,196 +2220,35 @@
   color: var(--sys-text-color-light);
 }
 
-/* ── The embedded report ──────────────────────────────────────────────────
-   The canvas is drawn at a real report's width and scaled down to the column,
-   which is what the canvas does at any zoom under 100%. Squeezing a 12-column
-   grid into 742px instead would give 47px columns, and a 3-column widget would
-   come out portrait where the real one is landscape.
+/* The report grid: 40px cells with a 16px gutter — the 56px row of
+   report-grid.constants.ts — and spans rather than pixel heights, so a size sets
+   width and height together.
 
-   The viewport clips the overhang and carries the SCALED height, set from JS
-   (fitReport) — a transform doesn't affect layout, so nothing else can know how
-   tall the scaled canvas ended up. */
-.recap__report-viewport {
-  overflow: hidden;
-}
-
-.recap__report {
-  transform-origin: top left;
-}
-
-/* The report grid, rebuilt: 12 columns, 40px cells, 16px gutter — so one grid row
-   measures 56px, exactly as report-grid.constants.ts sets up GridStack. A widget
-   spans the same number of columns and rows, which is why height isn't settable
-   on its own: the size sets both. Doing this with real CSS grid rather than flex
-   basis percentages is what makes the widths land on the actual column edges. */
+   Nine columns, not the report's twelve: twelve of them across a 742px column are
+   47px each, which leaves a 3-column widget portrait. Nine make it landscape, and
+   the two offered sizes tile the row exactly (3×S, or M+S), so the canvas never
+   ends in a dead strip. */
 .recap__widgets {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(9, 1fr);
   grid-auto-rows: 40px;
   gap: var(--ref-spacing-sm);
 }
 
-/* Spans, not pixel heights. 3 rows → 3×40 + 2×16 = 152px tall inside a 168px
-   footprint, and so on up. XL is 12 columns but only 10 rows — the grid caps its
-   height, so it's the one size where width and height don't stay in step. */
-.recap__widget--mini,
-.recap__pin-select {
-  grid-column: span 3;
-  grid-row: span 3;
-}
-
-.recap__widget--small {
-  grid-column: span 6;
-  grid-row: span 6;
-}
-
-.recap__widget--medium {
-  grid-column: span 9;
-  grid-row: span 9;
-}
-
-.recap__widget--large {
-  grid-column: span 12;
-  grid-row: span 10;
-}
-
-/* The placeholder is a <summary> inside the picker's <details>, which is the grid
-   item — so it just fills its host. */
-.recap__widget-add {
-  height: 100%;
-}
-
-/* The widget card, from widget-card.component.scss: 16px padding, 8px gap,
-   grey-10 border, sys-border-radius-lg, and overflow hidden so a chart can't
-   spill. Relative so the floating action toolbar anchors to the tile. */
+/* widget-card.component.scss: 16px padding, 8px gap, a grey-10 border at
+   sys-border-radius-lg, overflow hidden so a chart can't spill. Each widget is
+   placed explicitly on the grid — the spans come from the size, inline, because
+   the report's shape is fixed rather than packed. */
 .recap__widget {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
+  min-width: 0;
   padding: var(--ref-spacing-sm);
   overflow: hidden;
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-10);
   border-radius: var(--sys-border-radius-lg);
-}
-
-/* Size + unpin + the rest of the canvas action set, in a toolbar that FLOATS on
-   the tile's top edge rather than sitting inside the head — same as
-   widget-actions-toolbar, and for the same reason: a quarter-row tile has no
-   width to give five buttons, so the title would be clipped to make space.
-   Hidden until the tile is hovered or holds focus, and kept up while its dropdown
-   is open so the popover can't yank its own trigger away. */
-.recap__widget-actions {
-  position: absolute;
-  top: 0;
-  right: var(--ref-spacing-sm);
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  padding: 0 var(--ref-spacing-xxxs);
-  background: var(--app-surface);
-  border: 1px solid var(--ref-color-grey-20);
-  border-radius: var(--ref-border-radius-md);
-  box-shadow: var(--app-shadow-card);
-  opacity: 0;
-  transform: translateY(-50%);
-  transition: opacity var(--ref-animation-short);
-}
-
-.recap__widget:hover .recap__widget-actions,
-.recap__widget:focus-within .recap__widget-actions,
-.recap__widget-actions:has([open]) {
-  opacity: 1;
-}
-
-/* ── Quick-edit size dropdown ─────────────────────────────────────────────
-   Report Studio's canvas control, rebuilt: a cropper button opening a labelled
-   popover of four size choices. The DS select is full-width by default (it
-   normally wraps a text trigger); here the trigger is an icon button. */
-.recap__size-select {
-  width: auto;
-}
-
-.recap__size-select > summary {
-  list-style: none;
-  cursor: pointer;
-}
-
-.recap__size-select > summary::-webkit-details-marker {
-  display: none;
-}
-
-.recap__size-dropdown {
-  top: calc(100% + var(--ref-spacing-xxs));
-  left: auto;
-  right: calc(-1 * var(--ref-spacing-xxs));
-  width: max-content;
-  padding: var(--ref-spacing-xs);
-}
-
-/* The popover's own heading, per the real panel: uppercase caption, tracked out. */
-.recap__size-label {
-  display: block;
-  margin-bottom: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--ref-font-weight-bold);
-  line-height: var(--sys-text-style-caption-line-height);
-  letter-spacing: 0.04em;
-  color: var(--ref-color-grey-60);
-  text-transform: uppercase;
-}
-
-/* 2×2, the real panel's arrangement — four sizes in a row would read as a
-   segmented control rather than four choices. */
-.recap__sizes {
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: var(--ref-spacing-xxs);
-  width: fit-content;
-}
-
-/* `.ap-radio-card card` brings the bordered tile, the radio dot and the blue
-   selected border; all this adds is centring the glyph next to it. */
-.recap__size-option {
-  align-items: center;
-}
-
-/* One coloured cell as wide as the size, then grey quarter-cells for the rest of
-   the row, so all four glyphs span the same width and the choice reads as a
-   share of the row. Cell widths are Report Studio's, at its quick-edit scale. */
-.recap__size-preview {
-  --cell-h: 16px;
-  --cell-gap: 5px;
-
-  display: flex;
-  gap: var(--cell-gap);
-}
-
-.recap__size-cell {
-  height: var(--cell-h);
-  background: var(--ref-color-electric-blue-100);
-  border-radius: var(--ref-border-radius-sm);
-}
-
-.recap__size-cell.is-filler {
-  background: var(--ref-color-grey-20);
-}
-
-.recap__size-cell--mini {
-  width: 11px;
-}
-
-.recap__size-cell--small {
-  width: 27px;
-}
-
-.recap__size-cell--medium {
-  width: 43px;
-}
-
-.recap__size-cell--large {
-  width: 59px;
 }
 
 /* ── S: the overview card ─────────────────────────────────────────────────
@@ -2431,15 +2267,6 @@
   font-size: var(--ref-font-size-sm);
   line-height: var(--ref-font-line-height-sm);
   color: var(--ref-color-grey-80);
-}
-
-/* The widget title is editable on the canvas, and the pen that says so sits right
-   after it (widget-editable-title, symbol size xs). */
-.recap__title-pen {
-  flex-shrink: 0;
-  margin-left: var(--ref-spacing-xxxs);
-  font-size: var(--sys-icon-css-xs);
-  color: var(--ref-color-grey-60);
 }
 
 .recap__overview-content {

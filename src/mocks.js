@@ -2048,77 +2048,46 @@ export function objectiveCardsFor(context) {
     .map((label) => ({ objective: label, ...OBJECTIVE_METRICS[label] }));
 }
 
-// The metric catalogue behind the embedded mini report — what the picker offers
-// and what a pinned widget shows.
+// The metrics the Playbook's report shows, and where each one sits in it.
 //
-// `size` is the width the widget takes in the grid: a quarter row up to the full
-// row, the four sizes a real Report Studio widget can take. `pinned` seeds the
-// initial report; everything else is what the picker lists.
+// The report is fixed: always the same six metrics, in the same places. It's a
+// summary the Playbook owns, not a canvas the reader builds — so there's nothing
+// to pin, resize or choose, and no state behind it.
 //
-// `group` splits the picker the way the metrics actually differ: a profile
-// metric is measured on the account (followers, reach, visits), a post metric on
-// what was published (engagement, clicks, saves). Same split the prototype's
-// objective cards carried but never showed.
-export const WIDGET_METRIC_GROUPS = [
-  { key: "profile", label: "Profile metrics" },
-  { key: "post", label: "Post metrics" },
-];
-
-export const PINNABLE_WIDGETS = [
+// Placement is on the report's 9-column grid, rows 40px tall: a first line of
+// three S widgets, then the chart at M with two S stacked to its left.
+//
+//   ┌─────┬─────┬─────┐   cols 1-3 / 4-6 / 7-9, rows 1-3
+//   ├─────┼─────┴─────┤
+//   │  S  │           │   cols 1-3 rows 4-6
+//   ├─────┤     M     │   cols 4-9 rows 4-9
+//   │  S  │           │   cols 1-3 rows 7-9
+//   └─────┴───────────┘
+export const PLAYBOOK_REPORT = [
   {
     id: "avg-reach",
     title: "Avg reach per post",
     value: "2,050",
     total: 61500,
     variation: 6.2,
-    group: "post",
     size: "mini",
-    pinned: true,
+    col: 1,
+    row: 1,
   },
-  {
-    id: "eng-rate",
-    title: "Engagement rate",
-    value: "4.1%",
-    total: 3400,
-    variation: 0,
-    group: "post",
-    size: "mini",
-    pinned: true,
-  },
-  {
-    id: "cta",
-    title: "CTA clicks",
-    value: "126",
-    total: 126,
-    variation: 8.4,
-    group: "post",
-    size: "mini",
-    pinned: true,
-  },
+  { id: "eng-rate", title: "Engagement rate", value: "4.1%", total: 3400, variation: 0, size: "mini", col: 4, row: 1 },
+  { id: "cta", title: "CTA clicks", value: "126", total: 126, variation: 8.4, size: "mini", col: 7, row: 1 },
+  { id: "reach", title: "Reach", value: "18,400", total: 18400, variation: 30.2, size: "mini", col: 1, row: 4 },
+  { id: "views", title: "Video views", value: "9,320", total: 9320, variation: -25.1, size: "mini", col: 1, row: 7 },
   {
     id: "followers",
     title: "Follower growth",
     value: "+1,240",
     total: 1240,
     variation: 12,
-    group: "profile",
     size: "small",
-    pinned: true,
+    col: 4,
+    row: 4,
   },
-  { id: "reach", title: "Reach", value: "18,400", total: 18400, variation: 30.2, group: "profile", size: "mini" },
-  {
-    id: "profile-visits",
-    title: "Profile visits",
-    value: "3,180",
-    total: 3180,
-    variation: -4.8,
-    group: "profile",
-    size: "mini",
-  },
-  { id: "mentions", title: "Mentions", value: "312", total: 312, variation: 15.3, group: "profile", size: "mini" },
-  { id: "views", title: "Video views", value: "9,320", total: 9320, variation: -25.1, group: "post", size: "mini" },
-  { id: "saves", title: "Saves", value: "1,204", total: 1204, variation: 2.7, group: "post", size: "mini" },
-  { id: "comments", title: "Comments", value: "486", total: 486, variation: -11.4, group: "post", size: "mini" },
 ];
 
 // The series behind a widget's chart, one per connected profile — what a real
@@ -2152,9 +2121,9 @@ function buildChartDays(total, days = 30) {
   return raw.map((v) => Math.round((v / sum) * total));
 }
 
-// One chart per metric: the metric's total split across the profiles by weight,
-// then across the month by the shared shape. Values are what the bars measure.
-export function chartSeriesFor(widgetId, total) {
+// A metric's total split across the profiles by weight, then across the month by
+// the shared shape. The values are what the bars measure.
+export function chartSeriesFor(total) {
   return WIDGET_CHART_SERIES.map((s) => ({
     name: s.name,
     color: s.color,

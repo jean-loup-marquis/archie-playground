@@ -19,13 +19,7 @@ import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mo
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=16";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=34";
-import {
-  chartSeriesFor,
-  objectiveCardsFor,
-  PINNABLE_WIDGETS,
-  WIDGET_CHART_DAYS,
-  WIDGET_METRIC_GROUPS,
-} from "./mocks.js?v=65";
+import { chartSeriesFor, objectiveCardsFor, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=66";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -164,8 +158,6 @@ let loadingTimer = null;
 let loadingStage = 0;
 let phase = "ready"; // "loading" | "ready"
 let scrollSpy = null; // IntersectionObserver for the section-nav active state
-let reportFitObserver = null; // ResizeObserver keeping the report canvas scaled to its column
-let pinnedReport = null; // the Performance mini report: [{ id, size }] in pin order
 
 // ── Public API ───────────────────────────────────────────────────────────
 
@@ -195,7 +187,6 @@ export function mount(target, config) {
   cmpModalIndex = null;
   cmpScanning = false;
   cmpScanFoundNone = false;
-  pinnedReport = PINNABLE_WIDGETS.filter((w) => w.pinned).map((w) => ({ id: w.id, size: w.size }));
 
   if (cfg.loader && !cfg.skipLoader) {
     phase = "loading";
@@ -226,7 +217,6 @@ export function mount(target, config) {
     stopLoading();
     stopCompetitorScan();
     detachScrollSpy();
-    detachReportFit();
     target.removeEventListener("click", onClickH);
     target.removeEventListener("input", onInputH);
     target.removeEventListener("change", onChangeH);
@@ -1627,18 +1617,6 @@ function renderCompetitorModal(data) {
 // fact sheet declares: the goals as scored cards, the metrics as a pinned mini
 // report, the winning posts as something to reuse.
 
-const MAX_PINS = 5;
-
-// The report is drawn at the width a real canvas has, then scaled down to fit the
-// Playbook's column — which is what the canvas itself does at any zoom below 100%
-// (report-grid puts `transform: scale(zoomLevel)` on the grid, down to 0.2).
-//
-// Scaling rather than squeezing is the whole point: a 12-column grid in a 742px
-// column gives 47px columns, so a 3-column widget comes out 174×152 — portrait,
-// where the real one is 253×152. Drawing at 1056px keeps every proportion inside
-// the widget right and only the final size changes.
-const REPORT_CANVAS_WIDTH = 1056;
-
 // A section lead — one line under the head saying what the section proves.
 function renderPanelLead(text) {
   return `<p class="recap__panel-lead">${esc(text)}</p>`;
@@ -1718,72 +1696,11 @@ function renderObjectivesPanel(data) {
     </section>`;
 }
 
-// The pinned widgets, in pin order. The report holds which metrics are in it and
-// how wide each one is; PINNABLE_WIDGETS holds what each metric IS. Unknown ids
-// are dropped rather than rendered empty.
-function pinnedWidgets() {
-  return (pinnedReport || [])
-    .map((p) => {
-      const entry = PINNABLE_WIDGETS.find((w) => w.id === p.id);
-      return entry ? { ...entry, size: p.size } : null;
-    })
-    .filter(Boolean);
-}
-
-// The four sizes a Report Studio widget can take, smallest first — the order the
-// size grid reads in.
-//
-// The report grid is 12 columns of 40px-tall cells with a 16px gutter, which is
-// where the "56px row" comes from (40 + 16). A size takes the SAME span in
-// columns and rows, so width and height grow together and height is never set on
-// its own: S is 3×3, M 6×6, L 9×9. XL is the one exception — 12 columns but 10
-// rows, because the grid caps its height, so the ratio is 3:6:9:10 rather than a
-// clean 1:2:3:4. Straight from report-grid.constants.ts.
-const WIDGET_SIZES = [
-  { key: "mini", cols: 3, rows: 3 },
-  { key: "small", cols: 6, rows: 6 },
-  { key: "medium", cols: 9, rows: 9 },
-  { key: "large", cols: 12, rows: 10 },
-];
-
-// The blue/grey cells that illustrate a width, lifted from Report Studio's
-// `ap-widget-size-preview`: one coloured cell as wide as the chosen size, then
-// grey quarter-cells filling the rest, so every glyph spans the same full row and
-// the choice reads as "how much of the row does this take".
-function renderSizePreview(index) {
-  const { key } = WIDGET_SIZES[index];
-  const fillers = WIDGET_SIZES.length - 1 - index;
-  return `
-    <span class="recap__size-preview" aria-hidden="true">
-      <span class="recap__size-cell recap__size-cell--${key}"></span>
-      ${`<span class="recap__size-cell recap__size-cell--mini is-filler"></span>`.repeat(fillers)}
-    </span>`;
-}
-
-// The quick-edit size dropdown as it works on the canvas today: a cropper
-// icon-button opening a "SIZE" popover with the four sizes in a 2×2 grid of radio
-// cards. Picking one repaints, which closes the <details> — the same reason the
-// real panel closes its overlay on select (resizing moves the widget, and its
-// toolbar with it, so there's no trigger left to chase).
-function renderSizeSelect(w) {
-  const options = WIDGET_SIZES.map(
-    ({ key }, i) => `
-      <label class="ap-radio-card card recap__size-option" data-recap-size="${key}" data-recap-size-widget="${esc(w.id)}">
-        <input type="radio" name="recap-size-${esc(w.id)}" value="${key}" ${key === w.size ? "checked" : ""} />
-        ${renderSizePreview(i)}
-      </label>`,
-  ).join("");
-  return `
-    <details class="ap-select recap__size-select">
-      <summary class="ap-icon-button transparent recap__widget-action" title="Size" aria-label="Size">
-        <i class="ap-icon-cropper"></i>
-      </summary>
-      <div class="ap-select-dropdown recap__size-dropdown">
-        <span class="recap__size-label">Size</span>
-        <div class="recap__sizes" role="radiogroup" aria-label="Size">${options}</div>
-      </div>
-    </details>`;
-}
+// The two sizes the report uses, as spans on its 9-column grid of 40px rows. A
+// size sets width and height together, so 3×3 is 237×152 and 6×6 is 489×320 — the
+// rule the real grid follows (report-grid.constants.ts), on a canvas narrow enough
+// that nine columns keep a widget landscape rather than portrait.
+const WIDGET_SPANS = { mini: 3, small: 6 };
 
 // ── The chart ────────────────────────────────────────────────────────────
 //
@@ -1940,12 +1857,11 @@ function renderChartLegend(series, { columns, visible }) {
     </div>`;
 }
 
-// How much room each size gives the chart and its legend. Straight from the four
-// card sizes: the plot gets what's left after the header and the legend.
+// What the chart gets once the header and legend have taken theirs, at M's
+// nominal 489×320. The SVG carries a viewBox so it still scales cleanly if the
+// column ends up a little narrower — only M charts, S is the overview card.
 const CHART_LAYOUT = {
-  small: { w: 476, h: 150, xLabelEvery: 4, columns: 2, visible: 4 },
-  medium: { w: 724, h: 260, xLabelEvery: 2, columns: 2, visible: 8 },
-  large: { w: 972, h: 330, xLabelEvery: 2, columns: 3, visible: 8 },
+  small: { w: 457, h: 184, xLabelEvery: 4, columns: 2, visible: 4 },
 };
 
 // ── The card ─────────────────────────────────────────────────────────────
@@ -1959,10 +1875,7 @@ function renderOverviewBody(w) {
   const icon = v > 0 ? "ap-icon-data-increase" : v < 0 ? "ap-icon-data-decrease" : "ap-icon-data-stagnate";
   return `
     <div class="recap__overview">
-      <span class="recap__overview-title">
-        ${esc(w.title)}
-        <i class="ap-icon-pen recap__title-pen" aria-hidden="true"></i>
-      </span>
+      <span class="recap__overview-title">${esc(w.title)}</span>
       <div class="recap__overview-content">
         <div class="recap__overview-metric">${esc(w.value)}</div>
         <div class="recap__overview-variation ${v > 0 ? "is-positive" : ""}">
@@ -1976,11 +1889,10 @@ function renderOverviewBody(w) {
 // M and up is the chart card: an h3 title, then the chart, then the legend.
 function renderChartBody(w) {
   const layout = CHART_LAYOUT[w.size];
-  const series = chartSeriesFor(w.id, w.total);
+  const series = chartSeriesFor(w.total);
   return `
     <div class="recap__widget-head">
       <h3 class="recap__widget-title">${esc(w.title)}</h3>
-      <i class="ap-icon-pen recap__title-pen" aria-hidden="true"></i>
     </div>
     <div class="recap__chart-wrapper">
       ${renderChart(series, layout.w, layout.h, layout.xLabelEvery)}
@@ -1988,74 +1900,25 @@ function renderChartBody(w) {
     ${renderChartLegend(series, layout)}`;
 }
 
-// The widget card, rebuilt from widget-card.component.{html,scss}: 16px padding,
-// 8px gap, grey-10 border, 8px radius, overflow hidden — and the body it shows
-// depends on the size, the overview at S and the chart above its legend from M up,
-// which is the actual reason the sizes exist.
+// The widget card, from widget-card.component.scss: 16px padding, 8px gap, a
+// grey-10 border at sys-border-radius-lg, and overflow hidden so a chart can't
+// spill. The real component splits this into a host plus an inner card because it
+// floats an action toolbar on the card's edge; there's nothing to float here.
+//
+// Placement is explicit rather than auto-flowed: the report's shape is fixed, and
+// spelling out each cell is what guarantees the chart lands beside its two stacked
+// neighbours instead of wherever the packing algorithm decides.
 function renderWidget(w) {
+  const span = WIDGET_SPANS[w.size];
+  const area = `grid-column: ${w.col} / span ${span}; grid-row: ${w.row} / span ${span}`;
   return `
-    <div class="recap__widget recap__widget--${w.size}">
-      <div class="recap__widget-actions">
-        ${renderSizeSelect(w)}
-        <button type="button" class="ap-icon-button transparent recap__widget-action" title="Duplicate" aria-label="Duplicate" data-recap-widget-todo="Duplicating a widget">
-          <i class="ap-icon-copy"></i>
-        </button>
-        <button type="button" class="ap-icon-button transparent recap__widget-action" title="Edit" aria-label="Edit" data-recap-widget-todo="The widget editor">
-          <i class="ap-icon-pen"></i>
-        </button>
-        <button
-          type="button"
-          class="ap-icon-button transparent recap__widget-action"
-          data-recap-unpin="${esc(w.id)}"
-          title="Delete"
-          aria-label="Delete ${esc(w.title)}"
-        ><i class="ap-icon-trash"></i></button>
-        <button type="button" class="ap-icon-button transparent recap__widget-action" title="More" aria-label="More actions" data-recap-widget-todo="The widget's more-actions menu">
-          <i class="ap-icon-more"></i>
-        </button>
-      </div>
+    <div class="recap__widget recap__widget--${w.size}" style="${area}">
       ${w.size === "mini" ? renderOverviewBody(w) : renderChartBody(w)}
     </div>`;
 }
 
-// The metric picker. Choosing WHICH metric to pin is the actual decision here, so
-// the placeholder tile opens a list rather than silently grabbing the next metric
-// in the shelf: each option names the metric and shows what it currently holds,
-// grouped by what it measures.
-function renderPinPicker(pinnedSet) {
-  const groups = WIDGET_METRIC_GROUPS.map((g) => {
-    const available = PINNABLE_WIDGETS.filter((w) => w.group === g.key && !pinnedSet.has(w.id));
-    if (!available.length) return "";
-    return `
-      <span class="ap-select-group-label">${esc(g.label)}</span>
-      ${available
-        .map(
-          (w) => `
-        <div class="ap-select-option two-lines" role="option" aria-selected="false" data-recap-pin="${esc(w.id)}">
-          <span class="ap-select-option-content">
-            <span class="ap-select-option-title">${esc(w.title)}</span>
-            <span class="ap-select-option-caption">${esc(w.value)} · ${w.variation >= 0 ? "+" : ""}${w.variation}%</span>
-          </span>
-        </div>`,
-        )
-        .join("")}`;
-  }).join("");
-  return `
-    <details class="ap-select recap__pin-select">
-      <summary class="recap__widget-add">
-        <i class="ap-icon-plus" aria-hidden="true"></i><span>Pin a metric</span>
-      </summary>
-      <div class="ap-select-dropdown recap__pin-dropdown" role="listbox" aria-label="Metrics you can pin">
-        <div class="ap-select-options">${groups}</div>
-      </div>
-    </details>`;
-}
-
 function renderPerformancePanel() {
   const section = sectionById("pbk-sec-performance");
-  const pinned = pinnedWidgets();
-  const pinnedSet = new Set(pinned.map((w) => w.id));
-  const canPin = pinned.length < MAX_PINS && pinnedSet.size < PINNABLE_WIDGETS.length;
   return `
     <section class="recap__panel" id="${section.id}">
       ${renderPanelHead(section, false)}
@@ -2063,16 +1926,9 @@ function renderPerformancePanel() {
         ${renderPanelLead("Key metrics tracked for this Playbook · last 30 days")}
         <p class="recap__gate">
           <i class="ap-icon-lock-on" aria-hidden="true"></i>
-          ${pinned.length}/${MAX_PINS} pinned · full report in Agorapulse
+          full report in Agorapulse
         </p>
-        <div class="recap__report-viewport">
-          <div class="recap__report" style="width: ${REPORT_CANVAS_WIDTH}px">
-            <div class="recap__widgets">
-              ${pinned.map(renderWidget).join("")}
-              ${canPin ? renderPinPicker(pinnedSet) : ""}
-            </div>
-          </div>
-        </div>
+        <div class="recap__widgets">${PLAYBOOK_REPORT.map(renderWidget).join("")}</div>
         <div class="recap__connect">
           <p class="recap__connect-text">
             See the full proof — every objective, unlimited history, per-link detail and export — in Agorapulse.
@@ -2255,67 +2111,6 @@ function paint() {
 
   portalModal();
   attachScrollSpy();
-  fitReport();
-  attachReportFit();
-}
-
-// Scales the report canvas down to the column it sits in, and gives its viewport
-// the scaled height — a transform doesn't affect layout, so without this the page
-// would reserve the unscaled height and leave a gap under the section.
-function fitReport() {
-  const viewport = mountTarget?.querySelector(".recap__report-viewport");
-  const canvas = viewport?.querySelector(".recap__report");
-  if (!viewport || !canvas) return;
-  // A zero width means we're being measured before layout settles (the recap
-  // reveals from behind a transform). Scaling to 0 there would hide the report
-  // for good if no further resize followed, so keep the scale it already has.
-  const available = viewport.getBoundingClientRect().width;
-  if (!available) return;
-  const scale = Math.min(1, available / REPORT_CANVAS_WIDTH);
-  canvas.style.transform = `scale(${scale})`;
-  viewport.style.height = `${Math.round(canvas.offsetHeight * scale)}px`;
-}
-
-// Observed rather than listening for window resize: the column also changes width
-// when the sidebar collapses or the right panel opens, and an observer fires after
-// layout has settled instead of racing it.
-function attachReportFit() {
-  detachReportFit();
-  const viewport = mountTarget?.querySelector(".recap__report-viewport");
-  if (!viewport || !("ResizeObserver" in window)) return;
-  reportFitObserver = new ResizeObserver(() => fitReport());
-  reportFitObserver.observe(viewport);
-}
-
-function detachReportFit() {
-  if (reportFitObserver) {
-    reportFitObserver.disconnect();
-    reportFitObserver = null;
-  }
-}
-
-// The detail modals (reference image, competitor) are rendered inside the recap
-// body, but the recap scroll container / reveal transform stops their fixed
-// backdrop from covering the viewport. Move whichever one is open onto <body>
-// (like the app's real modals) and bind the same delegated handlers so its
-// controls keep working. Only one can be open at a time — refModalIndex and
-// cmpModalIndex are mutually exclusive — so one host covers both.
-function portalModal() {
-  if (refModalHost) {
-    refModalHost.remove();
-    refModalHost = null;
-  }
-  const modalEl = mountTarget?.querySelector(".recap__refmodal-backdrop, .recap__cmpmodal-backdrop");
-  if (!modalEl) return;
-  refModalHost = document.createElement("div");
-  refModalHost.className = "recap__refmodal-host";
-  refModalHost.appendChild(modalEl);
-  refModalHost.addEventListener("click", onClick);
-  refModalHost.addEventListener("input", onInput);
-  refModalHost.addEventListener("change", onChange);
-  refModalHost.addEventListener("keydown", onKeydown);
-  refModalHost.addEventListener("error", onLoadError, true);
-  document.body.appendChild(refModalHost);
 }
 
 // ── Section-nav scroll-spy ─────────────────────────────────────────────
@@ -2473,46 +2268,8 @@ function onClick(event) {
     return;
   }
 
-  // ── Analytics sections ──
-  // All of these repaint in place: they sit far down the page, and a plain
-  // paint() would rebuild the scroll container and throw the reader back to the
-  // top of the Playbook.
-  const pin = event.target.closest("[data-recap-pin]");
-  if (pin) {
-    const entry = PINNABLE_WIDGETS.find((w) => w.id === pin.dataset.recapPin);
-    const already = pinnedReport.some((p) => p.id === entry?.id);
-    if (entry && !already && pinnedReport.length < MAX_PINS) {
-      pinnedReport = [...pinnedReport, { id: entry.id, size: entry.size }];
-      repaintPreservingScroll();
-    }
-    return;
-  }
-
-  const unpin = event.target.closest("[data-recap-unpin]");
-  if (unpin) {
-    pinnedReport = pinnedReport.filter((p) => p.id !== unpin.dataset.recapUnpin);
-    repaintPreservingScroll();
-    return;
-  }
-
-  const sizeOpt = event.target.closest("[data-recap-size]");
-  if (sizeOpt) {
-    const { recapSize: size, recapSizeWidget: id } = sizeOpt.dataset;
-    if (pinnedReport.some((p) => p.id === id && p.size !== size)) {
-      pinnedReport = pinnedReport.map((p) => (p.id === id ? { ...p, size } : p));
-      repaintPreservingScroll();
-    }
-    return;
-  }
-
-  // The toolbar carries the canvas's full action set so the chrome reads right;
-  // only size and delete mean anything to a pinned metric in a Playbook.
-  const todo = event.target.closest("[data-recap-widget-todo]");
-  if (todo) {
-    toast(`${todo.dataset.recapWidgetTodo} isn't part of this prototype.`);
-    return;
-  }
-
+  // The report is static, so the only clickable things left down here are the two
+  // placeholder affordances.
   if (event.target.closest("[data-recap-add-objective]")) {
     toast("Picking metrics for a new objective isn't built yet.");
     return;
