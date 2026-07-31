@@ -1712,49 +1712,57 @@ function pinnedWidgets() {
     .filter(Boolean);
 }
 
-// The four widths a Report Studio widget can take, narrowest first — the order
-// the size grid reads in.
-const WIDGET_SIZES = ["mini", "small", "medium", "large"];
+// The four sizes a Report Studio widget can take, smallest first — the order the
+// size grid reads in.
+//
+// The report grid is 12 columns of 40px-tall cells with a 16px gutter, which is
+// where the "56px row" comes from (40 + 16). A size takes the SAME span in
+// columns and rows, so width and height grow together and height is never set on
+// its own: S is 3×3, M 6×6, L 9×9. XL is the one exception — 12 columns but 10
+// rows, because the grid caps its height, so the ratio is 3:6:9:10 rather than a
+// clean 1:2:3:4. Straight from report-grid.constants.ts.
+const WIDGET_SIZES = [
+  { key: "mini", cols: 3, rows: 3 },
+  { key: "small", cols: 6, rows: 6 },
+  { key: "medium", cols: 9, rows: 9 },
+  { key: "large", cols: 12, rows: 10 },
+];
 
 // The blue/grey cells that illustrate a width, lifted from Report Studio's
 // `ap-widget-size-preview`: one coloured cell as wide as the chosen size, then
 // grey quarter-cells filling the rest, so every glyph spans the same full row and
 // the choice reads as "how much of the row does this take".
-function renderSizePreview(size) {
-  const idx = WIDGET_SIZES.indexOf(size);
-  const fillers = WIDGET_SIZES.length - 1 - idx;
+function renderSizePreview(index) {
+  const { key } = WIDGET_SIZES[index];
+  const fillers = WIDGET_SIZES.length - 1 - index;
   return `
     <span class="recap__size-preview" aria-hidden="true">
-      <span class="recap__size-cell recap__size-cell--${size}"></span>
+      <span class="recap__size-cell recap__size-cell--${key}"></span>
       ${`<span class="recap__size-cell recap__size-cell--mini is-filler"></span>`.repeat(fillers)}
     </span>`;
 }
 
-// The quick-edit size dropdown, as it works on the canvas today: a cropper
-// icon-button opening a labelled popover with the four widths in a 2×2 grid.
-// Picking one repaints, which closes the <details> — the same reason the real
-// panel closes its overlay on select (resizing moves the widget, and its
+// The quick-edit size dropdown as it works on the canvas today: a cropper
+// icon-button opening a "SIZE" popover with the four sizes in a 2×2 grid of radio
+// cards. Picking one repaints, which closes the <details> — the same reason the
+// real panel closes its overlay on select (resizing moves the widget, and its
 // toolbar with it, so there's no trigger left to chase).
 function renderSizeSelect(w) {
   const options = WIDGET_SIZES.map(
-    (size) => `
-      <div
-        class="ap-select-option recap__size-option ${size === w.size ? "selected" : ""}"
-        role="option"
-        aria-selected="${size === w.size}"
-        aria-label="${size} width"
-        data-recap-size="${size}"
-        data-recap-size-widget="${esc(w.id)}"
-      >${renderSizePreview(size)}</div>`,
+    ({ key }, i) => `
+      <label class="ap-radio-card card recap__size-option" data-recap-size="${key}" data-recap-size-widget="${esc(w.id)}">
+        <input type="radio" name="recap-size-${esc(w.id)}" value="${key}" ${key === w.size ? "checked" : ""} />
+        ${renderSizePreview(i)}
+      </label>`,
   ).join("");
   return `
     <details class="ap-select recap__size-select">
       <summary class="ap-icon-button transparent recap__widget-action" title="Size" aria-label="Size">
         <i class="ap-icon-cropper"></i>
       </summary>
-      <div class="ap-select-dropdown recap__size-dropdown" role="listbox" aria-label="Size">
-        <span class="ap-select-group-label">Size</span>
-        <div class="recap__sizes">${options}</div>
+      <div class="ap-select-dropdown recap__size-dropdown">
+        <span class="recap__size-label">Size</span>
+        <div class="recap__sizes" role="radiogroup" aria-label="Size">${options}</div>
       </div>
     </details>`;
 }
@@ -1768,13 +1776,22 @@ function renderWidget(w) {
     <div class="recap__widget recap__widget--${w.size}">
       <div class="recap__widget-actions">
         ${renderSizeSelect(w)}
+        <button type="button" class="ap-icon-button transparent recap__widget-action" title="Duplicate" aria-label="Duplicate" data-recap-widget-todo="Duplicating a widget">
+          <i class="ap-icon-copy"></i>
+        </button>
+        <button type="button" class="ap-icon-button transparent recap__widget-action" title="Edit" aria-label="Edit" data-recap-widget-todo="The widget editor">
+          <i class="ap-icon-pen"></i>
+        </button>
         <button
           type="button"
           class="ap-icon-button transparent recap__widget-action"
           data-recap-unpin="${esc(w.id)}"
-          title="Unpin"
-          aria-label="Unpin ${esc(w.title)}"
+          title="Delete"
+          aria-label="Delete ${esc(w.title)}"
         ><i class="ap-icon-trash"></i></button>
+        <button type="button" class="ap-icon-button transparent recap__widget-action" title="More" aria-label="More actions" data-recap-widget-todo="The widget's more-actions menu">
+          <i class="ap-icon-more"></i>
+        </button>
       </div>
       <div class="recap__widget-head">
         <span class="recap__widget-title">${esc(w.title)}</span>
@@ -2229,6 +2246,14 @@ function onClick(event) {
       pinnedReport = pinnedReport.map((p) => (p.id === id ? { ...p, size } : p));
       repaintPreservingScroll();
     }
+    return;
+  }
+
+  // The toolbar carries the canvas's full action set so the chrome reads right;
+  // only size and delete mean anything to a pinned metric in a Playbook.
+  const todo = event.target.closest("[data-recap-widget-todo]");
+  if (todo) {
+    toast(`${todo.dataset.recapWidgetTodo} isn't part of this prototype.`);
     return;
   }
 

@@ -2223,36 +2223,46 @@
   color: var(--sys-text-color-light);
 }
 
-/* Flex, not grid: a widget's size is a share of the row, and a lone widget
-   shouldn't stretch to fill it (flex-grow stays 0). */
+/* The report grid, rebuilt: 12 columns, 40px cells, 16px gutter — so one grid row
+   measures 56px, exactly as report-grid.constants.ts sets up GridStack. A widget
+   spans the same number of columns and rows, which is why height isn't settable
+   on its own: the size sets both. Doing this with real CSS grid rather than flex
+   basis percentages is what makes the widths land on the actual column edges. */
 .recap__widgets {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 40px;
   gap: var(--ref-spacing-sm);
 }
 
-.recap__widget {
-  flex: 0 1 calc(25% - var(--ref-spacing-sm));
-  min-width: 150px;
-  height: 168px;
-}
-
-/* The placeholder is a <summary> inside the picker's <details>, which carries the
-   tile's flex sizing — so it just fills its host. */
-.recap__widget-add {
-  height: 100%;
+/* Spans, not pixel heights. 3 rows → 3×40 + 2×16 = 152px tall inside a 168px
+   footprint, and so on up. XL is 12 columns but only 10 rows — the grid caps its
+   height, so it's the one size where width and height don't stay in step. */
+.recap__widget--mini,
+.recap__pin-select {
+  grid-column: span 3;
+  grid-row: span 3;
 }
 
 .recap__widget--small {
-  flex-basis: calc(50% - var(--ref-spacing-sm));
+  grid-column: span 6;
+  grid-row: span 6;
 }
 
 .recap__widget--medium {
-  flex-basis: calc(75% - var(--ref-spacing-sm));
+  grid-column: span 9;
+  grid-row: span 9;
 }
 
 .recap__widget--large {
-  flex-basis: 100%;
+  grid-column: span 12;
+  grid-row: span 10;
+}
+
+/* The placeholder is a <summary> inside the picker's <details>, which is the grid
+   item — so it just fills its host. */
+.recap__widget-add {
+  height: 100%;
 }
 
 /* The widget shell, redrawn from the Report Studio card: a framed tile with its
@@ -2301,7 +2311,7 @@
 .recap__widget-actions {
   position: absolute;
   top: 0;
-  right: var(--ref-spacing-xxs);
+  right: var(--ref-spacing-sm);
   z-index: 2;
   display: flex;
   align-items: center;
@@ -2309,7 +2319,7 @@
   background: var(--app-surface);
   border: 1px solid var(--ref-color-grey-20);
   border-radius: var(--ref-border-radius-md);
-  box-shadow: var(--app-shadow-subtle);
+  box-shadow: var(--app-shadow-card);
   opacity: 0;
   transform: translateY(-50%);
   transition: opacity var(--ref-animation-short);
@@ -2338,10 +2348,9 @@
   display: none;
 }
 
-/* Right-aligned to the TILE, not to the button — the toolbar is inset from the
-   tile's edge, and anchoring to the button pushed the popover that much further
-   over the neighbour for no reason. It still overhangs by the ~32px it is wider
-   than a quarter-row tile, which is what a floating popover does. */
+/* Right-aligned to the popover's own trigger. The dropdown is wider than a
+   quarter-row tile, so it overhangs its neighbour — which is what the canvas
+   overlay does too. */
 .recap__size-dropdown {
   top: calc(100% + var(--ref-spacing-xxs));
   left: auto;
@@ -2350,21 +2359,31 @@
   padding: var(--ref-spacing-xs);
 }
 
+/* The popover's own heading, per the real panel: uppercase caption, tracked out. */
+.recap__size-label {
+  display: block;
+  margin-bottom: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: var(--sys-text-style-caption-line-height);
+  letter-spacing: 0.04em;
+  color: var(--ref-color-grey-60);
+  text-transform: uppercase;
+}
+
+/* 2×2, the real panel's arrangement — four sizes in a row would read as a
+   segmented control rather than four choices. */
 .recap__sizes {
   display: grid;
   grid-template-columns: repeat(2, auto);
   gap: var(--ref-spacing-xxs);
   width: fit-content;
-  margin-top: var(--ref-spacing-xxs);
 }
 
-/* Trimmed from the DS option's text-row padding: these hold a glyph, not a label,
-   and the extra padding pushed the popover wider than the tile it belongs to. */
+/* `.ap-radio-card card` brings the bordered tile, the radio dot and the blue
+   selected border; all this adds is centring the glyph next to it. */
 .recap__size-option {
-  justify-content: center;
-  padding: var(--ref-spacing-xxs);
-  border-radius: var(--app-radius-sm);
-  cursor: pointer;
+  align-items: center;
 }
 
 /* One coloured cell as wide as the size, then grey quarter-cells for the rest of
@@ -2407,11 +2426,10 @@
 /* ── Metric picker ────────────────────────────────────────────────────────
    The placeholder tile IS the trigger, so the flex sizing lives on the
    <details> and the dashed summary fills it. */
+/* Its span is set with the widget sizes above; all that's left is undoing the DS
+   select's full-width default, since the grid decides the width here. */
 .recap__pin-select {
-  flex: 0 1 calc(25% - var(--ref-spacing-sm));
-  min-width: 150px;
   width: auto;
-  height: 168px;
 }
 
 .recap__pin-select > summary {
