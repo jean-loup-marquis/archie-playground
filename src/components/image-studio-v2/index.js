@@ -25,17 +25,17 @@ import { showToast } from "../toast.js?v=20";
 import { getPosts, attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=42";
 import { getSessionById } from "../../sessions-store.js?v=12";
 import { getContextById } from "../../contexts-store.js?v=44";
-import { MODAL_ID, KEY, ctx, state } from "./context.js?v=29";
+import { MODAL_ID, KEY, ctx, state } from "./context.js?v=31";
 import { compositeOverlays, loadImg, shadowMetrics, outlineMetrics } from "../image-studio/canvas.js?v=2";
-import { renderStudio } from "./stage-view.js?v=56";
+import { renderStudio } from "./stage-view.js?v=58";
 import {
   openFilePicker,
   openLogoPicker,
   startOverlayGesture,
   startCropGesture,
   applyCropSelection,
-} from "./interactions.js?v=29";
-import * as imageStudio from "../../image-studio.js?v=65";
+} from "./interactions.js?v=31";
+import * as imageStudio from "../../image-studio.js?v=67";
 
 let backdrop;
 let initialized = false;
@@ -233,6 +233,8 @@ function onClick(event) {
   if (slideBtn) return void imageStudio.setSlideCount(KEY, Number(slideBtn.dataset.imgSlidecount));
   // Brand kit switch is a DS toggle (checkbox) — handled in onChange.
   if (event.target.closest("[data-img-ref-add]")) return void openFilePicker();
+  const refMode = event.target.closest("[data-img-ref-mode]");
+  if (refMode) return void imageStudio.setRefMode(KEY, refMode.dataset.imgRefMode);
   const refToggle = event.target.closest("[data-img-ref-toggle]");
   if (refToggle) return void imageStudio.toggleReferenceImage(KEY, refToggle.dataset.imgRefToggle);
   const refRm = event.target.closest("[data-img-ref-remove]");

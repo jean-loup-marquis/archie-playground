@@ -69,6 +69,45 @@ export const IMAGE_TYPES = [
 
 // Style presets — the aesthetic look. Single-select with toggle-off; switches off
 // when reference images guide the look. Rendered as filter chips.
+// HOW the model should use the reference image, not WHETHER — that's the switch
+// above it. "Match this image" was doing a lot of unstated work: reproducing a
+// composition and borrowing a palette are two different jobs, and picking a
+// reference gave you no way to say which one you meant.
+//
+// One catalog for all three faces of a mode — the chip's label, the hint under the
+// chips, and the clause that goes in the brief — because they say the same thing
+// to three different readers and drift the moment they live apart.
+//
+// Every clause keeps the same sentence head so the brand-kit suffix still lands and
+// v1, which has no control and always runs `blend`, reads exactly as it did.
+export const REF_MODES = [
+  {
+    key: "layout",
+    label: "Layout",
+    hint: "Reproduce its composition and framing, with new subject matter.",
+    clause: "reproduce its composition and framing, with new subject matter",
+  },
+  {
+    key: "blend",
+    label: "Blend",
+    hint: "Its look, plus a light echo of one of its elements.",
+    clause: "its palette, texture and treatment, plus a light echo of one of its elements",
+  },
+  {
+    key: "style",
+    // "Style", not "Style only": the three chips have 212px of panel and "Style
+    // only" missed one row by 2.4px. The "only" it loses is the whole point of the
+    // mode, so the hint under the chips carries it — and there is no ambiguity with
+    // the Style SETTING two rows down, because that row is disabled whenever these
+    // chips exist ("From references").
+    label: "Style",
+    hint: "Palette, texture and treatment only — none of its composition.",
+    clause: "its art style only: palette, texture and treatment, none of its composition",
+  },
+];
+
+export const DEFAULT_REF_MODE = "blend";
+
 export const STYLE_PRESETS = [
   { key: "tech-minimal", label: "Tech Minimal" },
   { key: "corporate", label: "Corporate" },
@@ -201,6 +240,30 @@ const BRAND_MARK = { xF: 0.78, yF: 0.89, wF: 0.26 };
 // colours switch splices it in and out, and those two disagreeing would show up
 // as a duplicate line rather than as an error.
 const PALETTE_RE = /^Palette: /;
+
+// Same deal for the look line — written by derivePrompt, spliced by the reference
+// controls. It is the ONE line the whole References section produces: which image,
+// where it came from, and what to do with it.
+const LOOK_RE = /^Look: /;
+
+// Null when there is nothing to say about the look — no reference AND no style
+// preset — so the callers can use it to mean "this line shouldn't exist".
+function lookLine(s) {
+  const ref = s.referenceImages[0] || null;
+  if (ref) {
+    const mode = REF_MODES.find((m) => m.key === s.refMode) || REF_MODES.find((m) => m.key === DEFAULT_REF_MODE);
+    // The brand kit rides in the noun phrase rather than after its own dash: the
+    // mode clause already needs the dash, and two em dashes in one sentence made
+    // the line read as three fragments.
+    const what =
+      ref.fromPlaybook && s.playbookName
+        ? `the provided reference from the ${s.playbookName} brand kit`
+        : "the reference image provided";
+    return `Look: match ${what} — ${mode.clause}.`;
+  }
+  const style = STYLE_PRESETS.find((o) => o.key === s.styleKey);
+  return style ? `Look: ${style.label}.` : null;
+}
 
 function paletteLine(s) {
   return `Palette: ${s.playbookColors
@@ -340,6 +403,7 @@ export function start(
     referenceImages: initialSelectedRefId ? [{ ...pbRefs[0], fromPlaybook: true }] : [],
     selectedRefId: initialSelectedRefId,
     lastRefId: initialSelectedRefId, // what the switch restores when turned back on
+    refMode: DEFAULT_REF_MODE, // how the model uses it — see REF_MODES
     playbookRefs: pbRefs, // the Playbook's brand images (snapshot)
     uploadedRefs: [], // the user's own uploads — a POOL to pick from, not the selection
     // Branding — the Playbook's logo, stamped into the corner of what's generated.
@@ -540,9 +604,16 @@ export function selectedReference(s) {
 // `referenceImages` is derived, never assigned from the outside: every mutator
 // below changes `selectedRefId` and calls this. One writer keeps the derived
 // array honest without a getter (state is a plain object).
+//
+// It also re-writes the brief's look line, so the ONE sentence the References
+// section produces is never left describing an image that is no longer in play —
+// switching references off used to leave "Look: match the reference image
+// provided" behind, and that line now carries the mode too, which made a stale one
+// louder. A no-op before the brief exists (spliceBriefLine bails on empty text).
 function syncSelectedRef(s) {
   const picked = selectedReference(s);
   s.referenceImages = picked ? [picked] : [];
+  syncLookLine(s);
 }
 
 let refSeq = 0;
@@ -595,30 +666,61 @@ export function setUseBrandColors(sessionId, on) {
   notify(sessionId);
 }
 
-// The palette reaches the model through exactly ONE line of the brief, and the
-// brief is only written when the studio opens — so the switch has to edit that
-// line in place. Re-deriving the whole thing would throw away every word the user
-// typed; leaving the text alone would make the switch inert for the generation
-// they are about to run, since Generate sends the field and not the settings.
+// A setting reaches the model through exactly ONE line of the brief, and the brief
+// is only written when the studio opens — so a control that owns a line has to edit
+// that line in place. Re-deriving the whole thing would throw away every word the
+// user typed; leaving the text alone would make the control inert for the
+// generation they are about to run, since Generate sends the field, not the
+// settings.
 //
-// Surgical on purpose: it adds or removes its own line and touches nothing else.
-function syncPaletteLine(s) {
+// Surgical on purpose: it adds, replaces or removes its own line and touches
+// nothing else. `line` of null means "this line should not exist".
+//
+// `after` is the prefixes to sit behind when inserting, most-preferred first —
+// derivePrompt's own order, so the brief doesn't end up reading differently
+// depending on which control the user touched first.
+function spliceBriefLine(s, re, line, after) {
   const text = s.promptText || "";
   if (!text.trim()) return; // nothing derived yet — derivePrompt will get it right
   const lines = text.split("\n");
-  const at = lines.findIndex((l) => PALETTE_RE.test(l));
-  if (s.useBrandColors === at >= 0) return;
-  if (!s.useBrandColors) {
-    lines.splice(at, 1);
+  const at = lines.findIndex((l) => re.test(l));
+  if (at >= 0) {
+    if (line) lines[at] = line;
+    else lines.splice(at, 1);
+  } else if (line) {
+    let idx = -1;
+    for (const prefix of after) {
+      idx = lines.findIndex((l) => l.startsWith(prefix));
+      if (idx >= 0) break;
+    }
+    lines.splice(idx < 0 ? lines.length : idx + 1, 0, line);
   } else {
-    // Back where derivePrompt puts it: after the look, before the type and the
-    // format. Appending would have left the brief reading in a different order
-    // depending on how the user got there.
-    let after = lines.findIndex((l) => l.startsWith("Look:"));
-    if (after < 0) after = lines.findIndex((l) => l.startsWith("Visual direction:"));
-    lines.splice(after < 0 ? lines.length : after + 1, 0, paletteLine(s));
+    return;
   }
   s.promptText = lines.join("\n");
+}
+
+function syncPaletteLine(s) {
+  const on = s.useBrandColors && s.playbookColors.length > 0;
+  spliceBriefLine(s, PALETTE_RE, on ? paletteLine(s) : null, ["Look:", "Visual direction:"]);
+}
+
+// Every reference control ends here: the switch, the tile you pick, and the mode.
+// All three change what that one line says, and none of them is allowed to leave a
+// line describing a reference that is no longer in play.
+function syncLookLine(s) {
+  spliceBriefLine(s, LOOK_RE, lookLine(s), ["Visual direction:"]);
+}
+
+// How the model should use the reference. Only ever one of the catalog's keys — a
+// bad value here would silently fall back to Blend and the chips would disagree
+// with the brief.
+export function setRefMode(sessionId, key) {
+  const s = states.get(sessionId);
+  if (!s || !REF_MODES.some((m) => m.key === key)) return;
+  s.refMode = key;
+  syncLookLine(s);
+  notify(sessionId);
 }
 
 // Whether the generator gets a reference image AT ALL. This is the switch at the
@@ -751,18 +853,12 @@ function derivePrompt(s) {
   const hook = stop(parts[0]);
   const message = stop(parts[1] || parts[0]);
   const type = IMAGE_TYPES.find((o) => o.key === s.imageTypeKey);
-  const style = STYLE_PRESETS.find((o) => o.key === s.styleKey);
   const fmt = FORMATS[s.formatId];
-  const ref = s.referenceImages[0] || null;
   const lines = [`Subject: ${hook}`, `Key message: ${message}`];
   if (type) lines.push(`Image type: ${type.label} — ${type.desc.toLowerCase()}`);
   lines.push(`Visual direction: ${TYPE_DIRECTION[s.imageTypeKey] || TYPE_DIRECTION["visual-hook"]}`);
-  if (ref) {
-    const from = ref.fromPlaybook && s.playbookName ? ` — ${s.playbookName} brand kit` : "";
-    lines.push(`Look: match the reference image provided${from}.`);
-  } else if (style) {
-    lines.push(`Look: ${style.label}.`);
-  }
+  const look = lookLine(s);
+  if (look) lines.push(look);
   if (s.useBrandColors && s.playbookColors.length) lines.push(paletteLine(s));
   // Whether the artwork carries type is the user's call ("Text in image"), so the
   // composition line states whichever one they asked for rather than assuming.

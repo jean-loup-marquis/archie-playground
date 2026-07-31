@@ -39,8 +39,8 @@
 
 import { escapeHtml } from "../../utils.js?v=21";
 import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=34";
-import { KEY } from "./context.js?v=29";
-import * as imageStudio from "../../image-studio.js?v=65";
+import { KEY } from "./context.js?v=31";
+import * as imageStudio from "../../image-studio.js?v=67";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why
@@ -312,7 +312,7 @@ function settingRows(st) {
     settingRow({
       name: "refs",
       label: "References",
-      value: refSource(picked, st),
+      value: refSummary(picked, st),
       set: !!picked,
       pinned: true,
       body: () => refsBody(st, picked),
@@ -440,6 +440,17 @@ function refSource(ref, st) {
   return ref.fromPlaybook ? st.playbookName || BRAND_GROUP : CUSTOM_GROUP;
 }
 
+// …plus the mode, but ONLY when it isn't the default. The summary should report a
+// choice the user made — that's what a set value means everywhere else in this
+// panel — and "Acme · Blend" on every draft would say nothing while costing the
+// header half its width.
+function refSummary(ref, st) {
+  const source = refSource(ref, st);
+  if (!ref || st.refMode === imageStudio.DEFAULT_REF_MODE) return source;
+  const mode = imageStudio.REF_MODES.find((m) => m.key === st.refMode);
+  return mode ? `${source} \u00b7 ${mode.label}` : source;
+}
+
 // The merged section: both pools in one grid, brand book first, then the uploader.
 // Every group is LABELLED, even when it's the only one — with the two sections
 // gone, the label is the only thing left saying these images come from the
@@ -490,7 +501,7 @@ function refsBody(st, picked) {
         <i aria-hidden="true"></i>
       </label>
     </div>
-    ${on ? `${groups.join("")}${dropzone}` : ""}`;
+    ${on ? `${groups.join("")}${dropzone}${picked ? refModeBlock(st) : ""}` : ""}`;
 }
 
 // A pool and its label as ONE block. Unwrapped, the body's 12px gap fell between
@@ -506,6 +517,29 @@ function refGroup(label, tiles, count) {
   // affordance left — so the count is announced by the strip itself.
   const more = count > VISIBLE_REFS ? " is-scrollable" : "";
   return `<div class="isv2-block">${head}<div class="isv2-refs${more}">${tiles}</div></div>`;
+}
+
+// HOW the picked image gets used — the last thing in the section, after the pool
+// and the uploader, and only ever shown when something is actually picked: a
+// sub-option that outlives its subject is a control that lies.
+//
+// Chips, the panel's own vocabulary for "one of a small set" (Type, Format and
+// Output are all chip groups) — so nothing new to learn, and one row of them fits
+// the 260px body. Short labels for that reason; the hint under them spells the
+// active one out in full, the same label-and-hint shape Format uses for "Best for".
+function refModeBlock(st) {
+  const active = imageStudio.REF_MODES.some((m) => m.key === st.refMode) ? st.refMode : imageStudio.DEFAULT_REF_MODE;
+  const chips = imageStudio.REF_MODES.map((m) => {
+    const sel = m.key === active;
+    const tip = `${m.label} · ${m.hint}`;
+    return `<button type="button" class="ap-filter-chip" data-img-ref-mode="${escapeHtml(m.key)}" aria-pressed="${sel}" title="${escapeHtml(tip)}" aria-label="${escapeHtml(tip)}">${escapeHtml(m.label)}</button>`;
+  }).join("");
+  const hint = imageStudio.REF_MODES.find((m) => m.key === active).hint;
+  return `<div class="isv2-block">
+      <p class="isv2-refs-group">How to use it</p>
+      <div class="isv2-chip-group">${chips}</div>
+      <p class="isv2-sheet-hint">${escapeHtml(hint)}</p>
+    </div>`;
 }
 
 // One candidate. SINGLE-SELECT: picking one drops whatever was picked before, so

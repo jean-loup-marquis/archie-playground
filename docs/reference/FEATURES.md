@@ -260,6 +260,36 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   plus gros d'une section dont le sujet est les vignettes au-dessus. Le drop marche toujours —
   `data-img-dropzone` est sur le bouton, et le mode Generate accepte de toute façon un drop
   n'importe où dans la modale.
+  **« How to use it » — comment le modèle doit se servir de la référence**, en bas de la section et
+  seulement quand une image est effectivement choisie : une sous-option qui survit à son sujet est un
+  contrôle qui ment. « Match this image » faisait beaucoup de travail non dit — reproduire une
+  composition et emprunter une palette sont deux métiers différents, et choisir une référence ne
+  donnait aucun moyen de dire lequel on voulait. Trois modes (`REF_MODES` dans `image-studio.js`,
+  `blend` par défaut, soit ce que « match » voulait dire implicitement, donc rien ne bouge pour qui
+  ignore le contrôle) : **Layout** (reproduire la composition et le cadrage, autre sujet), **Blend**
+  (le look, plus un écho léger d'un de ses éléments), **Style** (palette, texture et traitement
+  seulement, aucune composition).
+  Des **chips**, le vocabulaire que le panneau parle déjà pour « un parmi quelques-uns » (Type,
+  Format et Output sont tous des groupes de chips) — rien de neuf à apprendre, et une seule rangée
+  tient dans les 212px du corps. Libellés courts pour cette raison ; « Style only » ratait la rangée
+  de 2,4px, donc c'est **« Style »** et le hint sous les chips porte le « only ». Aucune ambiguïté
+  avec le RÉGLAGE Style deux rangées plus bas : cette rangée est désactivée (« From references »)
+  chaque fois que ces chips existent. Le hint est celui du mode ACTIF, la même forme libellé + hint
+  que `formatBody` utilise pour « Best for ».
+  L'en-tête épinglé ajoute le mode **seulement quand ce n'est pas Blend** (`Acme · Layout`) : un
+  résumé doit rapporter un choix que l'utilisateur a fait — c'est ce que `set` veut dire partout
+  ailleurs dans ce panneau — et « Acme · Blend » sur chaque draft ne dirait rien en coûtant la moitié
+  de la largeur.
+  **Ce n'est PAS un remplacement d'un autre réglage** : ça dit comment utiliser l'image choisie, et
+  ne touche à rien d'autre. En particulier `derivePrompt` continue d'émettre sa ligne
+  `Visual direction:` — qui retombe silencieusement sur Visual hook quand Type vaut « Any » — donc en
+  mode Layout deux instructions de composition cohabitent dans le brief. Les vrais prompts portent ce
+  genre de tension et le modèle la réconcilie.
+  Côté moteur, une seule fonction écrit la ligne `Look:` (`lookLine`) et **tous** les contrôles de
+  référence la resynchronisent en place via `syncSelectedRef` → `syncLookLine` → `spliceBriefLine`,
+  le mécanisme généralisé depuis `syncPaletteLine` (voir Branding : le brief n'est écrit qu'à
+  l'ouverture et Generate envoie le champ). Conséquence bonus : couper le switch **retire** la ligne,
+  là où elle restait avant à décrire une référence hors jeu.
   **Aucun séparateur à l'intérieur de la section** : un filet entre les vignettes et le bouton
   redessinait exactement la frontière que la fusion venait d'enlever. Les libellés de groupe
   séparent déjà les viviers, et le cadre de la section la sépare déjà de Text in image.
