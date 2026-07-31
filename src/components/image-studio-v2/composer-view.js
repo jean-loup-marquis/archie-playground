@@ -118,10 +118,21 @@ export function toolPalette(st) {
 // it never enters `collapsedGroups` at all. The value still rides in the header:
 // with the body open it is a summary of what's below ("Acme · 3") rather than a
 // stand-in for it.
-function settingRow({ name, label, value, body, open, set = false, disabled = false, pinned = false }) {
+function settingRow({ name, label, value, tip = "", body, open, set = false, disabled = false, pinned = false }) {
   const expanded = pinned || (open && !disabled);
+  // `tip` puts an info icon in the value slot instead of a value. For a row whose
+  // body ALREADY shows its setting in full — the text field, which is open by
+  // default — the header value was a truncated second copy of the words sitting
+  // right underneath it. The icon spends that space on something the body can't
+  // say instead. aria-hidden because the row's header is a <button>: a focusable
+  // element inside it would be a control inside a control, and folding the
+  // sentence into the button's accessible name would make its label a paragraph.
   const head = `<span class="ap-accordion-title isv2-acc-title">${escapeHtml(label)}</span>
-      <span class="isv2-acc-value${set ? " is-set" : ""}">${escapeHtml(value)}</span>`;
+      ${
+        tip
+          ? `<i class="ap-icon-info isv2-acc-info" title="${escapeHtml(tip)}" aria-hidden="true"></i>`
+          : `<span class="isv2-acc-value${set ? " is-set" : ""}">${escapeHtml(value)}</span>`
+      }`;
   return `<div class="ap-accordion isv2-acc${expanded ? "" : " collapsed"}${disabled ? " is-disabled" : ""}${pinned ? " isv2-acc--pinned" : ""}">
     ${
       pinned
@@ -322,13 +333,11 @@ function settingRows(st) {
   // Text in image — words the model paints into the artwork. It sits with the
   // references because both answer "what goes IN the image"; type / style /
   // format / output below are all treatment.
-  const inImage = (st.renderText || "").trim();
   out.push(
     settingRow({
       name: "renderText",
       label: "Text in image",
-      value: inImage ? shortRenderText(inImage) : "None",
-      set: !!inImage,
+      tip: RENDER_TEXT_TIP,
       open: isOpen("renderText"),
       body: () => renderTextBody(st),
     }),
@@ -474,8 +483,10 @@ function refsBody(st, picked) {
   const capped = mine.length >= imageStudio.MAX_REFS;
   const dropzone = capped
     ? `<p class="isv2-sheet-hint">Maximum ${imageStudio.MAX_REFS} images. Remove one to add another.</p>`
-    : // A button and a line under it, not a dashed drop panel. The panel was a
-      // 64px-tall placeholder for an action that is one click. Dropping still works —
+    : // Just the button — not a dashed drop panel, and no longer a line of accepted
+      // file types under it. The panel was a 64px-tall placeholder for an action that
+      // is one click; the caption listed formats nobody was going to be surprised by
+      // and restated the section's own promise. Dropping still works —
       // `data-img-dropzone` rides on the button, and generate mode accepts a drop
       // anywhere in the modal anyway (see index.js#onDrop).
       //
@@ -485,11 +496,13 @@ function refsBody(st, picked) {
       // hierarchy problem it was solving is solved better by the label tiers and the
       // grouping around it, and the DS has no filled grey button (secondary is blue
       // and orange only), so a border is the way a quiet button stays a button.
+      //
+      // The wrapper stays: `.isv2-group` is a column flex, so an unwrapped button
+      // would stretch to the panel's full width.
       `<div class="isv2-adder">
         <button type="button" class="ap-button stroked grey" data-img-dropzone data-img-ref-add>
           <i class="ap-icon-plus" aria-hidden="true"></i><span>Add an image</span>
         </button>
-        <p class="isv2-sheet-hint">PNG, JPG or WebP · I'll match its look</p>
       </div>`;
   // The switch owns "no reference at all" — it was an 81px tile in the grid, which
   // is a lot of square for nothing, and a two-state choice is what a switch is. Off
@@ -661,36 +674,26 @@ function brandingPreview(st) {
     </div>`;
 }
 
-// The collapsed row's value has one line of a 284px panel to live in, beside a
-// label that must stay readable — so it shows the headline's first line, clipped.
-// The full text is one click away in the field itself.
-function shortRenderText(text) {
-  const first = text.split("\n")[0].trim();
-  const rest = text.split("\n").length > 1;
-  const clipped = first.length > 18 ? `${first.slice(0, 18).trimEnd()}…` : first;
-  return rest && clipped === first ? `${clipped}…` : clipped;
-}
-
 // Text in image — a plain DS textarea field. The counter is a live node the input
-// handler writes into (typing must not re-render the panel, or the caret dies), and
-// the hint names the other thing the user might have meant: the movable text
-// overlay in Edit, which is a different job on a finished image.
+// handler writes into (typing must not re-render the panel, or the caret dies).
 //
-// "Edit" is a link straight to that tab — but ONLY once an image exists. The tab
-// is disabled until then, so linking earlier would promise a place you can't go.
-// It reuses `data-img-mode`, the mode tabs' own hook, so there's no second path
-// into setMode to keep in step.
+// The line that used to sit beside the counter — naming the OTHER thing the user
+// might have meant, the movable text overlay in Edit — is now the header's info
+// tooltip. It was a permanent two-line footnote for a fact you need once, in a panel
+// that is short of room; the counter is the only thing here that changes as you
+// type, so it is the only thing that earns a standing line.
+//
+// Casualty worth knowing about: that sentence carried a live link into the Edit tab
+// (enabled only once an image existed). A title tooltip can't hold a link, so the
+// path is now the Edit tab in the modal header — one click either way.
+const RENDER_TEXT_TIP = "For a text box you can move, use Add text in Edit.";
+
 function renderTextBody(st) {
   const text = st.renderText || "";
-  const hasImg = !!st.currentImage || (st.genPhase === "results" && st.variations.length > 0);
-  const editLink = hasImg
-    ? `<button type="button" class="ap-link small isv2-hint-link" data-img-mode="edit">Edit</button>`
-    : "Edit";
   return `<div class="ap-textarea-field narrow isv2-textfield">
       <textarea data-img-render-text rows="2" maxlength="${imageStudio.MAX_RENDER_TEXT}" placeholder="${escapeHtml(RENDER_TEXT_PLACEHOLDER)}" aria-label="Text to write into the image">${escapeHtml(text)}</textarea>
     </div>
     <p class="isv2-sheet-hint isv2-textfield-foot">
-      <span>For a text box you can move, use Add text in ${editLink}.</span>
       <span class="isv2-textfield-count" data-img-render-text-count>${text.length}/${imageStudio.MAX_RENDER_TEXT}</span>
     </p>`;
 }

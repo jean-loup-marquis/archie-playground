@@ -292,6 +292,19 @@ seule la surface change, ce qui permet de comparer les deux à comportement iden
   le mécanisme généralisé depuis `syncPaletteLine` (voir Branding : le brief n'est écrit qu'à
   l'ouverture et Generate envoie le champ). Conséquence bonus : couper le switch **retire** la ligne,
   là où elle restait avant à décrire une référence hors jeu.
+  **Le bouton d'ajout est seul** : plus de ligne « PNG, JPG or WebP · I'll match its look » en dessous.
+  Elle listait des formats qui ne surprennent personne et redisait la promesse de la section.
+  **« Text in image » : un ⓘ à la place de la valeur d'en-tête.** La section est dépliée par défaut,
+  donc l'en-tête affichait une copie tronquée des mots posés juste en dessous. L'icône dépense cette
+  place sur ce que le corps ne peut pas dire — l'autre chose que l'utilisateur pourrait vouloir, le
+  bloc de texte déplaçable d'Edit — via l'attribut `title` natif. **Pas `.ap-tooltip`** : le tooltip
+  DS est en position absolue et piloté par une directive Angular, et le panneau est une boîte
+  `overflow-y: auto` — un tooltip positionné dedans se ferait couper par le conteneur de scroll, le
+  piège que les commentaires de ce fichier ont noté avoir rencontré trois fois. `aria-hidden`, parce
+  que l'en-tête de rangée est un `<button>` : un élément focusable dedans serait un contrôle dans un
+  contrôle. Prix payé : cette phrase portait un lien vivant vers l'onglet Edit ; un `title` ne peut
+  pas contenir de lien, donc le chemin est l'onglet Edit de l'en-tête de la modale. Le compteur de
+  caractères reste, désormais aligné à droite sous le champ.
   **Le corps d'une section a du padding en haut** (8px), pas seulement en bas : l'en-tête apporte 6px
   des siens, donc 8 + 6 met 14px entre son texte et le premier contrôle, contre 12 jusqu'au filet du
   dessous — le bloc est optiquement centré et l'en-tête est un poil plus loin de son contenu que ce
