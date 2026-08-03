@@ -1991,6 +1991,8 @@ for (const ctx of contexts) {
 //   baseline  → `variationPercent` vs the previous 30 days (0 reads as "flat")
 //   benchmark → `benchmarkVsIndustry` vs the industry median
 // `value` and `goal` are pre-formatted: a prototype never computes, it shows.
+// The verdict is NOT stored — `objective-scoring.js` derives it from progress and
+// trend, so the Playbook card and the Analytics hub can never disagree.
 const OBJECTIVE_METRICS = {
   "Brand awareness": {
     metric: "reach",
@@ -1998,7 +2000,6 @@ const OBJECTIVE_METRICS = {
     goal: "20,000",
     progress: 92,
     variationPercent: 12,
-    status: "on-track",
     benchmarkLabel: "industry median 14,200",
     benchmarkVsIndustry: "+30%",
     benchmarkAhead: true,
@@ -2009,7 +2010,6 @@ const OBJECTIVE_METRICS = {
     goal: "150",
     progress: 84,
     variationPercent: 8,
-    status: "on-track",
     benchmarkLabel: "industry median 140",
     benchmarkVsIndustry: "−10%",
     benchmarkAhead: false,
@@ -2020,7 +2020,6 @@ const OBJECTIVE_METRICS = {
     goal: "5.0%",
     progress: 82,
     variationPercent: 0,
-    status: "watch",
     benchmarkLabel: "industry median 3.2%",
     benchmarkVsIndustry: "+0.9pt",
     benchmarkAhead: true,
@@ -2031,10 +2030,51 @@ const OBJECTIVE_METRICS = {
     goal: "1,500",
     progress: 83,
     variationPercent: 6,
-    status: "on-track",
     benchmarkLabel: "industry median 980",
     benchmarkVsIndustry: "+27%",
     benchmarkAhead: true,
+  },
+};
+
+// Per-Playbook numbers, keyed by context id then goal label, layered over the
+// defaults above. The map above is keyed by goal alone, so without this every
+// Playbook reads identically — and a portfolio hub whose whole job is triage
+// would have nothing to triage. Calibrated to span the three verdict tiers,
+// including declining trends, so the hub shows real spread.
+const OBJECTIVE_METRICS_BY_CONTEXT = {
+  "ctx-founder-voice": {
+    "Brand awareness": {
+      value: "12,800",
+      progress: 64,
+      variationPercent: 3,
+      benchmarkVsIndustry: "−10%",
+      benchmarkAhead: false,
+    },
+  },
+  "ctx-customer": {
+    "Brand awareness": {
+      value: "10,400",
+      progress: 52,
+      variationPercent: -9,
+      benchmarkVsIndustry: "−27%",
+      benchmarkAhead: false,
+    },
+    "Lead generation": {
+      value: "107",
+      progress: 71,
+      variationPercent: -6,
+      benchmarkVsIndustry: "−24%",
+      benchmarkAhead: false,
+    },
+  },
+  "ctx-pawtrack": {
+    "Brand awareness": {
+      value: "17,600",
+      progress: 88,
+      variationPercent: 0,
+      benchmarkVsIndustry: "+24%",
+      benchmarkAhead: true,
+    },
   },
 };
 
@@ -2043,9 +2083,10 @@ const OBJECTIVE_METRICS = {
 // objective" placeholder is what invites the user to wire one up.
 export function objectiveCardsFor(context) {
   const goals = Array.isArray(context?.objective) ? context.objective : [];
+  const overrides = OBJECTIVE_METRICS_BY_CONTEXT[context?.id] || {};
   return goals
     .filter((label) => OBJECTIVE_METRICS[label])
-    .map((label) => ({ objective: label, ...OBJECTIVE_METRICS[label] }));
+    .map((label) => ({ objective: label, ...OBJECTIVE_METRICS[label], ...overrides[label] }));
 }
 
 // The metrics the Playbook's report shows, and where each one sits in it.

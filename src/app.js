@@ -2,7 +2,7 @@ import { route, setAfterRender, start } from "./router.js?v=30";
 import { isFlagOn } from "./feature-flags.js?v=16";
 import { initArchieLoader } from "./archie-loader.js?v=2";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=293";
-import { initSidebar, renderSidebar } from "./components/sidebar.js?v=263";
+import { initSidebar, renderSidebar } from "./components/sidebar.js?v=264";
 import { init as initRightPanel } from "./components/right-panel.js?v=430";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=62";
 import { init as initBugReportModal } from "./components/bug-report-modal.js?v=24";
@@ -34,8 +34,9 @@ import { renderTopicsSettings } from "./screens/topics-settings.js?v=54";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=4";
 // Settings route removed — the prototype Admin controls moved to the sidebar
 // cog popover (see admin-menu.js + sidebar.js); Social accounts page dropped.
-import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=250";
-import { renderPlaybook } from "./screens/playbook.js?v=261";
+import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=251";
+import { renderPlaybook } from "./screens/playbook.js?v=262";
+import { renderAnalytics } from "./screens/analytics.js?v=4";
 import * as __capAddSource from "./components/add-source-modal.js?v=69";
 import * as __capBug from "./components/bug-report-modal.js?v=24";
 import * as __capFeedback from "./components/feedback-modal.js?v=26";
@@ -55,6 +56,10 @@ route("/", renderDashboard);
 route("/session/:id", renderSession);
 route("/contexts", renderContexts);
 route("/playbook/:id", renderPlaybook);
+// Account-level analytics, above any single Playbook. Gated by the
+// `rootAnalytics` flag on its sidebar row; the route itself stays reachable so a
+// bookmark keeps working with the row hidden.
+route("/analytics", renderAnalytics);
 route("/connectors", renderConnectors);
 route("/topics", renderTopics);
 // route() anchors its regex (^…$), so this is a distinct sibling of /topics — no

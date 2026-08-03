@@ -1,0 +1,339 @@
+/* Analytics hub — the portfolio layer (/analytics).
+   Header → Playbook health cards → flat objective table with filters.
+   Verdict colours are never written here: they come from `.ap-status`
+   modifiers picked in objective-scoring.js, so this file and the Playbook
+   detail can't drift apart. */
+
+.analytics-view {
+  overflow-y: auto;
+}
+
+.analytics-view__page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xl);
+  padding: var(--ref-spacing-xl);
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.analytics-view__head-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.analytics-view__title {
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  font-weight: var(--sys-text-style-h1-weight);
+  line-height: var(--sys-text-style-h1-line-height);
+  color: var(--ref-color-grey-100);
+  margin: 0;
+}
+
+.analytics-view__sub {
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-60);
+  margin: 0;
+}
+
+.analytics-view__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.analytics-view__section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+  flex-wrap: wrap;
+}
+
+.analytics-view__section-title {
+  font-family: var(--sys-text-style-h3-font-family);
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  line-height: var(--sys-text-style-h3-line-height);
+  color: var(--ref-color-grey-100);
+  margin: 0;
+}
+
+/* ---- Playbook health cards ---------------------------------------------- */
+
+.analytics-view__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+.analytics-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-10);
+  border-radius: var(--ref-border-radius-md);
+  background: var(--ref-color-white);
+  cursor: pointer;
+  transition:
+    border-color var(--ref-animation-short) var(--app-ease-out),
+    transform var(--ref-animation-short) var(--app-ease-out);
+}
+
+/* Gauge left, identity right — the score is the thing you scan across cards,
+   so it holds the same spot in every one of them. */
+.analytics-card__top {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  min-width: 0;
+}
+
+.analytics-card__id {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.analytics-card:hover {
+  border-color: var(--ref-color-grey-40);
+  transform: translateY(-1px);
+}
+
+.analytics-card:focus-visible {
+  outline: none;
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow:
+    0 0 0 1px var(--ref-color-white),
+    0 0 0 3px var(--ref-color-electric-blue-100);
+}
+
+.analytics-card--empty {
+  cursor: default;
+  justify-content: center;
+}
+
+.analytics-card--empty:hover {
+  border-color: var(--ref-color-grey-10);
+  transform: none;
+}
+
+.analytics-card__verdict {
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  line-height: 1;
+}
+
+/* Watch is amber (yellow-150), NOT orange-150 — orange-150 resolves to a brick
+   #C83E07 that sits a hair from red-150 #D80505, so the two worst tiers became
+   indistinguishable at a glance, which defeats having three of them. The pale
+   chip tints keep using the DS `.ap-status orange`, which is unambiguous. */
+.analytics-card__verdict--strong {
+  color: var(--ref-color-green-150);
+}
+.analytics-card__verdict--watch {
+  color: var(--ref-color-yellow-150);
+}
+.analytics-card__verdict--at-risk {
+  color: var(--ref-color-red-150);
+}
+
+.analytics-card__name {
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-card__none {
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-60);
+  margin: 0;
+}
+
+/* Playbook identity dot — same six colours as the /contexts card swatch. */
+.analytics-card__dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-grey-40);
+}
+
+.analytics-card__dot--orange {
+  background: var(--ref-color-orange-100);
+}
+.analytics-card__dot--blue {
+  background: var(--ref-color-electric-blue-100);
+}
+.analytics-card__dot--green {
+  background: var(--ref-color-green-100);
+}
+.analytics-card__dot--purple {
+  background: var(--ref-color-purple-100);
+}
+.analytics-card__dot--red {
+  background: var(--ref-color-red-100);
+}
+.analytics-card__dot--yellow {
+  background: var(--ref-color-yellow-100);
+}
+
+/* Annular gauge. `--ring-progress` is the 0–100 score, set inline per card;
+   the conic sweep paints that share and the inner disc punches the hole so it
+   reads as one score, not as a pie of parts. */
+.analytics-card__ring {
+  --ring-size: 52px;
+  --ring-thickness: 5px;
+  --ring-progress: 0;
+  --ring-color: var(--ref-color-grey-40);
+  position: relative;
+  flex-shrink: 0;
+  width: var(--ring-size);
+  height: var(--ring-size);
+  border-radius: var(--app-radius-circle);
+  background: conic-gradient(
+    var(--ring-color) calc(var(--ring-progress) * 1%),
+    var(--ref-color-grey-10) calc(var(--ring-progress) * 1%)
+  );
+  display: grid;
+  place-items: center;
+}
+
+.analytics-card__ring::before {
+  content: "";
+  position: absolute;
+  inset: var(--ring-thickness);
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-white);
+}
+
+/* The deeper 150 shades, not 100: at this stroke width the brighter tints read
+   as decoration rather than as a verdict. Watch is amber for the same reason as
+   the verdict text above. */
+.analytics-card__ring--strong {
+  --ring-color: var(--ref-color-green-150);
+}
+.analytics-card__ring--watch {
+  --ring-color: var(--ref-color-yellow-150);
+}
+.analytics-card__ring--at-risk {
+  --ring-color: var(--ref-color-red-150);
+}
+
+.analytics-card__ring-value {
+  position: relative;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  line-height: 1;
+  color: var(--ref-color-grey-100);
+}
+
+.analytics-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  width: 100%;
+}
+
+.analytics-card__chip {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Filters ------------------------------------------------------------ */
+
+.analytics-view__filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  align-items: flex-end;
+}
+
+.analytics-view__filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  justify-content: flex-end;
+}
+
+/* ---- Objective table --------------------------------------------------- */
+
+.analytics-view__table {
+  width: 100%;
+}
+
+.analytics-row {
+  cursor: pointer;
+}
+
+/* Deliberate extension of the DS table: a 3px accent inset on the leading cell
+   so scanning the left edge finds what needs work without reading a column. */
+.analytics-row.is-flagged td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--row-accent);
+}
+
+/* Same amber-vs-red split as the cards, so one scan of the page teaches one
+   colour language. */
+.analytics-row.is-flagged--watch {
+  --row-accent: var(--ref-color-yellow-150);
+}
+
+.analytics-row.is-flagged--at-risk {
+  --row-accent: var(--ref-color-red-150);
+}
+
+.analytics-row__playbook {
+  gap: var(--ref-spacing-xxs);
+}
+
+.analytics-row__progress {
+  gap: var(--ref-spacing-xxs);
+}
+
+.analytics-row__pct {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.analytics-row__goal {
+  color: var(--ref-color-grey-60);
+}
+
+.analytics-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  color: var(--ref-color-grey-60);
+  white-space: nowrap;
+}
+
+.analytics-trend.is-up {
+  color: var(--ref-color-green-150);
+}
+
+.analytics-trend.is-down {
+  color: var(--ref-color-red-100);
+}
+
+.analytics-view__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxl) var(--ref-spacing-md);
+  text-align: center;
+}

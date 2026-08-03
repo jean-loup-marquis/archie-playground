@@ -19,7 +19,8 @@ import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mo
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=16";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=34";
-import { chartSeriesFor, objectiveCardsFor, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=66";
+import { chartSeriesFor, objectiveCardsFor, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=67";
+import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "./objective-scoring.js?v=1";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1650,19 +1651,21 @@ function renderCompareRow({ ahead, icon, value, context, title = "" }) {
 
 function renderObjectiveCard(o) {
   const up = o.variationPercent > 0;
+  const down = o.variationPercent < 0;
+  const tier = objectiveTier(o.progress, o.variationPercent);
   return `
     <article class="recap__ocard">
       <div class="recap__ocard-head">
         <span class="recap__ocard-name">${esc(o.objective)}</span>
-        <span class="ap-status ${o.status === "on-track" ? "green" : "grey"} recap__ocard-verdict">${o.status === "on-track" ? "On track" : "Watch"}</span>
+        <span class="ap-status ${TIER_STATUS_CLASS[tier]} recap__ocard-verdict">${TIER_LABELS[tier]}</span>
       </div>
       <span class="recap__ocard-metric">${esc(o.value)}<span class="recap__ocard-unit">${esc(o.metric)}</span></span>
       ${renderBullet(o)}
       <div class="recap__compare">
         ${renderCompareRow({
           ahead: up,
-          icon: up ? "ap-icon-arrow-up" : "ap-icon-arrow-right",
-          value: up ? `+${o.variationPercent}%` : "flat",
+          icon: up ? "ap-icon-arrow-up" : down ? "ap-icon-arrow-down" : "ap-icon-arrow-right",
+          value: up ? `+${o.variationPercent}%` : down ? `−${Math.abs(o.variationPercent)}%` : "flat",
           context: "vs last 30 days",
         })}
         ${renderCompareRow({

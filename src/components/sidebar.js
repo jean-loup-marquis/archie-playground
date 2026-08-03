@@ -21,6 +21,8 @@ import { clearSession as clearLibrarySession } from "../library.js?v=60";
 import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=44";
 import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=34";
 import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=2";
+import { objectiveCardsFor } from "../mocks.js?v=67";
+import { objectiveTier } from "../objective-scoring.js?v=1";
 import { closePanel as closeRightPanel } from "./right-panel.js?v=430";
 import { clearSession as clearAssistantSession } from "../assistant.js?v=66";
 import { clearSession as clearPostsSession } from "../posts-store.js?v=42";
@@ -589,6 +591,22 @@ const NAV = [
     // Topics rather than somewhere else.
     match: (p) => p.startsWith("/topics"),
     count: () => getUnseenTopicCount(),
+  },
+  // The counter is objectives needing attention, not the total — this row is a
+  // triage prompt. It stays available to Archie-only accounts: the hub is
+  // self-contained, unlike the Agorapulse-only "Analytics" entry in the shell.
+  {
+    path: "/analytics",
+    icon: "ap-icon-bar-graph",
+    label: "Analytics",
+    flag: "rootAnalytics",
+    match: (p) => p === "/analytics",
+    count: () =>
+      getContexts().reduce(
+        (sum, c) =>
+          sum + objectiveCardsFor(c).filter((o) => objectiveTier(o.progress, o.variationPercent) !== "strong").length,
+        0,
+      ),
   },
 ];
 
