@@ -1,9 +1,13 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
 import { renderTopbar } from "../components/topbar.js?v=293";
 import { getContexts, subscribe as subscribeContexts } from "../contexts-store.js?v=44";
-import { objectiveCardsFor } from "../mocks.js?v=67";
+import { objectiveCardsFor, archieImpact } from "../mocks.js?v=70";
 import { navigate } from "../router.js?v=30";
 import { renderEmptyState } from "../components/empty-state.js?v=1";
+import { renderEditorialBanner } from "../components/editorial-banner.js?v=1";
+import { flaggedCount } from "../components/action-drawer.js?v=4";
+import { showToast } from "../components/toast.js?v=20";
+import { isFlagOn } from "../feature-flags.js?v=16";
 import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER, TIER_STATUS_CLASS } from "../objective-scoring.js?v=1";
 
 // Analytics hub — the portfolio layer, above a single Playbook's detail.
@@ -14,10 +18,12 @@ import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER, TIER_STATUS_CLAS
 // flattened into one sortable table with the worst first.
 //
 // It is deliberately self-contained: no Agorapulse subscription is required to
-// read it, which is the whole point of putting analytics at Archie's root.
+// read it, which is the whole point of putting analytics at Archie's root. The
+// Report Studio bridge at the bottom is the one place that acknowledges the paid
+// product, and it argues rather than nags.
 
 const STATUS_FILTERS = [
-  { id: "all", label: "All" },
+  { id: "all", label: "All statuses" },
   { id: "attention", label: "Needs attention" },
   { id: "strong", label: "Strong only" },
 ];
@@ -76,12 +82,11 @@ function visibleRows(rows) {
 function renderPage() {
   const contexts = getContexts();
   const rows = allRows();
-  const flagged = rows.filter((r) => r.tier !== "strong").length;
 
   if (contexts.length === 0) {
     return html`
       <div class="analytics-view__page">
-        ${raw(renderHead(0, 0))}
+        ${raw(renderHead(0))}
         ${raw(
           renderEmptyState({
             icon: "ap-icon-bar-graph",
@@ -96,7 +101,7 @@ function renderPage() {
 
   return html`
     <div class="analytics-view__page">
-      ${raw(renderHead(contexts.length, flagged))}
+      ${raw(renderHead(flaggedCount()))} ${raw(renderEditorialBanner(archieImpact()))}
 
       <section class="analytics-view__section">
         <h2 class="analytics-view__section-title">Playbook health</h2>
@@ -106,25 +111,43 @@ function renderPage() {
       <section class="analytics-view__section">
         <div class="analytics-view__section-head">
           <h2 class="analytics-view__section-title">Objectives</h2>
-          ${raw(renderFilters(contexts))}
         </div>
-        ${raw(renderTable(visibleRows(rows)))}
+        ${raw(renderTableControls(contexts, visibleRows(rows).length))} ${raw(renderTable(visibleRows(rows)))}
       </section>
+
+      ${raw(renderReportStudioBridge())}
     </div>
   `;
 }
 
-function renderHead(playbookCount, flagged) {
+// The ⚡ badge is the drawer's door from this page. It carries the count so the
+// page states the size of the problem before you ask.
+function renderHead(flagged) {
   const sub =
     flagged > 0
-      ? `${playbookCount} Playbooks · ${flagged} ${flagged === 1 ? "objective" : "objectives"} need attention`
-      : `${playbookCount} Playbooks · every objective on track`;
+      ? `${getContexts().length} Playbooks · ${flagged} ${flagged === 1 ? "objective" : "objectives"} need attention`
+      : `${getContexts().length} Playbooks · every objective on track`;
+
+  const trigger =
+    flagged > 0
+      ? `<button
+          type="button"
+          class="analytics-view__actions-trigger"
+          data-open-action-drawer
+          aria-label="${flagged} objectives need attention — see recommended actions"
+        >
+          <i class="ap-icon-sparkles" aria-hidden="true"></i>
+          <span class="analytics-view__actions-count">${flagged}</span>
+        </button>`
+      : "";
+
   return html`
     <header class="analytics-view__head">
       <div class="analytics-view__head-text">
         <h1 class="analytics-view__title">Analytics</h1>
         <p class="analytics-view__sub">${sub}</p>
       </div>
+      ${raw(trigger)}
     </header>
   `;
 }
@@ -179,33 +202,45 @@ function renderHealthCard(context) {
     </article>`;
 }
 
-function renderFilters(contexts) {
-  const playbookChips = [{ id: "all", label: "All Playbooks" }, ...contexts.map((c) => ({ id: c.id, label: c.name }))]
-    .map(
-      (opt) => `
-      <button
-        type="button"
-        class="ap-filter-chip"
-        aria-pressed="${pageState.playbook === opt.id}"
-        data-analytics-filter-playbook="${escapeAttr(opt.id)}"
-      >${escapeText(opt.label)}</button>`,
-    )
+// Built on the repo's `.ap-select` <details> dropdown (same component as the
+// Playbook audience picker) — one choice each, so a dropdown rather than chips.
+function renderSelect({ key, label, options, selected }) {
+  const current = options.find((o) => o.id === selected)?.label || label;
+  const items = options
+    .map((opt) => {
+      const on = opt.id === selected;
+      return `<div class="ap-select-option${on ? " selected" : ""}" data-analytics-filter-${key}="${escapeAttr(opt.id)}" role="option" aria-selected="${on}">
+          <span class="ap-select-option-text">${escapeText(opt.label)}</span>
+          ${on ? `<i class="ap-icon-check ap-select-option-check" aria-hidden="true"></i>` : ""}
+        </div>`;
+    })
     .join("");
 
-  const statusChips = STATUS_FILTERS.map(
-    (opt) => `
-      <button
-        type="button"
-        class="ap-filter-chip"
-        aria-pressed="${pageState.status === opt.id}"
-        data-analytics-filter-status="${escapeAttr(opt.id)}"
-      >${escapeText(opt.label)}</button>`,
-  ).join("");
+  return `
+    <details class="ap-select analytics-view__select">
+      <summary class="ap-select-trigger">
+        <span class="ap-select-value">${escapeText(current)}</span>
+        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+      </summary>
+      <div class="ap-select-dropdown" role="listbox" aria-label="${escapeAttr(label)}">
+        <div class="ap-select-options">${items}</div>
+      </div>
+    </details>`;
+}
+
+function renderTableControls(contexts, shown) {
+  const playbookOptions = [
+    { id: "all", label: "All playbooks" },
+    ...contexts.map((c) => ({ id: c.id, label: c.name })),
+  ];
 
   return `
-    <div class="analytics-view__filters">
-      <div class="analytics-view__filter-group" role="group" aria-label="Filter by Playbook">${playbookChips}</div>
-      <div class="analytics-view__filter-group" role="group" aria-label="Filter by status">${statusChips}</div>
+    <div class="analytics-view__controls">
+      <div class="analytics-view__filters">
+        ${renderSelect({ key: "playbook", label: "All playbooks", options: playbookOptions, selected: pageState.playbook })}
+        ${renderSelect({ key: "status", label: "All statuses", options: STATUS_FILTERS, selected: pageState.status })}
+      </div>
+      <span class="analytics-view__count">${shown} ${shown === 1 ? "objective" : "objectives"} · sorted by status</span>
     </div>`;
 }
 
@@ -235,14 +270,11 @@ function renderRow(r) {
       </td>
       <td><div class="ap-table-cell-content">${escapeText(r.objective)}</div></td>
       <td class="right">
-        <div class="ap-table-cell-content analytics-row__progress">
-          <span class="analytics-row__pct">${r.progress}%</span>
-          <span class="analytics-row__goal">${escapeText(r.value)} / ${escapeText(r.goal)}</span>
-        </div>
+        <div class="ap-table-cell-content analytics-row__pct" title="${escapeAttr(`${r.value} of ${r.goal}`)}">${r.progress}%</div>
       </td>
       <td>
         <div class="ap-table-cell-content">
-          <span class="ap-status ${TIER_STATUS_CLASS[r.tier]}">${TIER_LABELS[r.tier]}</span>
+          <span class="ap-status ${TIER_STATUS_CLASS[r.tier]} no-dot">${TIER_LABELS[r.tier]}</span>
         </div>
       </td>
       <td><div class="ap-table-cell-content">${renderTrendCell(r)}</div></td>
@@ -278,20 +310,66 @@ function renderTable(rows) {
     </table>`;
 }
 
+// Two states, one slot. Without Agorapulse the argument is STRUCTURAL, not a
+// feature list: Archie can only see what Archie published, so the comparison you
+// actually want is the one it cannot make. That's honest, and it's the only
+// version of this pitch a solo creator won't resent.
+function renderReportStudioBridge() {
+  const entitled = isFlagOn("agorapulseEntitlement");
+
+  if (entitled) {
+    return `
+      <section class="analytics-bridge analytics-bridge--entitled">
+        <div class="analytics-bridge__text">
+          <h2 class="analytics-bridge__title">Put this in a report</h2>
+          <p class="analytics-bridge__body">Drop these objectives into a Report Studio report alongside everything else you publish.</p>
+        </div>
+        <button type="button" class="ap-button primary blue" data-analytics-bridge-cta>
+          <i class="ap-icon-plus"></i><span>Add to a report</span>
+        </button>
+      </section>`;
+  }
+
+  return `
+    <section class="analytics-bridge analytics-bridge--locked">
+      <div class="analytics-bridge__text">
+        <h2 class="analytics-bridge__title">
+          <i class="ap-icon-lock" aria-hidden="true"></i>
+          Compare Archie's posts to everything else you publish
+        </h2>
+        <p class="analytics-bridge__body">
+          This page measures what Archie made. Seeing how it stacks up against the rest of your content needs
+          visibility into all of it — that's what Agorapulse adds.
+        </p>
+      </div>
+      <button type="button" class="ap-button stroked grey" data-analytics-bridge-cta>
+        <span>Learn more</span>
+      </button>
+    </section>`;
+}
+
 function bind(root) {
   root.addEventListener("click", (event) => {
-    const playbookFilter = event.target.closest("[data-analytics-filter-playbook]");
-    if (playbookFilter) {
-      pageState.playbook = playbookFilter.dataset.analyticsFilterPlaybook;
+    if (event.target.closest("[data-analytics-bridge-cta]")) {
+      showToast("Report Studio isn't wired up in this prototype");
+      return;
+    }
+    const playbookPick = event.target.closest("[data-analytics-filter-playbook]");
+    if (playbookPick) {
+      pageState.playbook = playbookPick.dataset.analyticsFilterPlaybook;
       paint(root);
       return;
     }
-    const statusFilter = event.target.closest("[data-analytics-filter-status]");
-    if (statusFilter) {
-      pageState.status = statusFilter.dataset.analyticsFilterStatus;
+    const statusPick = event.target.closest("[data-analytics-filter-status]");
+    if (statusPick) {
+      pageState.status = statusPick.dataset.analyticsFilterStatus;
       paint(root);
       return;
     }
+    // Guard the dropdown itself: clicking the trigger must open it, not fall
+    // through to the card/row navigation below.
+    if (event.target.closest(".ap-select")) return;
+
     const card = event.target.closest("[data-analytics-playbook]");
     if (card) {
       navigate(`/playbook/${card.dataset.analyticsPlaybook}`);

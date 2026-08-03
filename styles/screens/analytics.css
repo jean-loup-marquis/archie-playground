@@ -19,10 +19,46 @@
   box-sizing: border-box;
 }
 
+.analytics-view__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+}
+
 .analytics-view__head-text {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
+}
+
+/* Orange because it opens Archie's recommendations — the DS reserves orange for
+   AI/spotlight actions, and this is the page's only one. */
+.analytics-view__actions-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 1px solid var(--ref-color-orange-100);
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-orange-10);
+  color: var(--ref-color-orange-150);
+  font-family: inherit;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  cursor: pointer;
+  transition: background-color var(--ref-animation-short) var(--app-ease-out);
+}
+
+.analytics-view__actions-trigger:hover {
+  background: var(--ref-color-orange-20);
+}
+
+.analytics-view__actions-trigger:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1px var(--ref-color-white),
+    0 0 0 3px var(--ref-color-orange-100);
 }
 
 .analytics-view__title {
@@ -256,18 +292,30 @@
 
 /* ---- Filters ------------------------------------------------------------ */
 
-.analytics-view__filters {
+.analytics-view__controls {
   display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  align-items: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
 }
 
-.analytics-view__filter-group {
+.analytics-view__filters {
   display: flex;
+  gap: var(--ref-spacing-xxs);
   flex-wrap: wrap;
-  gap: var(--ref-spacing-xxxs);
-  justify-content: flex-end;
+}
+
+/* `.ap-select` is width:100% by design (it normally fills a form field), so a
+   filter has to be sized here. */
+.analytics-view__select {
+  width: auto;
+  min-width: 180px;
+}
+
+.analytics-view__count {
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-60);
 }
 
 /* ---- Objective table --------------------------------------------------- */
@@ -327,6 +375,53 @@
 
 .analytics-trend.is-down {
   color: var(--ref-color-red-100);
+}
+
+/* ---- Report Studio bridge ---------------------------------------------- */
+
+.analytics-bridge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+  padding: var(--ref-spacing-md);
+  border: 1px solid var(--ref-color-grey-10);
+  border-radius: var(--ref-border-radius-md);
+  flex-wrap: wrap;
+}
+
+/* Muted, and no coloured CTA: an Archie-only account is being told what exists,
+   not pushed. The locked state has to be resistible or it reads as a nag. */
+.analytics-bridge--locked {
+  background: var(--ref-color-grey-05);
+}
+
+.analytics-bridge--entitled {
+  background: var(--ref-color-white);
+}
+
+.analytics-bridge__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+  flex: 1 1 320px;
+}
+
+.analytics-bridge__title {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.analytics-bridge__body {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-60);
 }
 
 .analytics-view__empty {

@@ -156,4 +156,17 @@ export const FLAGS = Object.freeze([
       "Playbook and by status. It needs no Agorapulse subscription: an " +
       "Archie-only account reads the same page. Playbook detail is unaffected.",
   },
+  {
+    id: "agorapulseEntitlement",
+    label: "Agorapulse subscription",
+    default: false,
+    hides:
+      "Stands in for the real entitlement check, which doesn't exist in this " +
+      "prototype. OFF (default) is the Archie-only account the root hub is " +
+      "built for: the Report Studio bridge shows its locked treatment and the " +
+      "structural argument — Archie can only measure what Archie published, so " +
+      "comparing it to the rest of your content needs Agorapulse. ON is the " +
+      'hybrid account: the same slot turns into a functional "Add to a ' +
+      'report" CTA (stubbed — no Report Studio integration exists here).',
+  },
 ]);

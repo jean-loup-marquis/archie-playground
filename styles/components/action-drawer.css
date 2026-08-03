@@ -1,0 +1,127 @@
+/* Action drawer — overlay panel sliding in from the right.
+   NOT the right-panel: that one is a column of the #appShell grid and is
+   force-closed outside /session/. This has to open on /analytics and on
+   /playbook/:id, so it floats above the shell instead. */
+
+.action-drawer__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--ref-color-grey-100);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ref-animation-short) var(--app-ease-out);
+}
+
+.action-drawer__backdrop.open {
+  opacity: 0.32;
+  pointer-events: auto;
+}
+
+.action-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  display: flex;
+  flex-direction: column;
+  width: 420px;
+  max-width: 100vw;
+  background: var(--ref-color-white);
+  border-left: 1px solid var(--ref-color-grey-10);
+  transform: translateX(100%);
+  transition: transform var(--ref-animation-normal) var(--app-ease-out);
+}
+
+.action-drawer.open {
+  transform: translateX(0);
+}
+
+.action-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-md);
+  border-bottom: 1px solid var(--ref-color-grey-10);
+}
+
+.action-drawer__title {
+  margin: 0;
+  font-family: var(--sys-text-style-h3-font-family);
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.action-drawer__scope {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) 0;
+}
+
+.action-drawer__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md);
+  overflow-y: auto;
+}
+
+/* Same amber-vs-red language as the hub's cards and rows. */
+.action-drawer__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--ref-color-grey-10);
+  border-radius: var(--ref-border-radius-md);
+  border-left-width: 3px;
+}
+
+.action-drawer__row--watch {
+  border-left-color: var(--ref-color-yellow-150);
+}
+
+.action-drawer__row--at-risk {
+  border-left-color: var(--ref-color-red-150);
+}
+
+.action-drawer__row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+}
+
+.action-drawer__objective {
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.action-drawer__playbook {
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-60);
+}
+
+.action-drawer__diagnosis {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-100);
+}
+
+.action-drawer__levers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  padding-top: var(--ref-spacing-xxxs);
+}
+
+.action-drawer__empty {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-grey-60);
+}

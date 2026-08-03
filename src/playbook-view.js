@@ -19,8 +19,10 @@ import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mo
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=16";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=34";
-import { chartSeriesFor, objectiveCardsFor, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=67";
+import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=70";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "./objective-scoring.js?v=1";
+import { renderEditorialBanner } from "./components/editorial-banner.js?v=1";
+import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=4";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1682,11 +1684,30 @@ function renderObjectiveCard(o) {
 function renderObjectivesPanel(data) {
   const section = sectionById("pbk-sec-objectives");
   const cards = objectiveCardsFor(data).map(renderObjectiveCard).join("");
+  // Second door to the shared action drawer, scoped to this Playbook. Seeing a
+  // card go red and having nowhere to go from it was the gap.
+  const flagged = drawerFlaggedCount({ contextId: data.id });
+  const actions =
+    flagged > 0
+      ? `<button
+          type="button"
+          class="recap__actions-trigger"
+          data-open-action-drawer
+          data-context-id="${esc(data.id)}"
+          aria-label="${flagged} ${flagged === 1 ? "objective needs" : "objectives need"} attention — see recommended actions"
+        >
+          <i class="ap-icon-sparkles" aria-hidden="true"></i>
+          <span>${flagged}</span>
+        </button>`
+      : "";
   return `
     <section class="recap__panel" id="${section.id}">
       ${renderPanelHead(section, false)}
       <div class="recap__panel-body recap__panel-body--padded">
-        ${renderPanelLead("How this Playbook proves the goals it was set up to serve")}
+        <div class="recap__panel-lead-row">
+          ${renderPanelLead("How this Playbook proves the goals it was set up to serve")}
+          ${actions}
+        </div>
         <div class="recap__ocards">
           ${cards}
           <button type="button" class="recap__ocard recap__ocard--add" data-recap-add-objective>
@@ -1920,13 +1941,19 @@ function renderWidget(w) {
     </div>`;
 }
 
-function renderPerformancePanel() {
+function renderPerformancePanel(data) {
   const section = sectionById("pbk-sec-performance");
+  // Same component, same technique as the Analytics hub — just this Playbook's
+  // numbers instead of the portfolio's, so the two Performance surfaces read as
+  // one product rather than two treatments. Inline variant: it's a lead-in to
+  // the widgets below, not a card of its own.
+  const banner = renderEditorialBanner(archieImpact(data), { modifier: "editorial-banner--inline" });
   return `
     <section class="recap__panel" id="${section.id}">
       ${renderPanelHead(section, false)}
       <div class="recap__panel-body recap__panel-body--padded">
         ${renderPanelLead("Key metrics tracked for this Playbook · last 30 days")}
+        ${banner}
         <p class="recap__gate">
           <i class="ap-icon-lock-on" aria-hidden="true"></i>
           full report in Agorapulse
@@ -2097,7 +2124,7 @@ function paint() {
         ${renderBrandPanel(data, scope === "brand")}
         ${competitorsOn() ? renderCompetitorsPanel(data, scope === "competitors") : ""}
         ${analyticsOn() ? renderObjectivesPanel(data) : ""}
-        ${analyticsOn() ? renderPerformancePanel() : ""}
+        ${analyticsOn() ? renderPerformancePanel(data) : ""}
       </div>
     </div>
     ${renderRefModal(data)}
