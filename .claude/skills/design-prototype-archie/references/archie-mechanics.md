@@ -43,6 +43,34 @@ Correspondance de mode : `design-guidelines` → **`mode: html-prototype`** (jam
   exclusivement dans `styles/ds-patches.css`.
 - **Données** — tout est mocké dans `src/mocks.js`, exposé via des stores (`src/*-store.js`).
 
+## ⚠️ Le cache-buster `?v=N` est transitif — la règle à ne pas rater
+
+Modifier un module ne suffit pas. Il faut bumper son `?v=` **et celui de tous ses importeurs,
+transitivement, jusqu'à `src/app.js` dans `index.html`**. Un importeur servi depuis le cache
+continue de résoudre l'**ancienne** URL de son enfant : le navigateur exécute alors un graphe de
+modules périmé pendant que `curl` sert le bon fichier — on débogue un fantôme.
+
+Deux corollaires appris à la dure :
+
+- **La version doit rester uniforme** entre tous les importeurs d'un même module. 19 fichiers
+  importaient `mocks.js?v=66` ; n'en bumper qu'un charge **deux instances** du module, donc deux
+  états séparés.
+- **L'échec peut être totalement silencieux.** Ajouter un flag dans `ff-catalog.js` sans bumper son
+  importeur `feature-flags.js` laisse les navigateurs sur l'ancien catalogue ; `isFlagOn` fait
+  `if (!flag) return false` pour un id inconnu, donc **la fonctionnalité neuve est simplement
+  invisible**, sans erreur, sans trace console. Toucher `ff-catalog.js` impacte ~40 modules par
+  transitivité.
+
+Vérifier avant de conclure « ça ne marche pas » :
+
+```bash
+grep -rho "<module>\.js?v=[0-9]*" src/ index.html | sort -u   # doit renvoyer UNE seule version
+```
+
+Et se souvenir qu'un même nom de fichier peut exister dans deux dossiers frères
+(`image-studio/context.js` vs `image-studio-v2/context.js`) — ce sont deux modules distincts, pas
+une incohérence de version.
+
 ## Contraintes DS liantes
 
 Détail dans `docs/reference/DESIGN-SYSTEM.md`. Ce qui fait échouer `validate_css` ou une revue :

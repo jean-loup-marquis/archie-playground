@@ -33,7 +33,7 @@ import {
   startCropGesture,
   applyCropSelection,
 } from "./interactions.js?v=45";
-import * as imageStudio from "../../image-studio.js?v=69";
+import * as imageStudio from "../../image-studio.js?v=70";
 
 let backdrop;
 let initialized = false;

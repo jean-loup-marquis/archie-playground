@@ -1,6 +1,6 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=66";
-import { isFlagOn } from "../feature-flags.js?v=16";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=67";
+import { isFlagOn } from "../feature-flags.js?v=17";
 import { ideas as MOCK_IDEAS } from "../mocks.js?v=70";
 import { isNewUser } from "../user-mode.js?v=22";
 import { getPath } from "../router.js?v=30";
@@ -28,14 +28,14 @@ import {
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=59";
+} from "../sources-stream.js?v=60";
 import { open as openAddSourceModal } from "./add-source-modal.js?v=69";
 import { open as openRenameModal } from "./rename-modal.js?v=2";
 import { getConnectedConnectors } from "../connectors-store.js?v=34";
 import { askConnector } from "../connector-ask.js?v=14";
 import { renderConnectorLogo } from "../connectors-view.js?v=16";
 import { open as openConnectorsModal } from "./connectors-modal.js?v=17";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=34";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=35";
 import { iconFor } from "../file-kinds.js?v=20";
 
 // Lot 15 — empty in first-time mode so the right-panel Ideas surface lines
@@ -736,7 +736,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session.js?v=515").then(({ startClipDraftFlow }) => {
+          import("../screens/session.js?v=516").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -919,7 +919,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session.js?v=515").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=516").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -937,7 +937,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session.js?v=515").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=516").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -2811,7 +2811,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session.js?v=515").then(({ askAngleQuestion }) => {
+  import("../screens/session.js?v=516").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }

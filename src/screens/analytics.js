@@ -1,5 +1,5 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
-import { renderTopbar } from "../components/topbar.js?v=293";
+import { renderTopbar } from "../components/topbar.js?v=294";
 import { getContexts, subscribe as subscribeContexts } from "../contexts-store.js?v=44";
 import { objectiveCardsFor, archieImpact } from "../mocks.js?v=70";
 import { navigate } from "../router.js?v=30";
@@ -7,7 +7,7 @@ import { renderEmptyState } from "../components/empty-state.js?v=1";
 import { renderEditorialBanner } from "../components/editorial-banner.js?v=1";
 import { flaggedCount } from "../components/action-drawer.js?v=4";
 import { showToast } from "../components/toast.js?v=20";
-import { isFlagOn } from "../feature-flags.js?v=16";
+import { isFlagOn } from "../feature-flags.js?v=17";
 import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER, TIER_STATUS_CLASS } from "../objective-scoring.js?v=1";
 
 // Analytics hub — the portfolio layer, above a single Playbook's detail.
