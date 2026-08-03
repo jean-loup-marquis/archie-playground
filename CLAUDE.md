@@ -15,6 +15,12 @@ npm start     # runs `npx serve -p 8000` — open http://localhost:8000
 
 With Claude Code the dev server auto-launches via `.claude/launch.json` (server name `archie`, runs `python3 -m http.server`). There is **no test suite**; verify changes by running the app (see the verify/run skills) and the `ds-css` MCP `validate_css`.
 
+## Prototyping sessions
+
+Use **`/design-prototype-archie`** (`.claude/skills/design-prototype-archie/`) to drive a guided prototyping session in this repo.
+
+The marketplace's `/design-prototype` **does not apply here** and cannot run: it is wired to the platform monorepo (`pulse run <mfe>`, anchoring on beta, a Shortcut ticket via `flow`, `design-guidelines` in `angular` mode). Archie has no app or MFE in platform, and this repo is outside the delivery process.
+
 ## Architecture
 
 **Vanilla JS only** — no build step, no bundler, no framework, no external runtime deps. A hash-based router (`src/router.js`) renders the matched route into `#app` on every `hashchange`. The persistent app shell (sidebar + topbar + right panel) lives outside `#app` and is updated by subscriptions. Each screen, modal, and component owns its own DOM and uses **pure event delegation** with `data-*` attributes.
