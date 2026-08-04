@@ -14,19 +14,17 @@ import {
   deleteSession,
   togglePin as togglePinSession,
   subscribe as subscribeSessions,
-} from "../sessions-store.js?v=14";
+} from "../sessions-store.js?v=15";
 import { isFlagOn } from "../feature-flags.js?v=17";
 import { isNewUser } from "../user-mode.js?v=22";
-import { clearSession as clearLibrarySession } from "../library.js?v=63";
-import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=46";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=36";
-import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=4";
-import { objectiveCardsFor } from "../mocks.js?v=72";
-import { objectiveTier } from "../objective-scoring.js?v=1";
+import { clearSession as clearLibrarySession } from "../library.js?v=64";
+import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=47";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=37";
+import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=5";
 import { closePanel as closeRightPanel } from "./right-panel.js?v=430";
-import { clearSession as clearAssistantSession } from "../assistant.js?v=69";
-import { clearSession as clearPostsSession } from "../posts-store.js?v=45";
-import { clearSession as clearSourcesSession } from "../sources-stream.js?v=62";
+import { clearSession as clearAssistantSession } from "../assistant.js?v=70";
+import { clearSession as clearPostsSession } from "../posts-store.js?v=47";
+import { clearSession as clearSourcesSession } from "../sources-stream.js?v=63";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -592,21 +590,18 @@ const NAV = [
     match: (p) => p.startsWith("/topics"),
     count: () => getUnseenTopicCount(),
   },
-  // The counter is objectives needing attention, not the total — this row is a
-  // triage prompt. It stays available to Archie-only accounts: the hub is
-  // self-contained, unlike the Agorapulse-only "Analytics" entry in the shell.
+  // No counter, deliberately. The row above it reads "Playbooks 4" — a count of
+  // things — so an identically-styled "Analytics 5" was read as five analytics
+  // rather than five objectives in trouble. Two badges side by side have to count
+  // the same kind of thing or neither can be trusted; the number now lives once,
+  // on the hub's own call to action. Still available to Archie-only accounts: the
+  // hub is self-contained, unlike the Agorapulse-only "Analytics" shell entry.
   {
     path: "/analytics",
     icon: "ap-icon-bar-graph",
     label: "Analytics",
     flag: "rootAnalytics",
     match: (p) => p === "/analytics",
-    count: () =>
-      getContexts().reduce(
-        (sum, c) =>
-          sum + objectiveCardsFor(c).filter((o) => objectiveTier(o.progress, o.variationPercent) !== "strong").length,
-        0,
-      ),
   },
 ];
 

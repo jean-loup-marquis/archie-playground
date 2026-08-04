@@ -12,8 +12,13 @@
 }
 
 /* Electric blue, not orange: this is a fact being pointed at, not an AI action
-   to take — orange is reserved for the latter in this DS. */
+   to take — orange is reserved for the latter in this DS.
+
+   Deliberately NOT bold. At 24px/700 it tied the page title exactly for visual
+   weight, 95px below it and in a more saliently coloured hue, so the biggest
+   thing on the page competed with the page's own name. The colour alone is
+   enough to mark the figure. */
 .editorial-lead__highlight {
   color: var(--sys-color-accent-light-text);
-  font-weight: var(--sys-text-style-h1-weight);
+  font-weight: inherit;
 }

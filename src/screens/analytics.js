@@ -1,12 +1,12 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
-import { renderTopbar } from "../components/topbar.js?v=296";
-import { getContexts, subscribe as subscribeContexts } from "../contexts-store.js?v=46";
-import { objectiveCardsFor, archieImpact } from "../mocks.js?v=72";
+import { renderTopbar } from "../components/topbar.js?v=297";
+import { getContexts, subscribe as subscribeContexts } from "../contexts-store.js?v=47";
+import { objectiveCardsFor, archieImpact } from "../mocks.js?v=73";
 import { navigate } from "../router.js?v=30";
 import { renderEmptyState } from "../components/empty-state.js?v=1";
 import { renderEditorialBanner } from "../components/editorial-banner.js?v=2";
 import { renderMiniWidget } from "../components/report-widget.js?v=2";
-import { flaggedCount } from "../components/action-drawer.js?v=6";
+import { flaggedCount } from "../components/action-drawer.js?v=8";
 import { showToast } from "../components/toast.js?v=20";
 import { isFlagOn } from "../feature-flags.js?v=17";
 import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER, TIER_STATUS_CLASS } from "../objective-scoring.js?v=1";
@@ -22,6 +22,8 @@ import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER, TIER_STATUS_CLAS
 // read it, which is the whole point of putting analytics at Archie's root. The
 // Report Studio bridge at the bottom is the one place that acknowledges the paid
 // product, and it argues rather than nags.
+
+const TIER_ORDER_KEYS = ["at-risk", "watch", "strong"];
 
 const STATUS_FILTERS = [
   { id: "all", label: "All statuses" },
@@ -105,7 +107,16 @@ function renderPage() {
       ${raw(renderHead(flaggedCount()))} ${raw(renderEditorial())}
 
       <section class="analytics-view__section">
-        <h2 class="analytics-view__section-title">Playbook health</h2>
+        <div class="analytics-view__section-head">
+          <div class="analytics-view__section-text">
+            <h2 class="analytics-view__section-title">Playbook health</h2>
+            <p class="analytics-view__section-note">
+              Scored out of 100 — the average progress of a Playbook's objectives, lowered when a trend is flat or
+              falling.
+            </p>
+          </div>
+          ${raw(renderTierLegend())}
+        </div>
         <div class="analytics-view__cards">${raw(contexts.map(renderHealthCard).join(""))}</div>
       </section>
 
@@ -113,7 +124,8 @@ function renderPage() {
         <div class="analytics-view__section-head">
           <h2 class="analytics-view__section-title">Objectives</h2>
         </div>
-        ${raw(renderTableControls(contexts, visibleRows(rows).length))} ${raw(renderTable(visibleRows(rows)))}
+        ${raw(renderTableControls(contexts, visibleRows(rows).length, rows.length))}
+        ${raw(renderTable(visibleRows(rows)))}
       </section>
 
       ${raw(renderReportStudioBridge())}
@@ -136,26 +148,30 @@ function renderEditorial() {
     </section>`;
 }
 
-// The ⚡ badge is the drawer's door from this page. It carries the count so the
-// page states the size of the problem before you ask.
+// The page's one call to action, and the only place the "needs attention" count
+// appears. It was an icon-and-number chip: the single real button above the fold,
+// labelled "5", for the page's whole purpose. Nothing said what it did.
+//
+// Orange primary because it opens Archie's recommendations, which is what the DS
+// reserves orange for — and because a triage page should have exactly one obvious
+// thing to do.
+//
+// The period is stated once, here, and everything below inherits it: the widgets
+// and the health cards carry bare percentages that meant nothing without it.
 function renderHead(flagged) {
-  const sub =
-    flagged > 0
-      ? `${getContexts().length} Playbooks · ${flagged} ${flagged === 1 ? "objective" : "objectives"} need attention`
-      : `${getContexts().length} Playbooks · every objective on track`;
+  const total = allRows().length;
+  const sub = `Last 30 days · ${getContexts().length} Playbooks · ${total} ${total === 1 ? "objective" : "objectives"}`;
 
-  const trigger =
+  const cta =
     flagged > 0
-      ? `<button
-          type="button"
-          class="analytics-view__actions-trigger"
-          data-open-action-drawer
-          aria-label="${flagged} objectives need attention — see recommended actions"
-        >
+      ? `<button type="button" class="ap-button primary orange analytics-view__cta" data-open-action-drawer>
           <i class="ap-icon-sparkles" aria-hidden="true"></i>
-          <span class="analytics-view__actions-count">${flagged}</span>
+          <span>Review ${flagged} ${flagged === 1 ? "objective" : "objectives"} that need${flagged === 1 ? "s" : ""} attention</span>
         </button>`
-      : "";
+      : `<p class="analytics-view__all-clear">
+          <i class="ap-icon-check" aria-hidden="true"></i>
+          Every objective is on track
+        </p>`;
 
   return html`
     <header class="analytics-view__head">
@@ -163,9 +179,25 @@ function renderHead(flagged) {
         <h1 class="analytics-view__title">Analytics</h1>
         <p class="analytics-view__sub">${sub}</p>
       </div>
-      ${raw(trigger)}
+      ${raw(cta)}
     </header>
   `;
+}
+
+// On the cards the tier is carried by colour alone — the chips show objective
+// names, not statuses — so without a key the amber/red distinction is decoration.
+// Vocabulary left as-is on purpose: renaming a tier is a product decision.
+function renderTierLegend() {
+  return `
+    <ul class="analytics-legend" aria-label="What the colours mean">
+      ${TIER_ORDER_KEYS.map(
+        (t) => `
+        <li class="analytics-legend__item">
+          <span class="analytics-legend__swatch analytics-legend__swatch--${t}" aria-hidden="true"></span>
+          ${escapeText(TIER_LABELS[t])}
+        </li>`,
+      ).join("")}
+    </ul>`;
 }
 
 // Annular gauge, not a filled disc: the hole is what stops it reading as a pie
@@ -179,6 +211,7 @@ function renderRing(score, tier) {
       aria-label="Health score ${Math.round(score)} out of 100"
     >
       <span class="analytics-card__ring-value">${Math.round(score)}</span>
+      <span class="analytics-card__ring-scale">/100</span>
     </div>`;
 }
 
@@ -244,7 +277,7 @@ function renderSelect({ key, label, options, selected }) {
     </details>`;
 }
 
-function renderTableControls(contexts, shown) {
+function renderTableControls(contexts, shown, total) {
   const playbookOptions = [
     { id: "all", label: "All playbooks" },
     ...contexts.map((c) => ({ id: c.id, label: c.name })),
@@ -256,7 +289,7 @@ function renderTableControls(contexts, shown) {
         ${renderSelect({ key: "playbook", label: "All playbooks", options: playbookOptions, selected: pageState.playbook })}
         ${renderSelect({ key: "status", label: "All statuses", options: STATUS_FILTERS, selected: pageState.status })}
       </div>
-      <span class="analytics-view__count">${shown} ${shown === 1 ? "objective" : "objectives"} · sorted by status</span>
+      <span class="analytics-view__count">Showing ${shown} of ${total} · worst first</span>
     </div>`;
 }
 
@@ -272,6 +305,15 @@ function renderTrendCell(o) {
   return `<span class="analytics-trend"><i class="ap-icon-arrow-right" aria-hidden="true"></i>flat</span>`;
 }
 
+// The Playbook cell holds a real <button> rather than the row carrying
+// role="button": eight rows were mouse-only, and putting the role on the <tr>
+// would have bought keyboard access by destroying the table's row semantics.
+// The row stays clickable as a mouse convenience, so both work.
+//
+// No `title` attributes. They were hiding the actual figures — "10,400 of 20,000"
+// behind "52%" — where touch, keyboard and several screen readers never reach
+// them. The percentage is the triage signal; the raw numbers live on the Playbook
+// page, one click away, in the open.
 function renderRow(r) {
   // 3px inset accent on flagged rows — a deliberate extension of the DS table,
   // so a scan down the left edge finds what needs work without reading a column.
@@ -281,12 +323,14 @@ function renderRow(r) {
       <td>
         <div class="ap-table-cell-content analytics-row__playbook">
           <span class="analytics-card__dot analytics-card__dot--${escapeAttr(r.playbookColor)}" aria-hidden="true"></span>
-          <span>${escapeText(r.playbookName)}</span>
+          <button type="button" class="analytics-row__open" data-analytics-row-open="${escapeAttr(r.playbookId)}">
+            ${escapeText(r.playbookName)}
+          </button>
         </div>
       </td>
       <td><div class="ap-table-cell-content">${escapeText(r.objective)}</div></td>
       <td class="right">
-        <div class="ap-table-cell-content analytics-row__pct" title="${escapeAttr(`${r.value} of ${r.goal}`)}">${r.progress}%</div>
+        <div class="ap-table-cell-content analytics-row__pct">${r.progress}%</div>
       </td>
       <td>
         <div class="ap-table-cell-content">
@@ -296,7 +340,7 @@ function renderRow(r) {
       <td><div class="ap-table-cell-content">${renderTrendCell(r)}</div></td>
       <td>
         <div class="ap-table-cell-content">
-          <span class="analytics-trend ${r.benchmarkAhead ? "is-up" : "is-down"}" title="${escapeAttr(r.benchmarkLabel)}">
+          <span class="analytics-trend ${r.benchmarkAhead ? "is-up" : "is-down"}">
             <i class="${r.benchmarkAhead ? "ap-icon-arrow-up" : "ap-icon-arrow-down"}" aria-hidden="true"></i>${escapeText(r.benchmarkVsIndustry)}
           </span>
         </div>
@@ -307,7 +351,12 @@ function renderRow(r) {
 function renderTable(rows) {
   const body =
     rows.length === 0
-      ? `<tr><td colspan="6" class="ap-table-empty">No objective matches these filters.</td></tr>`
+      ? `<tr><td colspan="6" class="ap-table-empty">
+          No objective matches these filters.
+          <button type="button" class="ap-button transparent blue" data-analytics-clear-filters>
+            <span>Clear filters</span>
+          </button>
+        </td></tr>`
       : rows.map(renderRow).join("");
 
   return `
@@ -318,8 +367,8 @@ function renderTable(rows) {
           <th>Objective</th>
           <th class="right">Progress</th>
           <th>Status</th>
-          <th>Trend (30d)</th>
-          <th>Benchmark</th>
+          <th>Trend</th>
+          <th>vs industry median</th>
         </tr>
       </thead>
       <tbody>${body}</tbody>
@@ -368,6 +417,16 @@ function bind(root) {
   root.addEventListener("click", (event) => {
     if (event.target.closest("[data-analytics-bridge-cta]")) {
       showToast("Report Studio isn't wired up in this prototype");
+      return;
+    }
+    if (event.target.closest("[data-analytics-clear-filters]")) {
+      pageState = { playbook: "all", status: "all" };
+      paint(root);
+      return;
+    }
+    const rowOpen = event.target.closest("[data-analytics-row-open]");
+    if (rowOpen) {
+      navigate(`/playbook/${rowOpen.dataset.analyticsRowOpen}`);
       return;
     }
     const playbookPick = event.target.closest("[data-analytics-filter-playbook]");

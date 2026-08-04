@@ -2104,9 +2104,16 @@ export function objectiveCardsFor(context) {
 // separate job.
 const ARCHIE_IMPACT = {
   portfolio: {
+    // Reconciled on purpose: the old sentence claimed "your engagement is beating
+    // the industry average" while the table underneath showed four objectives
+    // below that same median. Both were true — portfolio average vs per-objective
+    // — but nothing on screen said so, and praising the reader above the evidence
+    // against costs more credibility than the compliment buys. The caveat is
+    // static like every other figure here.
     lead: {
       highlight: "42,300 people reached",
-      after: "this month, and your engagement is beating the industry average.",
+      after:
+        "in the last 30 days. Engagement is ahead of the industry median overall, though four objectives still trail it.",
     },
     // Ordered as the story reads: how far it went, how much Archie made, how it
     // landed, what it drove.

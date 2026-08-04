@@ -2027,8 +2027,9 @@
   color: var(--sys-text-color-light);
 }
 
-/* Lead sentence + the action-drawer trigger on one line. Same orange pill as the
-   Analytics hub's, so the two doors to the drawer look like one affordance. */
+/* Lead sentence + the action-drawer trigger on one line. The trigger is the DS
+   orange primary button, same as the Analytics hub's — the two doors to the same
+   drawer have to look like one affordance. */
 .recap__panel-lead-row {
   display: flex;
   align-items: flex-start;
@@ -2037,38 +2038,7 @@
 }
 
 .recap__actions-trigger {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
   flex-shrink: 0;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-orange-100);
-  border-radius: var(--app-radius-pill);
-  background: var(--ref-color-orange-10);
-  color: var(--ref-color-orange-150);
-  font-family: inherit;
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  cursor: pointer;
-  transition: background-color var(--ref-animation-short) var(--app-ease-out);
-}
-
-.recap__actions-trigger:hover {
-  background: var(--ref-color-orange-20);
-}
-
-.recap__actions-trigger:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 1px var(--ref-color-white),
-    0 0 0 3px var(--ref-color-orange-100);
-}
-
-/* ── Objective cards ──────────────────────────────────────────────────── */
-.recap__ocards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--ref-spacing-sm);
 }
 
 .recap__ocard {

@@ -32,33 +32,21 @@
   gap: var(--ref-spacing-xxxs);
 }
 
-/* Orange because it opens Archie's recommendations — the DS reserves orange for
-   AI/spotlight actions, and this is the page's only one. */
-.analytics-view__actions-trigger {
+/* The page's single call to action. Orange primary is the DS's AI/spotlight
+   button and this is the page's only action, so it can afford to be the loudest
+   thing after the title. */
+.analytics-view__cta {
+  flex-shrink: 0;
+}
+
+.analytics-view__all-clear {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border: 1px solid var(--ref-color-orange-100);
-  border-radius: var(--app-radius-pill);
-  background: var(--ref-color-orange-10);
-  color: var(--ref-color-orange-150);
-  font-family: inherit;
+  margin: 0;
+  flex-shrink: 0;
   font-size: var(--ref-font-size-sm);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  cursor: pointer;
-  transition: background-color var(--ref-animation-short) var(--app-ease-out);
-}
-
-.analytics-view__actions-trigger:hover {
-  background: var(--ref-color-orange-20);
-}
-
-.analytics-view__actions-trigger:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 1px var(--ref-color-white),
-    0 0 0 3px var(--ref-color-orange-100);
+  color: var(--ref-color-green-150);
 }
 
 .analytics-view__title {
@@ -70,9 +58,12 @@
   margin: 0;
 }
 
+/* --sys-text-color-light, not grey-60: grey-60 measures 3.10:1 against the
+   #F9F9FA page background, under the 4.5:1 AA needs at 14px. This token is
+   5.18:1 and is what the rest of the app uses for secondary text. */
 .analytics-view__sub {
   font-size: var(--ref-font-size-sm);
-  color: var(--ref-color-grey-60);
+  color: var(--sys-text-color-light);
   margin: 0;
 }
 
@@ -88,6 +79,57 @@
   justify-content: space-between;
   gap: var(--ref-spacing-md);
   flex-wrap: wrap;
+}
+
+.analytics-view__section-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.analytics-view__section-note {
+  margin: 0;
+  max-width: 68ch;
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+/* Key for the card tints. Without it the amber/red split on the chips is
+   decoration — the chips show objective names, so colour is the only carrier. */
+.analytics-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-shrink: 0;
+}
+
+.analytics-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+.analytics-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--app-radius-circle);
+}
+
+.analytics-legend__swatch--strong {
+  background: var(--ref-color-green-150);
+}
+.analytics-legend__swatch--watch {
+  background: var(--ref-color-yellow-150);
+}
+.analytics-legend__swatch--at-risk {
+  background: var(--ref-color-red-150);
 }
 
 .analytics-view__section-title {
@@ -269,6 +311,18 @@
   --ring-color: var(--ref-color-red-150);
 }
 
+.analytics-card__ring-scale {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 2px;
+  background: var(--ref-color-white);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--sys-text-color-light);
+}
+
 .analytics-card__ring-value {
   position: relative;
   font-size: var(--ref-font-size-sm);
@@ -315,7 +369,7 @@
 
 .analytics-view__count {
   font-size: var(--ref-font-size-sm);
-  color: var(--ref-color-grey-60);
+  color: var(--sys-text-color-light);
 }
 
 /* ---- Objective table --------------------------------------------------- */
@@ -454,4 +508,33 @@
   gap: var(--ref-spacing-xs);
   padding: var(--ref-spacing-xxl) var(--ref-spacing-md);
   text-align: center;
+}
+
+/* The playbook name is a real <button> so the row is reachable by keyboard, but
+   it has to read as the plain cell text it replaced. */
+.analytics-row__open {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.analytics-row__open:hover {
+  text-decoration: underline;
+}
+
+.analytics-row__open:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+  border-radius: var(--ref-border-radius-sm);
+}
+
+.ap-table-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
 }

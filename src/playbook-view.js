@@ -18,12 +18,12 @@ import { html, raw, escapeHtml as esc } from "./utils.js?v=21";
 import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=25";
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=17";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=37";
-import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=72";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=38";
+import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=73";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "./objective-scoring.js?v=1";
 import { renderEditorialBanner } from "./components/editorial-banner.js?v=2";
 import { renderMiniWidget } from "./components/report-widget.js?v=2";
-import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=6";
+import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=8";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1692,13 +1692,12 @@ function renderObjectivesPanel(data) {
     flagged > 0
       ? `<button
           type="button"
-          class="recap__actions-trigger"
+          class="ap-button primary orange recap__actions-trigger"
           data-open-action-drawer
           data-context-id="${esc(data.id)}"
-          aria-label="${flagged} ${flagged === 1 ? "objective needs" : "objectives need"} attention — see recommended actions"
         >
           <i class="ap-icon-sparkles" aria-hidden="true"></i>
-          <span>${flagged}</span>
+          <span>Review ${flagged} ${flagged === 1 ? "objective" : "objectives"}</span>
         </button>`
       : "";
   return `

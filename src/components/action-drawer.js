@@ -1,7 +1,7 @@
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=21";
 import { escapeText, escapeAttr } from "../utils.js?v=21";
-import { getContexts } from "../contexts-store.js?v=46";
-import { objectiveCardsFor } from "../mocks.js?v=72";
+import { getContexts } from "../contexts-store.js?v=47";
+import { objectiveCardsFor } from "../mocks.js?v=73";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "../objective-scoring.js?v=1";
 import { showToast } from "./toast.js?v=20";
 
@@ -22,7 +22,7 @@ import { showToast } from "./toast.js?v=20";
 //
 // Public API:
 //   init()
-//   open({ contextId })   — contextId omitted ⇒ portfolio scope
+//   open({ contextId, returnFocusTo })  — contextId omitted ⇒ portfolio scope
 //   flaggedCount({ contextId })  — for the trigger badges
 
 const MODAL_ID = "action-drawer";
@@ -43,6 +43,7 @@ let backdrop, drawer, listEl, titleEl, scopeEl;
 let initialized = false;
 let scopeContextId = null;
 let openedFromContextId = null;
+let lastTrigger = null;
 
 const HTML = `
   <div class="action-drawer__backdrop" data-drawer-backdrop hidden></div>
@@ -103,7 +104,7 @@ function injectOnce() {
   document.addEventListener("click", (event) => {
     const trigger = event.target.closest("[data-open-action-drawer]");
     if (!trigger) return;
-    open({ contextId: trigger.dataset.contextId || null });
+    open({ contextId: trigger.dataset.contextId || null, returnFocusTo: trigger });
   });
 
   initialized = true;
@@ -197,12 +198,17 @@ export function init() {
   injectOnce();
 }
 
-export function open({ contextId = null } = {}) {
+export function open({ contextId = null, returnFocusTo = null } = {}) {
   injectOnce();
   requestOpen(MODAL_ID, close);
 
   openedFromContextId = contextId;
   scopeContextId = contextId;
+  // Remembered so closing can hand focus back — Esc used to leave it on the
+  // now-hidden close button, which strands a keyboard user. Taken from the
+  // delegated click rather than document.activeElement: a mouse click does not
+  // reliably focus a button across browsers, so activeElement can be <body>.
+  lastTrigger = returnFocusTo instanceof HTMLElement ? returnFocusTo : null;
   paint();
 
   backdrop.hidden = false;
@@ -220,5 +226,7 @@ function close() {
   drawer.setAttribute("aria-hidden", "true");
   backdrop.hidden = true;
   document.body.classList.remove("has-modal");
+  if (lastTrigger?.isConnected) lastTrigger.focus();
+  lastTrigger = null;
   notifyClose(MODAL_ID);
 }
