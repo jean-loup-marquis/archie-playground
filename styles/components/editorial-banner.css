@@ -1,73 +1,19 @@
-/* Editorial banner — warm lead sentence + three narrated tiles.
-   Used at the top of /analytics (portfolio numbers) and above a Playbook's
-   Performance widgets (that Playbook's own). Deliberately quiet chrome: the
-   sentence is the design. */
+/* Editorial lead — the warm sentence that opens /analytics and a Playbook's
+   Performance section. Plain text at 24px, no card: the figures it alludes to are
+   shown as real Report Studio widgets directly underneath. */
 
-.editorial-banner {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
-  padding: var(--ref-spacing-md);
-  border: 1px solid var(--ref-color-grey-10);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-white);
-}
-
-.editorial-banner__lead {
+.editorial-lead {
   margin: 0;
-  font-size: var(--sys-text-style-h3-size);
-  font-family: var(--sys-text-style-h3-font-family);
-  line-height: var(--sys-text-style-h3-line-height);
+  max-width: 72ch;
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
   color: var(--ref-color-grey-100);
 }
 
 /* Electric blue, not orange: this is a fact being pointed at, not an AI action
    to take — orange is reserved for the latter in this DS. */
-.editorial-banner__highlight {
+.editorial-lead__highlight {
   color: var(--sys-color-accent-light-text);
-  font-weight: var(--sys-text-style-h3-weight);
-}
-
-.editorial-banner__tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--ref-spacing-md);
-  padding-top: var(--ref-spacing-sm);
-  border-top: 1px solid var(--ref-color-grey-10);
-}
-
-.editorial-banner__tile {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-.editorial-banner__value {
-  font-family: var(--sys-text-style-h2-font-family);
-  font-size: var(--sys-text-style-h2-size);
-  font-weight: var(--sys-text-style-h2-weight);
-  line-height: 1;
-  color: var(--ref-color-grey-100);
-}
-
-.editorial-banner__label {
-  font-size: var(--ref-font-size-sm);
-  color: var(--ref-color-grey-60);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.editorial-banner__narrative {
-  font-size: var(--ref-font-size-sm);
-  font-style: italic;
-  color: var(--ref-color-grey-60);
-}
-
-/* Inside a Playbook's Performance section the banner is a lead-in to the widgets
-   below it, not a section of its own — so it drops the card chrome. */
-.editorial-banner--inline {
-  padding: 0;
-  border: none;
-  background: transparent;
+  font-weight: var(--sys-text-style-h1-weight);
 }

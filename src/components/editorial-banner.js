@@ -1,6 +1,6 @@
 import { escapeText } from "../utils.js?v=21";
 
-// Editorial banner — a warm one-sentence lead plus three narrated tiles.
+// Editorial lead — one warm sentence, at 24px, introducing the widgets under it.
 //
 // Every other analytics surface argues: this number vs that goal, this tier vs
 // that one. This one just tells you what happened, in a sentence you could read
@@ -8,37 +8,23 @@ import { escapeText } from "../utils.js?v=21";
 // Performance section (that Playbook's own), which is why it lives here and not
 // inside either screen — same technique, different scope.
 //
-// The `narrative` line under each tile is the whole point of the component: a
-// raw total means nothing until it's a sold-out stadium three times over.
+// No card and no tiles: it is a lead-in, not a section. The numbers it alludes to
+// are shown properly right below it as real Report Studio widgets, so restating
+// them here as a second row of figures was saying everything twice.
 //
 // Public API:
-//   renderEditorialBanner({ lead: { before?, highlight, after? }, tiles })
-//     tiles: [{ value, label, narrative }]
-//   Returns "" for missing/empty input so a caller can interpolate it blindly.
+//   renderEditorialBanner({ lead: { before?, highlight, after? } })
+//   Returns "" for missing input so a caller can interpolate it blindly.
 
-export function renderEditorialBanner(impact, { modifier = "" } = {}) {
-  if (!impact?.lead?.highlight || !impact?.tiles?.length) return "";
+export function renderEditorialBanner(impact) {
+  if (!impact?.lead?.highlight) return "";
 
   const { before = "Archie's been busy —", highlight, after = "" } = impact.lead;
 
-  const tiles = impact.tiles
-    .map(
-      (t) => `
-      <div class="editorial-banner__tile">
-        <span class="editorial-banner__value">${escapeText(t.value)}</span>
-        <span class="editorial-banner__label">${escapeText(t.label)}</span>
-        <span class="editorial-banner__narrative">${escapeText(t.narrative)}</span>
-      </div>`,
-    )
-    .join("");
-
   return `
-    <section class="editorial-banner${modifier ? ` ${modifier}` : ""}">
-      <p class="editorial-banner__lead">
-        ${escapeText(before)}
-        <strong class="editorial-banner__highlight">${escapeText(highlight)}</strong>
-        ${escapeText(after)}
-      </p>
-      <div class="editorial-banner__tiles">${tiles}</div>
-    </section>`;
+    <p class="editorial-lead">
+      ${escapeText(before)}
+      <strong class="editorial-lead__highlight">${escapeText(highlight)}</strong>
+      ${escapeText(after)}
+    </p>`;
 }

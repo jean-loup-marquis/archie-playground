@@ -2089,26 +2089,29 @@ export function objectiveCardsFor(context) {
     .map((label) => ({ objective: label, ...OBJECTIVE_METRICS[label], ...overrides[label] }));
 }
 
-// ---- Archie's impact (the editorial banner's numbers) ----------------------
+// ---- Archie's impact (the editorial lead + the hub's three widgets) -------
 //
-// Raw totals, deliberately NOT comparable between Playbooks and NOT scored —
-// the objective cards above already do comparison. These exist to be read once,
-// warmly, as "look what you got done": a hook, not a scoreboard. Hence the
-// `narrative` line on each tile, which translates the number into something a
-// human can picture.
+// The `lead` is one sentence, read once, warmly — a hook, not a scoreboard. The
+// hub's `widgets` are the same shape as PLAYBOOK_REPORT entries so they render
+// through the same mini widget component: the hub shows the portfolio's Reach /
+// Engagement rate / CTA clicks, a Playbook shows its own report below its lead.
 //
-// Nothing in this repo aggregates reach / posts / engagement today, so these are
-// illustrative. Wiring them to a real aggregation is a separate job.
+// A Playbook needs no `widgets` here — its Performance section already has the
+// full PLAYBOOK_REPORT under the lead.
+//
+// Nothing in this repo aggregates reach / engagement across Playbooks today, so
+// the portfolio figures are illustrative. Wiring them to a real aggregation is a
+// separate job.
 const ARCHIE_IMPACT = {
   portfolio: {
     lead: {
       highlight: "42,300 people reached",
       after: "this month, and your engagement is beating the industry average.",
     },
-    tiles: [
-      { value: "42,300", label: "people reached", narrative: "That's a sold-out stadium, three times over." },
-      { value: "18", label: "posts via Archie", narrative: "About one every other day this month." },
-      { value: "4.2%", label: "avg. engagement", narrative: "Ahead of the industry median (3.2%)." },
+    widgets: [
+      { id: "hub-reach", title: "Reach", value: "42,300", variation: 12, size: "mini" },
+      { id: "hub-eng-rate", title: "Engagement rate", value: "4.2%", variation: 3.1, size: "mini" },
+      { id: "hub-cta", title: "CTA clicks", value: "486", variation: 8.4, size: "mini" },
     ],
   },
   "ctx-acme": {
@@ -2117,11 +2120,6 @@ const ARCHIE_IMPACT = {
       highlight: "18,400 people reached",
       after: "and 92% of the way to its reach goal.",
     },
-    tiles: [
-      { value: "18,400", label: "people reached", narrative: "Nearly double the industry median." },
-      { value: "7", label: "posts via Archie", narrative: "Roughly two a week." },
-      { value: "126", label: "CTA clicks", narrative: "84% of the quarter's target already." },
-    ],
   },
   "ctx-founder-voice": {
     lead: {
@@ -2129,11 +2127,6 @@ const ARCHIE_IMPACT = {
       highlight: "1,240 new followers",
       after: "— the audience is compounding, even if reach lags.",
     },
-    tiles: [
-      { value: "1,240", label: "new followers", narrative: "27% ahead of the industry median." },
-      { value: "5", label: "posts via Archie", narrative: "One a week, kept steady." },
-      { value: "12,800", label: "people reached", narrative: "Reach is the one lagging its goal." },
-    ],
   },
   "ctx-customer": {
     lead: {
@@ -2141,11 +2134,6 @@ const ARCHIE_IMPACT = {
       highlight: "10,400 people",
       after: "— down 9%, and the goal is slipping away.",
     },
-    tiles: [
-      { value: "10,400", label: "people reached", narrative: "27% below the industry median." },
-      { value: "3", label: "posts via Archie", narrative: "The thinnest cadence of your Playbooks." },
-      { value: "107", label: "CTA clicks", narrative: "71% of target, and falling." },
-    ],
   },
   "ctx-pawtrack": {
     lead: {
@@ -2153,17 +2141,12 @@ const ARCHIE_IMPACT = {
       highlight: "17,600 people",
       after: "— strong numbers, but flat two months running.",
     },
-    tiles: [
-      { value: "17,600", label: "people reached", narrative: "24% ahead of the industry median." },
-      { value: "6", label: "posts via Archie", narrative: "Always-on, as designed." },
-      { value: "4.1%", label: "engagement rate", narrative: "Good, but it has stopped climbing." },
-    ],
   },
 };
 
-// Portfolio-wide when called with nothing, one Playbook's own numbers when given
-// a context. Returns null for a Playbook with no impact data rather than faking
-// one, so the banner can just not render.
+// Portfolio-wide when called with nothing, one Playbook's own lead when given a
+// context. Returns null for a Playbook with no impact data rather than faking
+// one, so the lead can just not render.
 export function archieImpact(context) {
   if (!context) return ARCHIE_IMPACT.portfolio;
   return ARCHIE_IMPACT[context.id] || null;

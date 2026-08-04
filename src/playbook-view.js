@@ -18,11 +18,12 @@ import { html, raw, escapeHtml as esc } from "./utils.js?v=21";
 import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=25";
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=17";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=35";
-import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=70";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=36";
+import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=71";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "./objective-scoring.js?v=1";
-import { renderEditorialBanner } from "./components/editorial-banner.js?v=1";
-import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=4";
+import { renderEditorialBanner } from "./components/editorial-banner.js?v=2";
+import { renderMiniWidget } from "./components/report-widget.js?v=2";
+import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=5";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -1890,26 +1891,6 @@ const CHART_LAYOUT = {
 
 // ── The card ─────────────────────────────────────────────────────────────
 
-// S is the overview card: title, the metric, and the variation against the
-// previous period. Not a caption — the real card has no such slot. The variation
-// only goes green when it's positive; flat and negative both stay grey, with the
-// data-stagnate / data-decrease glyph.
-function renderOverviewBody(w) {
-  const v = w.variation;
-  const icon = v > 0 ? "ap-icon-data-increase" : v < 0 ? "ap-icon-data-decrease" : "ap-icon-data-stagnate";
-  return `
-    <div class="recap__overview">
-      <span class="recap__overview-title">${esc(w.title)}</span>
-      <div class="recap__overview-content">
-        <div class="recap__overview-metric">${esc(w.value)}</div>
-        <div class="recap__overview-variation ${v > 0 ? "is-positive" : ""}">
-          <i class="${icon}" aria-hidden="true"></i>
-          <span>${v >= 0 ? "+" : ""}${v}%</span>
-        </div>
-      </div>
-    </div>`;
-}
-
 // M and up is the chart card: an h3 title, then the chart, then the legend.
 function renderChartBody(w) {
   const layout = CHART_LAYOUT[w.size];
@@ -1935,25 +1916,24 @@ function renderChartBody(w) {
 function renderWidget(w) {
   const span = WIDGET_SPANS[w.size];
   const area = `grid-column: ${w.col} / span ${span}; grid-row: ${w.row} / span ${span}`;
+  if (w.size === "mini") return renderMiniWidget(w, { style: area });
   return `
     <div class="recap__widget recap__widget--${w.size}" style="${area}">
-      ${w.size === "mini" ? renderOverviewBody(w) : renderChartBody(w)}
+      ${renderChartBody(w)}
     </div>`;
 }
 
 function renderPerformancePanel(data) {
   const section = sectionById("pbk-sec-performance");
-  // Same component, same technique as the Analytics hub — just this Playbook's
-  // numbers instead of the portfolio's, so the two Performance surfaces read as
-  // one product rather than two treatments. Inline variant: it's a lead-in to
-  // the widgets below, not a card of its own.
-  const banner = renderEditorialBanner(archieImpact(data), { modifier: "editorial-banner--inline" });
+  // The editorial lead stands in for the generic panel lead rather than sitting
+  // above it — two intro lines over the same widgets was one too many. Falls back
+  // to the generic one for a Playbook with no impact data.
+  const lead = renderEditorialBanner(archieImpact(data));
   return `
     <section class="recap__panel" id="${section.id}">
       ${renderPanelHead(section, false)}
       <div class="recap__panel-body recap__panel-body--padded">
-        ${renderPanelLead("Key metrics tracked for this Playbook · last 30 days")}
-        ${banner}
+        ${lead || renderPanelLead("Key metrics tracked for this Playbook · last 30 days")}
         <p class="recap__gate">
           <i class="ap-icon-lock-on" aria-hidden="true"></i>
           full report in Agorapulse
