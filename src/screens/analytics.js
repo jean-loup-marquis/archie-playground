@@ -1,12 +1,12 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
-import { renderTopbar } from "../components/topbar.js?v=295";
-import { getContexts, subscribe as subscribeContexts } from "../contexts-store.js?v=45";
-import { objectiveCardsFor, archieImpact } from "../mocks.js?v=71";
+import { renderTopbar } from "../components/topbar.js?v=296";
+import { getContexts, subscribe as subscribeContexts } from "../contexts-store.js?v=46";
+import { objectiveCardsFor, archieImpact } from "../mocks.js?v=72";
 import { navigate } from "../router.js?v=30";
 import { renderEmptyState } from "../components/empty-state.js?v=1";
 import { renderEditorialBanner } from "../components/editorial-banner.js?v=2";
 import { renderMiniWidget } from "../components/report-widget.js?v=2";
-import { flaggedCount } from "../components/action-drawer.js?v=5";
+import { flaggedCount } from "../components/action-drawer.js?v=6";
 import { showToast } from "../components/toast.js?v=20";
 import { isFlagOn } from "../feature-flags.js?v=17";
 import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER, TIER_STATUS_CLASS } from "../objective-scoring.js?v=1";
@@ -121,7 +121,7 @@ function renderPage() {
   `;
 }
 
-// The lead sentence, then the three figures it alludes to as real Report Studio
+// The lead sentence, then the figures it alludes to as real Report Studio
 // widgets — the same mini card a Playbook's report uses, so the hub reads as the
 // portfolio view of one product rather than a second design.
 function renderEditorial() {

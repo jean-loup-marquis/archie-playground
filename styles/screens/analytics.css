@@ -385,12 +385,19 @@
   gap: var(--ref-spacing-md);
 }
 
-/* Three across, and never fewer than a readable card — the mini widget is the
-   report's own 3×3 cell, so it stops making sense much below 200px. */
+/* Four across, fixed rather than auto-fit: auto-fit drops to three and leaves a
+   lone fourth card on its own row, which reads as a mistake. Below the width four
+   cards can hold, it halves to a 2×2 instead. */
 .analytics-view__mini-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--ref-spacing-sm);
+}
+
+@media (max-width: 900px) {
+  .analytics-view__mini-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* ---- Report Studio bridge ---------------------------------------------- */

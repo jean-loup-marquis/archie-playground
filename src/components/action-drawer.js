@@ -1,7 +1,7 @@
 import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=21";
 import { escapeText, escapeAttr } from "../utils.js?v=21";
-import { getContexts } from "../contexts-store.js?v=45";
-import { objectiveCardsFor } from "../mocks.js?v=71";
+import { getContexts } from "../contexts-store.js?v=46";
+import { objectiveCardsFor } from "../mocks.js?v=72";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "../objective-scoring.js?v=1";
 import { showToast } from "./toast.js?v=20";
 

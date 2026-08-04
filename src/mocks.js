@@ -2108,8 +2108,11 @@ const ARCHIE_IMPACT = {
       highlight: "42,300 people reached",
       after: "this month, and your engagement is beating the industry average.",
     },
+    // Ordered as the story reads: how far it went, how much Archie made, how it
+    // landed, what it drove.
     widgets: [
       { id: "hub-reach", title: "Reach", value: "42,300", variation: 12, size: "mini" },
+      { id: "hub-posts", title: "Posts published", value: "18", variation: 20, size: "mini" },
       { id: "hub-eng-rate", title: "Engagement rate", value: "4.2%", variation: 3.1, size: "mini" },
       { id: "hub-cta", title: "CTA clicks", value: "486", variation: 8.4, size: "mini" },
     ],
