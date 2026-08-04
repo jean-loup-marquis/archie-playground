@@ -2246,17 +2246,6 @@
 }
 
 /* ── Performance: the pinned mini report ──────────────────────────────── */
-.recap__gate {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--ref-spacing-xxxs);
-  margin: 0;
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
-  color: var(--sys-text-color-light);
-}
-
 /* The report grid: 40px cells with a 16px gutter — the 56px row of
    report-grid.constants.ts — and spans rather than pixel heights, so a size sets
    width and height together.

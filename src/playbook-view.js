@@ -1934,10 +1934,6 @@ function renderPerformancePanel(data) {
       ${renderPanelHead(section, false)}
       <div class="recap__panel-body recap__panel-body--padded">
         ${lead || renderPanelLead("Key metrics tracked for this Playbook · last 30 days")}
-        <p class="recap__gate">
-          <i class="ap-icon-lock-on" aria-hidden="true"></i>
-          full report in Agorapulse
-        </p>
         <div class="recap__widgets">${PLAYBOOK_REPORT.map(renderWidget).join("")}</div>
         <div class="recap__connect">
           <p class="recap__connect-text">
