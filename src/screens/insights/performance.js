@@ -262,7 +262,10 @@ function renderRow(r) {
       </td>
       <td><div class="ap-table-cell-content">${escapeText(r.objective)}</div></td>
       <td class="right">
-        <div class="ap-table-cell-content analytics-row__pct">${r.progress}%</div>
+        <div class="ap-table-cell-content analytics-row__progress">
+          <span class="analytics-row__pct">${r.progress}%</span>
+          <span class="analytics-row__goal">${escapeText(r.value)} / ${escapeText(r.goal)}</span>
+        </div>
       </td>
       <td>
         <div class="ap-table-cell-content">
