@@ -2,7 +2,7 @@ import { escapeText } from "../../utils.js?v=21";
 import { archieUsage, toneDistribution } from "../../mocks.js?v=75";
 import { getContexts } from "../../contexts-store.js?v=49";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=2";
-import { renderMiniWidget } from "../../components/report-widget.js?v=4";
+import { renderMiniWidget } from "../../components/report-widget.js?v=5";
 
 // Insights › Usage — what Archie produced, how you work with it, and your voice.
 //
@@ -44,15 +44,17 @@ export function renderUsageTab() {
     ${renderVoiceBlock(voice)}`;
 }
 
-// A list of four equal things, written as a list — which is what stops a fifth one
-// being pasted in with a different shape. None of them carries a trend, so none
-// gets a `variation`.
+// Four equal things, written as a list and rendered through one path — which is what
+// stops a fifth one being pasted in with a different shape. None of them carries a
+// trend, so none gets a `variation`; the opening carries `quote` because a hook is a
+// snippet of writing, not a figure.
 function renderVoiceBlock(voice) {
   const cards = [
     { title: "Favourite tone", value: voice.favouriteTone, narrative: `${voice.toneRunnerUp} runs a close second.` },
     {
       title: "Favourite opening",
-      value: `“${voice.favouriteHook.text}”`,
+      value: voice.favouriteHook.text,
+      quote: true,
       narrative: `Used ${voice.favouriteHook.uses} times.`,
     },
     { title: "Signature word", value: `“${voice.signatureWord}”` },

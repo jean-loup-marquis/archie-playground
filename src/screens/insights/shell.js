@@ -3,8 +3,8 @@ import { renderTopbar } from "../../components/topbar.js?v=300";
 import { getContexts, subscribe as subscribeContexts } from "../../contexts-store.js?v=49";
 import { navigate } from "../../router.js?v=30";
 import { flaggedCount } from "../../components/action-drawer.js?v=10";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=9";
-import { renderUsageTab } from "./usage.js?v=9";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=10";
+import { renderUsageTab } from "./usage.js?v=10";
 
 // Insights — the portfolio layer above a single Playbook's detail, as two tabs.
 //

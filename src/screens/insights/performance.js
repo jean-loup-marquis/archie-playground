@@ -4,7 +4,7 @@ import { objectiveCardsFor, archieImpact } from "../../mocks.js?v=75";
 import { navigate } from "../../router.js?v=30";
 import { renderEmptyState } from "../../components/empty-state.js?v=1";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=2";
-import { renderMiniWidget } from "../../components/report-widget.js?v=4";
+import { renderMiniWidget } from "../../components/report-widget.js?v=5";
 import { showToast } from "../../components/toast.js?v=20";
 import { isFlagOn } from "../../feature-flags.js?v=19";
 import {

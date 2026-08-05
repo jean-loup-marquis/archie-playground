@@ -18,16 +18,26 @@ import { escapeHtml as esc } from "../utils.js?v=21";
 // grey, with the data-stagnate / data-decrease glyph. A widget that omits
 // `variation` gets no row at all — passing 0 instead would draw the flat-trend
 // arrow, which claims a measurement nobody took.
+// `quote: true` marks a value that is a verbatim snippet of the user's own writing
+// rather than a figure. It swaps the XL bold metric for .recap__quote — the block a
+// Playbook's Voice section already uses for signature hooks — because XL bold reads
+// as a headline, and a hook is being shown, not announced. A one-item <ul>: the <li>
+// carries the look, the list carries list-style and the gap.
 export function renderMiniWidget(w, { style = "" } = {}) {
   const v = w.variation;
   const hasVariation = typeof v === "number";
   const icon = v > 0 ? "ap-icon-data-increase" : v < 0 ? "ap-icon-data-decrease" : "ap-icon-data-stagnate";
+  const value = w.quote
+    ? `<ul class="recap__quotes">
+            <li class="recap__quote"><i class="ap-icon-quote" aria-hidden="true"></i><span>${esc(w.value)}</span></li>
+          </ul>`
+    : `<div class="recap__overview-metric">${esc(w.value)}</div>`;
   return `
     <div class="recap__widget recap__widget--mini" ${style ? `style="${style}"` : ""}>
       <div class="recap__overview">
         <span class="recap__overview-title">${esc(w.title)}</span>
         <div class="recap__overview-content">
-          <div class="recap__overview-metric">${esc(w.value)}</div>
+          ${value}
           ${
             hasVariation
               ? `<div class="recap__overview-variation ${v > 0 ? "is-positive" : ""}">
