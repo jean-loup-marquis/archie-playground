@@ -7,19 +7,20 @@ import { renderMiniWidget } from "../../components/report-widget.js?v=5";
 // Insights › Usage — what Archie produced, how you work with it, and your voice.
 //
 // The counterpoint to Performance: nothing here compares a number to a goal. Ranges
-// differ per card on purpose and each one says so — a bare number is what is
-// forbidden, not a second range.
+// differ per card on purpose, and a second range is not the problem a page like this
+// has — an unstated one is.
+//
+// Which is where this tab currently stands: the lead opens the first section and
+// states "this month" for its own word count, the calendar states its own 90 days,
+// and the four produced figures state nothing. See the spec's decision 5.
 
 export function renderUsageTab() {
   const { lead, produced, work, voice } = archieUsage();
 
   return `
-    ${renderEditorialBanner({ lead })}
     <section class="insights-view__section">
-      <div class="insights-view__section-text">
-        <h2 class="insights-view__section-title">What Archie produced</h2>
-        <p class="insights-view__section-note">Since you started with me</p>
-      </div>
+      <h2 class="insights-view__section-title">What Archie produced</h2>
+      ${renderEditorialBanner({ lead })}
       <div class="insights-usage__produced">
         ${renderGauge(produced.keptRate)}
         ${produced.widgets.map((w) => renderMiniWidget(w)).join("")}
