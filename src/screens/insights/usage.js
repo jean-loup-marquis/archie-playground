@@ -165,16 +165,11 @@ function renderCalendar({ calendar, calendarLabel, streak, longestStreak }) {
     </div>`;
 }
 
-// The one conclusion on this tab, so it gets a card of its own rather than a line
-// pinned under the grid it was read from — the grid shows a pattern, this names it.
-//
-// A bare `p`, deliberately: `base.css` already puts --sys-text-style-body-* and
-// --sys-text-color-default on `body` and zeroes `p` margins, so prose IS the
-// default here. The muted italic it used to wear was the deviation, and it belonged
-// to a caption inside a card, not to a card that is only this sentence.
+// The one conclusion on this tab, and no card around it: a card frames data, and
+// this is the sentence read off the grid above it. .editorial-lead is the app's
+// existing treatment for exactly that — prose, no surface — so it is reused rather
+// than restyled. It stays in this column, under the grid it was read from, because
+// full-width it would read as a conclusion about the whole section.
 function renderWorkNote(note) {
-  return `
-    <div class="recap__widget">
-      <p>${escapeText(note)}</p>
-    </div>`;
+  return `<p class="editorial-lead">${escapeText(note)}</p>`;
 }

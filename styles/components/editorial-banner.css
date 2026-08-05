@@ -1,6 +1,9 @@
 /* Editorial lead — the warm sentence that opens /analytics and a Playbook's
    Performance section. Plain text at 24px, no card: the figures it alludes to are
-   shown as real Report Studio widgets directly underneath. */
+   shown as real Report Studio widgets directly underneath.
+
+   The class is also used bare, without renderEditorialBanner, for the Usage tab's
+   one conclusion under the streak grid — same technique, no highlighted figure. */
 
 .editorial-lead {
   margin: 0;
