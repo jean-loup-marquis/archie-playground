@@ -559,15 +559,20 @@
   }
 }
 
+/* Two cards in one grid cell, so the calendar keeps the half-width it needs to
+   stay readable — 18 cells across a third of the row would shrink them back to
+   the size 443e7414 fixed. Transparent: the cards carry the surface. */
+.insights-usage__bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
 .insights-bars__title {
   margin: 0 0 var(--ref-spacing-xs);
   font-size: var(--ref-font-size-sm);
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
-}
-
-.insights-bars + .insights-bars {
-  margin-top: var(--ref-spacing-md);
 }
 
 /* Four superlatives, equal weight — none of them is the headline, and none of

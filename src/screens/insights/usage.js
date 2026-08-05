@@ -28,7 +28,7 @@ export function renderUsageTab() {
     <section class="insights-view__section">
       <h2 class="insights-view__section-title">How you work</h2>
       <div class="insights-usage__work">
-        <div class="recap__widget">
+        <div class="insights-usage__bars">
           ${renderBars(
             "Where you publish",
             work.networks.map((n) => ({ value: n.share, caption: `${n.label} · ${n.share}%` })),
@@ -91,6 +91,10 @@ function toneBars() {
   }));
 }
 
+// One card per group, so a reader compares bars inside a frame and not across one.
+// `.insights-bars` carries no rule of its own any more but stays: it is the block
+// child that keeps the title's and rows' margins from compounding with the card's
+// own flex `gap`.
 function renderBars(title, rows) {
   const bars = rows
     .map(
@@ -102,9 +106,11 @@ function renderBars(title, rows) {
     )
     .join("");
   return `
-    <div class="insights-bars">
-      <h3 class="insights-bars__title">${escapeText(title)}</h3>
-      ${bars}
+    <div class="recap__widget">
+      <div class="insights-bars">
+        <h3 class="insights-bars__title">${escapeText(title)}</h3>
+        ${bars}
+      </div>
     </div>`;
 }
 
@@ -134,7 +140,8 @@ function renderIntensityLegend() {
     </div>`;
 }
 
-// Its own range label, so it does not contradict the tab's 30-day header.
+// Its own range label: 90 days is not the stretch the section above covers, and a
+// grid of 90 cells states no period on its own.
 function renderCalendar({ calendar, calendarLabel, calendarNote, streak, longestStreak }) {
   const cells = calendar
     .map((level) => `<span class="insights-calendar__cell insights-calendar__cell--${level}"></span>`)
