@@ -21,7 +21,7 @@ import { isFlagOn } from "./feature-flags.js?v=19";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=41";
 import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=75";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "./objective-scoring.js?v=1";
-import { renderEditorialBanner } from "./components/editorial-banner.js?v=2";
+import { renderEditorialBanner } from "./components/editorial-banner.js?v=3";
 import { renderMiniWidget } from "./components/report-widget.js?v=5";
 import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=10";
 

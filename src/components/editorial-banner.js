@@ -23,6 +23,7 @@ export function renderEditorialBanner(impact) {
 
   return `
     <p class="editorial-lead">
+      <i class="ap-icon-quote" aria-hidden="true"></i>
       ${escapeText(before)}
       <strong class="editorial-lead__highlight">${escapeText(highlight)}</strong>
       ${escapeText(after)}

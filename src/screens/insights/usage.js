@@ -1,7 +1,7 @@
 import { escapeText } from "../../utils.js?v=21";
 import { archieUsage, toneDistribution } from "../../mocks.js?v=75";
 import { getContexts } from "../../contexts-store.js?v=49";
-import { renderEditorialBanner } from "../../components/editorial-banner.js?v=2";
+import { renderEditorialBanner } from "../../components/editorial-banner.js?v=3";
 import { renderMiniWidget } from "../../components/report-widget.js?v=5";
 
 // Insights › Usage — what Archie produced, how you work with it, and your voice.
@@ -171,5 +171,9 @@ function renderCalendar({ calendar, calendarLabel, streak, longestStreak }) {
 // than restyled. It stays in this column, under the grid it was read from, because
 // full-width it would read as a conclusion about the whole section.
 function renderWorkNote(note) {
-  return `<p class="editorial-lead">${escapeText(note)}</p>`;
+  return `
+    <p class="editorial-lead">
+      <i class="ap-icon-quote" aria-hidden="true"></i>
+      ${escapeText(note)}
+    </p>`;
 }

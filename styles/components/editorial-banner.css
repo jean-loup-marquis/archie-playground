@@ -14,6 +14,16 @@
   color: var(--ref-color-grey-100);
 }
 
+/* The quote mark that opens a lead. Not .recap__quote's icon rule — that one is
+   sized for 14px body text inside a tinted block; this one sits against 24px prose
+   with no surface behind it. Same accent as the highlighted figure further along
+   the sentence, so the element carries one accent colour and not two. */
+.editorial-lead > i {
+  margin-right: var(--ref-spacing-xxxs);
+  font-size: var(--sys-icon-css-md);
+  color: var(--sys-color-accent-light-text);
+}
+
 /* Electric blue, not orange: this is a fact being pointed at, not an AI action
    to take — orange is reserved for the latter in this DS.
 
