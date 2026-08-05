@@ -131,14 +131,14 @@
   background: var(--ref-color-red-150);
 }
 
-/* h2 tokens on an h2 element. It was carrying h3's 16px, which put a section heading
-   two thirds of the way to the 14px its own cards' titles use; 18px sits properly
-   between those and the page title's 24px. */
+/* h3's 16px on an h2 element, on purpose. h2's 18px was tried and reverted: the
+   sections here are dividers inside one page, not chapters, and at 18px they pulled
+   attention off the figures. The token tier does not have to match the tag. */
 .insights-view__section-title {
-  font-family: var(--sys-text-style-h2-font-family);
-  font-size: var(--sys-text-style-h2-size);
-  font-weight: var(--sys-text-style-h2-weight);
-  line-height: var(--sys-text-style-h2-line-height);
+  font-family: var(--sys-text-style-h3-font-family);
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  line-height: var(--sys-text-style-h3-line-height);
   color: var(--ref-color-grey-100);
   margin: 0;
 }
