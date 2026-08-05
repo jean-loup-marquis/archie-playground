@@ -4,7 +4,7 @@ import { getContexts, subscribe as subscribeContexts } from "../../contexts-stor
 import { navigate } from "../../router.js?v=30";
 import { renderEmptyState } from "../../components/empty-state.js?v=1";
 import { flaggedCount } from "../../components/action-drawer.js?v=9";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=4";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=5";
 import { renderUsageTab } from "./usage.js?v=3";
 
 // Insights — the portfolio layer above a single Playbook's detail, as four tabs.
@@ -29,6 +29,9 @@ const TABS = [
 const DEFAULT_TAB = "usage";
 
 let unsubscribe = null;
+let boundTarget = null;
+let boundClick = null;
+let unbindTab = null;
 
 export function renderInsights(params, target) {
   renderTopbar();
@@ -38,18 +41,30 @@ export function renderInsights(params, target) {
     return () => {};
   }
 
-  if (unsubscribe) unsubscribe();
+  teardown();
   const paint = () => {
     target.innerHTML = html`<section class="screen insights-view">${raw(renderPage(active))}</section>`;
-    bind(target, active);
   };
   paint();
+  bind(target, active);
   unsubscribe = subscribeContexts(paint);
 
-  return () => {
-    if (unsubscribe) unsubscribe();
+  return teardown;
+}
+
+// `target` is the router's #app node, reused across every navigation rather
+// than recreated — so a listener bound here outlives this mount unless
+// something removes it before the next tab binds its own.
+function teardown() {
+  if (unsubscribe) {
+    unsubscribe();
     unsubscribe = null;
-  };
+  }
+  if (boundTarget && boundClick) boundTarget.removeEventListener("click", boundClick);
+  if (unbindTab) unbindTab();
+  boundTarget = null;
+  boundClick = null;
+  unbindTab = null;
 }
 
 function renderPage(active) {
@@ -134,9 +149,11 @@ function renderTeamPlaceholder() {
 
 // Tabs navigate rather than mutating local state, so the back button walks them.
 function bind(root, active) {
-  root.addEventListener("click", (event) => {
+  boundTarget = root;
+  boundClick = (event) => {
     const tab = event.target.closest("[data-insights-tab]");
     if (tab) navigate(`/insights/${tab.dataset.insightsTab}`);
-  });
-  TABS.find((t) => t.id === active)?.bind?.(root);
+  };
+  root.addEventListener("click", boundClick);
+  unbindTab = TABS.find((t) => t.id === active)?.bind?.(root) || null;
 }

@@ -352,8 +352,11 @@ function repaint(root) {
   if (panel) panel.innerHTML = renderPerformanceTab();
 }
 
+// Returns an unbind function: the shell mounts one tab at a time on a DOM
+// node it reuses across navigations, so whoever binds has to hand back a way
+// to remove it before the next tab binds on top.
 export function bindPerformanceTab(root) {
-  root.addEventListener("click", (event) => {
+  const onClick = (event) => {
     if (event.target.closest("[data-analytics-bridge-cta]")) {
       showToast("Report Studio isn't wired up in this prototype");
       return;
@@ -391,13 +394,21 @@ export function bindPerformanceTab(root) {
     }
     const row = event.target.closest("[data-analytics-row]");
     if (row) navigate(`/playbook/${row.dataset.analyticsRow}`);
-  });
+  };
 
-  root.addEventListener("keydown", (event) => {
+  const onKeydown = (event) => {
     if (event.key !== "Enter" && event.key !== " ") return;
     const card = event.target.closest("[data-analytics-playbook]");
     if (!card) return;
     event.preventDefault();
     navigate(`/playbook/${card.dataset.analyticsPlaybook}`);
-  });
+  };
+
+  root.addEventListener("click", onClick);
+  root.addEventListener("keydown", onKeydown);
+
+  return () => {
+    root.removeEventListener("click", onClick);
+    root.removeEventListener("keydown", onKeydown);
+  };
 }
