@@ -283,7 +283,7 @@ function renderRow(r) {
 function renderTable(rows) {
   const body =
     rows.length === 0
-      ? `<tr><td colspan="6" class="ap-table-empty">
+      ? `<tr><td colspan="6" class="ap-table-empty insights-view__table-empty">
           No objective matches these filters.
           <button type="button" class="ap-button transparent blue" data-analytics-clear-filters>
             <span>Clear filters</span>

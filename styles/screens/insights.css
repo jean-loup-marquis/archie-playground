@@ -232,7 +232,7 @@
 
 .analytics-card__none {
   font-size: var(--ref-font-size-sm);
-  color: var(--ref-color-grey-60);
+  color: var(--sys-text-color-light);
   margin: 0;
 }
 
@@ -407,14 +407,14 @@
 }
 
 .analytics-row__goal {
-  color: var(--ref-color-grey-60);
+  color: var(--sys-text-color-light);
 }
 
 .analytics-trend {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  color: var(--ref-color-grey-60);
+  color: var(--sys-text-color-light);
   white-space: nowrap;
 }
 
@@ -422,8 +422,11 @@
   color: var(--ref-color-green-150);
 }
 
+/* red-150, not red-100: the DS table stripes every other row, and red-100 clears
+   4.5:1 only against white — 4.40:1 on the stripe. -150 is also the step is-up and
+   the At-risk verdict already take, so the three tier colours stay one ramp. */
 .analytics-trend.is-down {
-  color: var(--ref-color-red-100);
+  color: var(--ref-color-red-150);
 }
 
 /* ---- Editorial lead + its three widgets --------------------------------- */
@@ -669,7 +672,9 @@
   margin-left: var(--ref-spacing-xxxs);
 }
 
-.ap-table-empty {
+/* Own class rather than overriding .ap-table-empty: the DS cell is a centred block
+   and this one has to sit the Clear-filters button on the same line as the message. */
+.insights-view__table-empty {
   display: flex;
   align-items: center;
   justify-content: center;
