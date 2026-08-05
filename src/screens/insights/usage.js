@@ -1,17 +1,17 @@
 import { escapeText } from "../../utils.js?v=21";
-import { archieUsage, toneDistribution } from "../../mocks.js?v=74";
-import { getContexts } from "../../contexts-store.js?v=48";
+import { archieUsage, toneDistribution } from "../../mocks.js?v=75";
+import { getContexts } from "../../contexts-store.js?v=49";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=2";
-import { renderMiniWidget } from "../../components/report-widget.js?v=3";
+import { renderMiniWidget } from "../../components/report-widget.js?v=4";
 
-// Insights › Usage — what Archie produced, and how you work with it.
+// Insights › Usage — what Archie produced, how you work with it, and your voice.
 //
 // The counterpoint to Performance: nothing here compares a number to a goal. Ranges
 // differ per card on purpose and each one says so — a bare number is what is
 // forbidden, not a second range.
 
 export function renderUsageTab() {
-  const { lead, produced, work } = archieUsage();
+  const { lead, produced, work, voice } = archieUsage();
 
   return `
     <p class="insights-tab__period">Last 30 days</p>
@@ -35,6 +35,28 @@ export function renderUsageTab() {
         </div>
         ${renderCalendar(work)}
       </div>
+    </section>
+    ${renderVoiceBlock(voice)}`;
+}
+
+// A list of four equal things, written as a list — which is what stops a fifth one
+// being pasted in with a different shape. None of them carries a trend, so none
+// gets a `variation`.
+function renderVoiceBlock(voice) {
+  const cards = [
+    { title: "Favourite tone", value: voice.favouriteTone, narrative: `${voice.toneRunnerUp} runs a close second.` },
+    {
+      title: "Favourite opening",
+      value: `“${voice.favouriteHook.text}”`,
+      narrative: `Used ${voice.favouriteHook.uses} times.`,
+    },
+    { title: "Signature word", value: `“${voice.signatureWord}”` },
+    { title: "Always avoided", value: voice.alwaysAvoid },
+  ];
+  return `
+    <section class="insights-view__section">
+      <h2 class="insights-view__section-title">Your voice</h2>
+      <div class="insights-voice">${cards.map((c) => renderMiniWidget(c)).join("")}</div>
     </section>`;
 }
 

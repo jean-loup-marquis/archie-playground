@@ -567,6 +567,20 @@
   margin-top: var(--ref-spacing-md);
 }
 
+/* Four superlatives, equal weight — none of them is the headline, and none of
+   them is a trend, so they get no gauge and no chart. */
+.insights-voice {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+@media (max-width: 900px) {
+  .insights-voice {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .insights-bars__row {
   display: flex;
   align-items: center;

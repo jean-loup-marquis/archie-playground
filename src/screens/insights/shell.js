@@ -1,13 +1,12 @@
 import { html, raw } from "../../utils.js?v=21";
-import { renderTopbar } from "../../components/topbar.js?v=299";
-import { getContexts, subscribe as subscribeContexts } from "../../contexts-store.js?v=48";
+import { renderTopbar } from "../../components/topbar.js?v=300";
+import { getContexts, subscribe as subscribeContexts } from "../../contexts-store.js?v=49";
 import { navigate } from "../../router.js?v=30";
-import { renderEmptyState } from "../../components/empty-state.js?v=1";
-import { flaggedCount } from "../../components/action-drawer.js?v=9";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=6";
-import { renderUsageTab } from "./usage.js?v=4";
+import { flaggedCount } from "../../components/action-drawer.js?v=10";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=7";
+import { renderUsageTab } from "./usage.js?v=5";
 
-// Insights — the portfolio layer above a single Playbook's detail, as four tabs.
+// Insights — the portfolio layer above a single Playbook's detail, as two tabs.
 //
 // This module knows the tabs' names, never their content: each entry owns its own
 // rendering and its own period. The header holds the one thing true of every tab —
@@ -22,8 +21,6 @@ const TABS = [
     render: renderPerformanceTab,
     bind: bindPerformanceTab,
   },
-  { id: "voice", label: "Voice", icon: "ap-icon-quote", render: renderVoicePlaceholder },
-  { id: "team", label: "Team", icon: "ap-icon-user", render: renderTeamPlaceholder },
 ];
 
 const DEFAULT_TAB = "usage";
@@ -99,8 +96,8 @@ function renderHead() {
 
 // Navigation, not the ARIA tab widget: each entry is its own URL, deep-linkable
 // and walked by the back button. role="tab" would promise arrow-key navigation
-// within one panel, and aria-controls would have to name three panels that are
-// not in the DOM — only the active tab renders. aria-current is the whole
+// within one panel, and aria-controls would have to name a panel that is not in
+// the DOM — only the active tab renders. aria-current is the whole
 // contract a nav owes. `.ap-tabs` stays for the DS look, as content-workspace
 // already uses it with no roles at all.
 function renderTabNav(active) {
@@ -119,24 +116,6 @@ function renderTabNav(active) {
   return `<nav class="ap-tabs insights-view__tabs" aria-label="Insights sections">
       <div class="ap-tabs-nav">${tabs}</div>
     </nav>`;
-}
-
-function renderVoicePlaceholder() {
-  return renderEmptyState({
-    icon: "ap-icon-quote",
-    title: "Voice is coming",
-    body: "A portfolio view of your brand voice across Playbooks — what recurs, what diverges, what Archie avoids.",
-    wrapperClass: "insights-view__empty",
-  });
-}
-
-function renderTeamPlaceholder() {
-  return renderEmptyState({
-    icon: "ap-icon-user",
-    title: "Team is coming",
-    body: "Who uses Archie across the organisation.",
-    wrapperClass: "insights-view__empty",
-  });
 }
 
 // The tab nav needs no handler: its entries are `#/` links, which the hash

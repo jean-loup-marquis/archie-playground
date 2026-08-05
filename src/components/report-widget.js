@@ -15,9 +15,12 @@ import { escapeHtml as esc } from "../utils.js?v=21";
 // passed in rather than computed here.
 
 // The variation only goes green when it's positive; flat and negative both stay
-// grey, with the data-stagnate / data-decrease glyph.
+// grey, with the data-stagnate / data-decrease glyph. A widget that omits
+// `variation` gets no row at all — passing 0 instead would draw the flat-trend
+// arrow, which claims a measurement nobody took.
 export function renderMiniWidget(w, { style = "" } = {}) {
   const v = w.variation;
+  const hasVariation = typeof v === "number";
   const icon = v > 0 ? "ap-icon-data-increase" : v < 0 ? "ap-icon-data-decrease" : "ap-icon-data-stagnate";
   return `
     <div class="recap__widget recap__widget--mini" ${style ? `style="${style}"` : ""}>
@@ -25,10 +28,14 @@ export function renderMiniWidget(w, { style = "" } = {}) {
         <span class="recap__overview-title">${esc(w.title)}</span>
         <div class="recap__overview-content">
           <div class="recap__overview-metric">${esc(w.value)}</div>
-          <div class="recap__overview-variation ${v > 0 ? "is-positive" : ""}">
+          ${
+            hasVariation
+              ? `<div class="recap__overview-variation ${v > 0 ? "is-positive" : ""}">
             <i class="${icon}" aria-hidden="true"></i>
             <span>${v >= 0 ? "+" : ""}${v}%</span>
-          </div>
+          </div>`
+              : ""
+          }
         </div>
         ${w.narrative ? `<span class="recap__overview-narrative">${esc(w.narrative)}</span>` : ""}
       </div>

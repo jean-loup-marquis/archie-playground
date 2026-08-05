@@ -780,7 +780,7 @@ Le badge de la ligne **Topics** compte les **unseen**, pas le total : la ligne e
 
 ## 18. Insights — le hub portfolio au-dessus des Playbooks
 
-`/insights/:tab` ([`screens/insights/shell.js`](../../src/screens/insights/shell.js)), gate `rootAnalytics`. Répond à « où regarder d'abord ? » à travers tous les Playbooks, quatre onglets déclarés dans une table `TABS` du shell (le shell ne connaît que les noms, jamais le contenu) : **Usage** (défaut), **Performance**, **Voice**, **Team**. Une seule URL par onglet ; `/analytics` redirige vers `/insights/usage` (ancien path partagé avant le renommage).
+`/insights/:tab` ([`screens/insights/shell.js`](../../src/screens/insights/shell.js)), gate `rootAnalytics`. Répond à « où regarder d'abord ? » à travers tous les Playbooks, deux onglets déclarés dans une table `TABS` du shell (le shell ne connaît que les noms, jamais le contenu) : **Usage** (défaut) et **Performance** — accueillir, puis trier. Une seule URL par onglet ; `/analytics`, `/insights/voice` et `/insights/team` redirigent tous vers `/insights/usage` (le premier précède le renommage, les deux autres ont existé assez longtemps pour qu'une URL circule).
 
 **Header partagé** (le shell) : H1 « Insights », `N Playbooks`, et le **CTA global** — bouton orange `Review N objectives that need attention` (ouvre l'action drawer) ou `Every objective is on track` s'il n'y en a aucun. Reste identique quel que soit l'onglet actif, donc quelqu'un qui ne quitte jamais Usage voit toujours le compte.
 
@@ -794,11 +794,17 @@ Reprise du hub `/analytics` d'origine, sans le header (monté par le shell). Un 
 
 ### Onglet Usage ([`insights/usage.js`](../../src/screens/insights/usage.js))
 
-Placeholder au moment d'écrire ces lignes — le contenu réel (ce qu'Archie a produit + comment on travaille avec) arrive dans une session de travail dédiée.
+Le contrepoint de Performance : rien n'y compare un chiffre à un objectif. Un lead éditorial (`editorial-banner`) puis trois blocs.
+
+1. **What Archie produced** — une jauge annulaire réservée au seul taux du tab (`drafts gardés sans édition`, 71 % : une jauge exprime une part d'un tout, la mettre sur un volume serait un mensonge visuel), plus trois cartes de volume avec une ligne narrative chacune.
+2. **How you work** — deux cartes : les barres (où tu publies / le ton qui revient, ce dernier **dérivé** de `contexts[].tones` et jamais mocké) et le calendrier de streak ~90 jours avec sa propre étiquette de période et sa légende d'intensité.
+3. **Your voice** — quatre superlatifs de poids égal (ton favori, accroche favorite, mot signature, ce que tu évites), sans tendance ni comparaison. Le sujet est **l'opérateur, pas la marque** : c'est ce qui rend le bloc indépendant du nombre de marques du compte. Aucune carte ne porte de `variation` — `renderMiniWidget` omet la ligne plutôt que d'afficher une flèche plate qui affirmerait une mesure inexistante.
+
+**Chaque bloc affiche sa période** (le lead = un mois, le calendrier = 90 jours) : l'interdit est le chiffre nu, pas la seconde période.
 
 ### Voice et Team
 
-Placeholders (`renderEmptyState`) rendus par le shell lui-même — chacun attend sa propre session de conception avant de recevoir un vrai contenu.
+**Voice** n'est plus un onglet : c'est le troisième bloc d'Usage (même registre — de la flatterie — donc un quatrième onglet aurait déséquilibré le hub). **Team est rejeté**, pas reporté : il contredirait la limite « pas de consolidation cross-compte/équipe » dont le bridge Report Studio tire son argument, et rien de multi-utilisateur n'existe dans le proto. Voir [`docs/specs/2026-08-05-insights-tabs-design.md`](../specs/2026-08-05-insights-tabs-design.md) → « Team, and why it is not built ».
 
 ---
 

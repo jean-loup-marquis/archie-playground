@@ -2227,6 +2227,21 @@ const ARCHIE_USAGE = {
     streak: 6,
     longestStreak: 21,
   },
+  // Pure flattery, and honest about it — the register of Wispr's "Your voice",
+  // describing the operator rather than a brand. That subject is what makes it
+  // agnostic to how many brands the account runs: an agency operator still has
+  // habits across fourteen clients.
+  //
+  // Every figure here needs a frequency the platform does not record. `tones`
+  // counts Playbooks, not posts, and ties 2–2 across the four seeded ones, so a
+  // favourite has no winner without post-level counts. See the spec's data table.
+  voice: {
+    favouriteTone: "Direct",
+    toneRunnerUp: "Conversational",
+    favouriteHook: { text: "Unpopular opinion:", uses: 34 },
+    signatureWord: "shipped",
+    alwaysAvoid: "Emoji in B2B posts",
+  },
 };
 
 export function archieUsage() {
