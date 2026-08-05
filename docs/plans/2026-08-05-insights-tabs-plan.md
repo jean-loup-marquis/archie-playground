@@ -52,14 +52,31 @@ Every task's requirements implicitly include this section.
   it changed; no section banners.
 - **English** for code, comments and commit messages.
 
-## How verification works in this repo
+## How verification works in this repo — and what it is not
 
-**There is no test framework.** `package.json` carries only `prettier` and `husky`/`lint-staged` — no
-vitest, no jest, no test files. Inventing a suite is out of scope for this plan.
+**This plan does not do TDD, and it should not be mistaken for it.** The `test-driven-development`
+skill grants an exception for throwaway prototypes with the human partner's permission; that
+permission was given explicitly on 2026-08-05 for this plan. Recording the terms so nobody reads the
+next paragraph as compliance:
 
-So each task's cycle is: **write a browser assertion → run it and watch it fail → implement → run it
-and watch it pass → commit.** The assertion is a JS snippet evaluated against the running page, in
-DevTools' console or via a browser tool.
+- There is **no test framework**. `package.json` carries only `prettier` and `husky`/`lint-staged`.
+- There is therefore **no regression net**. Nothing will tell you that you broke
+  `objective-scoring.js` — the three pure functions encoding the 80/60 tier thresholds, the 15-point
+  trend penalty and the equal-weight average that every verdict on both surfaces derives from. Change
+  them and the page will keep rendering, wrongly.
+- This is affordable **because the branch is disposable and never merged**. On production code it
+  would not be.
+- `node --test` is built into Node 22, needs no dependency, and imports these modules cleanly
+  (verified, including the `?v=` suffixes). If this hub ever heads toward production,
+  `objective-scoring.js` is the first thing to cover and it is roughly thirty minutes of work.
+
+What the plan does instead is keep the one part of the cycle that carries the value: **write an
+assertion → run it and watch it fail → implement → run it and watch it pass → commit.** Watching it
+fail first is what proves the check can catch anything. The assertion is a JS snippet evaluated
+against the running page, in DevTools' console or via a browser tool.
+
+Layout, contrast and keyboard reachability stay browser checks regardless — no test replaces looking
+at the screen.
 
 ```bash
 npm start   # npx serve -p 8000 — the canonical server for this repo
@@ -1103,5 +1120,6 @@ Checked against the spec, 2026-08-05.
 - **Interface consistency.** `renderPerformanceTab`, `bindPerformanceTab`, `renderUsageTab`,
   `archieUsage`, `toneDistribution`, and `renderMiniWidget(w)` with `w.narrative` are used under those
   exact names everywhere they appear.
-- **No test framework.** The TDD cycle is adapted to browser assertions rather than inventing a suite;
-  stated up front in "How verification works in this repo".
+- **Not TDD, by granted exception.** Stated up front with its terms in "How verification works in this
+  repo — and what it is not", including what is left uncovered (`objective-scoring.js`) and what it
+  would cost to cover it.
