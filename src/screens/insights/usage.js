@@ -16,7 +16,10 @@ export function renderUsageTab() {
   return `
     ${renderEditorialBanner({ lead })}
     <section class="insights-view__section">
-      <h2 class="insights-view__section-title">What Archie produced</h2>
+      <div class="insights-view__section-text">
+        <h2 class="insights-view__section-title">What Archie produced</h2>
+        <p class="insights-view__section-note">Since you started with me</p>
+      </div>
       <div class="insights-usage__produced">
         ${renderGauge(produced.keptRate)}
         ${produced.widgets.map((w) => renderMiniWidget(w)).join("")}
