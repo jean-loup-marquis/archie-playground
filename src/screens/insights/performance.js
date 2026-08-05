@@ -1,19 +1,23 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
-import { renderTopbar } from "../components/topbar.js?v=297";
-import { getContexts, subscribe as subscribeContexts } from "../contexts-store.js?v=47";
-import { objectiveCardsFor, archieImpact } from "../mocks.js?v=73";
-import { navigate } from "../router.js?v=30";
-import { renderEmptyState } from "../components/empty-state.js?v=1";
-import { renderEditorialBanner } from "../components/editorial-banner.js?v=2";
-import { renderMiniWidget } from "../components/report-widget.js?v=2";
-import { flaggedCount } from "../components/action-drawer.js?v=8";
-import { showToast } from "../components/toast.js?v=20";
-import { isFlagOn } from "../feature-flags.js?v=17";
-import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER, TIER_STATUS_CLASS } from "../objective-scoring.js?v=1";
+import { escapeText, escapeAttr } from "../../utils.js?v=21";
+import { getContexts } from "../../contexts-store.js?v=47";
+import { objectiveCardsFor, archieImpact } from "../../mocks.js?v=73";
+import { navigate } from "../../router.js?v=30";
+import { renderEmptyState } from "../../components/empty-state.js?v=1";
+import { renderEditorialBanner } from "../../components/editorial-banner.js?v=2";
+import { renderMiniWidget } from "../../components/report-widget.js?v=2";
+import { showToast } from "../../components/toast.js?v=20";
+import { isFlagOn } from "../../feature-flags.js?v=18";
+import {
+  objectiveTier,
+  playbookScore,
+  TIER_LABELS,
+  TIER_ORDER,
+  TIER_STATUS_CLASS,
+} from "../../objective-scoring.js?v=1";
 
-// Analytics hub — the portfolio layer, above a single Playbook's detail.
+// Insights › Performance — the portfolio layer, above a single Playbook's detail.
 //
-// A Playbook page answers "how is THIS Playbook doing?". This page answers
+// A Playbook page answers "how is THIS Playbook doing?". This tab answers
 // "where should I look first?" across all of them — so everything here is
 // comparison and triage: one health card per Playbook, then every objective
 // flattened into one sortable table with the worst first.
@@ -31,31 +35,7 @@ const STATUS_FILTERS = [
   { id: "strong", label: "Strong only" },
 ];
 
-let unsubscribe = null;
 let pageState = { playbook: "all", status: "all" };
-
-export function renderAnalytics(_params, target) {
-  renderTopbar();
-  if (unsubscribe) {
-    unsubscribe();
-    unsubscribe = null;
-  }
-  pageState = { playbook: "all", status: "all" };
-  paint(target);
-  unsubscribe = subscribeContexts(() => paint(target));
-
-  return () => {
-    if (unsubscribe) {
-      unsubscribe();
-      unsubscribe = null;
-    }
-  };
-}
-
-function paint(target) {
-  target.innerHTML = html`<section class="screen analytics-view">${raw(renderPage())}</section>`;
-  bind(target);
-}
 
 // One row per objective per Playbook — the table's unit is an objective, not a
 // Playbook, because that's the grain you act at.
@@ -82,55 +62,43 @@ function visibleRows(rows) {
     .sort((a, b) => TIER_ORDER[a.tier] - TIER_ORDER[b.tier] || a.progress - b.progress);
 }
 
-function renderPage() {
+export function renderPerformanceTab() {
   const contexts = getContexts();
   const rows = allRows();
 
   if (contexts.length === 0) {
-    return html`
-      <div class="analytics-view__page">
-        ${raw(renderHead(0))}
-        ${raw(
-          renderEmptyState({
-            icon: "ap-icon-bar-graph",
-            title: "Nothing to measure yet",
-            body: "Create a Playbook and declare its goals — this page starts reporting as soon as one has objectives.",
-            wrapperClass: "analytics-view__empty",
-          }),
-        )}
-      </div>
-    `;
+    return renderEmptyState({
+      icon: "ap-icon-bar-graph",
+      title: "Nothing to measure yet",
+      body: "Create a Playbook and declare its goals — this page starts reporting as soon as one has objectives.",
+      wrapperClass: "insights-view__empty",
+    });
   }
 
-  return html`
-    <div class="analytics-view__page">
-      ${raw(renderHead(flaggedCount()))} ${raw(renderEditorial())}
-
-      <section class="analytics-view__section">
-        <div class="analytics-view__section-head">
-          <div class="analytics-view__section-text">
-            <h2 class="analytics-view__section-title">Playbook health</h2>
-            <p class="analytics-view__section-note">
-              Scored out of 100 — the average progress of a Playbook's objectives, lowered when a trend is flat or
-              falling.
-            </p>
-          </div>
-          ${raw(renderTierLegend())}
+  return `
+    <p class="insights-tab__period">Last 30 days</p>
+    ${renderEditorial()}
+    <section class="insights-view__section">
+      <div class="insights-view__section-head">
+        <div class="insights-view__section-text">
+          <h2 class="insights-view__section-title">Playbook health</h2>
+          <p class="insights-view__section-note">
+            Scored out of 100 — the average progress of a Playbook's objectives, lowered when a trend
+            is flat or falling.
+          </p>
         </div>
-        <div class="analytics-view__cards">${raw(contexts.map(renderHealthCard).join(""))}</div>
-      </section>
-
-      <section class="analytics-view__section">
-        <div class="analytics-view__section-head">
-          <h2 class="analytics-view__section-title">Objectives</h2>
-        </div>
-        ${raw(renderTableControls(contexts, visibleRows(rows).length, rows.length))}
-        ${raw(renderTable(visibleRows(rows)))}
-      </section>
-
-      ${raw(renderReportStudioBridge())}
-    </div>
-  `;
+        ${renderTierLegend()}
+      </div>
+      <div class="insights-view__cards">${contexts.map(renderHealthCard).join("")}</div>
+    </section>
+    <section class="insights-view__section">
+      <div class="insights-view__section-head">
+        <h2 class="insights-view__section-title">Objectives</h2>
+      </div>
+      ${renderTableControls(contexts, visibleRows(rows).length, rows.length)}
+      ${renderTable(visibleRows(rows))}
+    </section>
+    ${renderReportStudioBridge()}`;
 }
 
 // The lead sentence, then the figures it alludes to as real Report Studio
@@ -142,46 +110,10 @@ function renderEditorial() {
   if (!widgets) return renderEditorialBanner(impact);
 
   return `
-    <section class="analytics-view__editorial">
+    <section class="insights-view__editorial">
       ${renderEditorialBanner(impact)}
-      <div class="analytics-view__mini-row">${widgets}</div>
+      <div class="insights-view__mini-row">${widgets}</div>
     </section>`;
-}
-
-// The page's one call to action, and the only place the "needs attention" count
-// appears. It was an icon-and-number chip: the single real button above the fold,
-// labelled "5", for the page's whole purpose. Nothing said what it did.
-//
-// Orange primary because it opens Archie's recommendations, which is what the DS
-// reserves orange for — and because a triage page should have exactly one obvious
-// thing to do.
-//
-// The period is stated once, here, and everything below inherits it: the widgets
-// and the health cards carry bare percentages that meant nothing without it.
-function renderHead(flagged) {
-  const total = allRows().length;
-  const sub = `Last 30 days · ${getContexts().length} Playbooks · ${total} ${total === 1 ? "objective" : "objectives"}`;
-
-  const cta =
-    flagged > 0
-      ? `<button type="button" class="ap-button primary orange analytics-view__cta" data-open-action-drawer>
-          <i class="ap-icon-sparkles" aria-hidden="true"></i>
-          <span>Review ${flagged} ${flagged === 1 ? "objective" : "objectives"} that need${flagged === 1 ? "s" : ""} attention</span>
-        </button>`
-      : `<p class="analytics-view__all-clear">
-          <i class="ap-icon-check" aria-hidden="true"></i>
-          Every objective is on track
-        </p>`;
-
-  return html`
-    <header class="analytics-view__head">
-      <div class="analytics-view__head-text">
-        <h1 class="analytics-view__title">Analytics</h1>
-        <p class="analytics-view__sub">${sub}</p>
-      </div>
-      ${raw(cta)}
-    </header>
-  `;
 }
 
 // On the cards the tier is carried by colour alone — the chips show objective
@@ -266,7 +198,7 @@ function renderSelect({ key, label, options, selected }) {
     .join("");
 
   return `
-    <details class="ap-select analytics-view__select">
+    <details class="ap-select insights-view__select">
       <summary class="ap-select-trigger">
         <span class="ap-select-value">${escapeText(current)}</span>
         <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -284,12 +216,12 @@ function renderTableControls(contexts, shown, total) {
   ];
 
   return `
-    <div class="analytics-view__controls">
-      <div class="analytics-view__filters">
+    <div class="insights-view__controls">
+      <div class="insights-view__filters">
         ${renderSelect({ key: "playbook", label: "All playbooks", options: playbookOptions, selected: pageState.playbook })}
         ${renderSelect({ key: "status", label: "All statuses", options: STATUS_FILTERS, selected: pageState.status })}
       </div>
-      <span class="analytics-view__count">Showing ${shown} of ${total} · worst first</span>
+      <span class="insights-view__count">Showing ${shown} of ${total} · worst first</span>
     </div>`;
 }
 
@@ -360,7 +292,7 @@ function renderTable(rows) {
       : rows.map(renderRow).join("");
 
   return `
-    <table class="ap-table striped analytics-view__table">
+    <table class="ap-table striped insights-view__table">
       <thead>
         <tr>
           <th>Playbook</th>
@@ -413,7 +345,14 @@ function renderReportStudioBridge() {
     </section>`;
 }
 
-function bind(root) {
+// Scoped to the tab's own panel, not the whole shell: the header and tab nav
+// above it are the shell's, and a filter pick has no reason to touch them.
+function repaint(root) {
+  const panel = root.querySelector(".insights-view__panel");
+  if (panel) panel.innerHTML = renderPerformanceTab();
+}
+
+export function bindPerformanceTab(root) {
   root.addEventListener("click", (event) => {
     if (event.target.closest("[data-analytics-bridge-cta]")) {
       showToast("Report Studio isn't wired up in this prototype");
@@ -421,7 +360,7 @@ function bind(root) {
     }
     if (event.target.closest("[data-analytics-clear-filters]")) {
       pageState = { playbook: "all", status: "all" };
-      paint(root);
+      repaint(root);
       return;
     }
     const rowOpen = event.target.closest("[data-analytics-row-open]");
@@ -432,13 +371,13 @@ function bind(root) {
     const playbookPick = event.target.closest("[data-analytics-filter-playbook]");
     if (playbookPick) {
       pageState.playbook = playbookPick.dataset.analyticsFilterPlaybook;
-      paint(root);
+      repaint(root);
       return;
     }
     const statusPick = event.target.closest("[data-analytics-filter-status]");
     if (statusPick) {
       pageState.status = statusPick.dataset.analyticsFilterStatus;
-      paint(root);
+      repaint(root);
       return;
     }
     // Guard the dropdown itself: clicking the trigger must open it, not fall

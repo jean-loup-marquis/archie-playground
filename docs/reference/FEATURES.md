@@ -778,6 +778,30 @@ Le badge de la ligne **Topics** compte les **unseen**, pas le total : la ligne e
 
 ---
 
+## 18. Insights — le hub portfolio au-dessus des Playbooks
+
+`/insights/:tab` ([`screens/insights/shell.js`](../../src/screens/insights/shell.js)), gate `rootAnalytics`. Répond à « où regarder d'abord ? » à travers tous les Playbooks, quatre onglets déclarés dans une table `TABS` du shell (le shell ne connaît que les noms, jamais le contenu) : **Usage** (défaut), **Performance**, **Voice**, **Team**. Une seule URL par onglet ; `/analytics` redirige vers `/insights/usage` (ancien path partagé avant le renommage).
+
+**Header partagé** (le shell) : H1 « Insights », `N Playbooks`, et le **CTA global** — bouton orange `Review N objectives that need attention` (ouvre l'action drawer) ou `Every objective is on track` s'il n'y en a aucun. Reste identique quel que soit l'onglet actif, donc quelqu'un qui ne quitte jamais Usage voit toujours le compte.
+
+**Aucun compteur sur les onglets** : un badge sur Performance compterait ses objectifs, pas les onglets — le seul compte vit sur le CTA.
+
+**Chaque onglet affiche sa propre période** ; il n'y en a pas au niveau du header. Usage est délibérément long-historique, Performance reste bornée à 30 jours.
+
+### Onglet Performance ([`insights/performance.js`](../../src/screens/insights/performance.js))
+
+Reprise du hub `/analytics` d'origine, sans le header (monté par le shell). Un health card par Playbook (gauge annulaire, score moyen pondéré de ses objectifs, baissé si la tendance est plate ou négative), puis tous les objectifs à plat dans une table triée pire-en-premier, filtrable par Playbook et par statut. Le bridge Report Studio en bas argue plutôt qu'il ne relance : deux états selon `agorapulseEntitlement`.
+
+### Onglet Usage ([`insights/usage.js`](../../src/screens/insights/usage.js))
+
+Placeholder au moment d'écrire ces lignes — le contenu réel (ce qu'Archie a produit + comment on travaille avec) arrive dans une session de travail dédiée.
+
+### Voice et Team
+
+Placeholders (`renderEmptyState`) rendus par le shell lui-même — chacun attend sa propre session de conception avant de recevoir un vrai contenu.
+
+---
+
 ## Voir aussi
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — le _comment_ technique

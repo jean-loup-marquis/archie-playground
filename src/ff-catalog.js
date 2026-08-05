@@ -148,13 +148,15 @@ export const FLAGS = Object.freeze([
     label: "Root analytics hub",
     default: true,
     hides:
-      "When OFF, hides the account-level Analytics hub: its sidebar row and " +
-      "the /analytics page. The hub is the portfolio layer above a single " +
-      "Playbook — one health card per Playbook (annular gauge over an " +
-      "equal-weight average of its objectives' effective scores) plus every " +
-      "objective flattened into one table, worst first, filterable by " +
-      "Playbook and by status. It needs no Agorapulse subscription: an " +
-      "Archie-only account reads the same page. Playbook detail is unaffected.",
+      "When OFF, hides the account-level Insights hub: its sidebar row and " +
+      "the /insights pages. The hub is the portfolio layer above a single " +
+      "Playbook, as four tabs — Usage (what Archie produced and how you " +
+      "work), Performance (one health card per Playbook, annular gauge over " +
+      "an equal-weight average of its objectives' effective scores, plus " +
+      "every objective flattened into one table, worst first, filterable by " +
+      "Playbook and by status), Voice and Team (both placeholders). It needs " +
+      "no Agorapulse subscription: an Archie-only account reads the same " +
+      "hub. Playbook detail is unaffected.",
   },
   {
     id: "agorapulseEntitlement",

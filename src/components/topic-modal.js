@@ -19,8 +19,8 @@ import { html, raw } from "../utils.js?v=21";
 import { getTopicById, markSeen, dismissTopic, topicWhen, subscribe as subscribeTopics } from "../topics-store.js?v=5";
 import { findTopicSource } from "../topics-catalog.js?v=2";
 import { getContextById } from "../contexts-store.js?v=47";
-import { openTopicInChat } from "../topic-flow.js?v=8";
-import { renderSocialPostCard } from "./social-post-card.js?v=1";
+import { openTopicInChat } from "../topic-flow.js?v=9";
+import { renderSocialPostCard } from "./social-post-card.js?v=2";
 
 const MODAL_ID = "topic";
 

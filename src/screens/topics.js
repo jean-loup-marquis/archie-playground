@@ -21,15 +21,15 @@
 import { html, raw, escapeAttr } from "../utils.js?v=21";
 import { navigate } from "../router.js?v=30";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=21";
-import { renderTopbar } from "../components/topbar.js?v=297";
+import { renderTopbar } from "../components/topbar.js?v=298";
 import { showToast } from "../components/toast.js?v=20";
 import { renderEmptyState } from "../components/empty-state.js?v=1";
 import { renderTopicCard } from "../components/topic-card.js?v=6";
-import { open as openTopicModal } from "../components/topic-modal.js?v=9";
-import { isFlagOn } from "../feature-flags.js?v=17";
+import { open as openTopicModal } from "../components/topic-modal.js?v=10";
+import { isFlagOn } from "../feature-flags.js?v=18";
 import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=47";
 import { TOPIC_SOURCES, findTopicSource, findCadence } from "../topics-catalog.js?v=2";
-import { openTopicInChat } from "../topic-flow.js?v=8";
+import { openTopicInChat } from "../topic-flow.js?v=9";
 import {
   getTopics,
   getUnseenCount,

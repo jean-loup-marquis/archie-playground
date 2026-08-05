@@ -1,14 +1,13 @@
-/* Analytics hub — the portfolio layer (/analytics).
-   Header → Playbook health cards → flat objective table with filters.
+/* Insights hub — the portfolio layer (/insights/:tab), shell + one tab panel.
    Verdict colours are never written here: they come from `.ap-status`
    modifiers picked in objective-scoring.js, so this file and the Playbook
    detail can't drift apart. */
 
-.analytics-view {
+.insights-view {
   overflow-y: auto;
 }
 
-.analytics-view__page {
+.insights-view__page {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xl);
@@ -19,14 +18,14 @@
   box-sizing: border-box;
 }
 
-.analytics-view__head {
+.insights-view__head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--ref-spacing-md);
 }
 
-.analytics-view__head-text {
+.insights-view__head-text {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
@@ -35,11 +34,11 @@
 /* The page's single call to action. Orange primary is the DS's AI/spotlight
    button and this is the page's only action, so it can afford to be the loudest
    thing after the title. */
-.analytics-view__cta {
+.insights-view__cta {
   flex-shrink: 0;
 }
 
-.analytics-view__all-clear {
+.insights-view__all-clear {
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
@@ -49,7 +48,7 @@
   color: var(--ref-color-green-150);
 }
 
-.analytics-view__title {
+.insights-view__title {
   font-family: var(--sys-text-style-h1-font-family);
   font-size: var(--sys-text-style-h1-size);
   font-weight: var(--sys-text-style-h1-weight);
@@ -61,19 +60,19 @@
 /* --sys-text-color-light, not grey-60: grey-60 measures 3.10:1 against the
    #F9F9FA page background, under the 4.5:1 AA needs at 14px. This token is
    5.18:1 and is what the rest of the app uses for secondary text. */
-.analytics-view__sub {
+.insights-view__sub {
   font-size: var(--ref-font-size-sm);
   color: var(--sys-text-color-light);
   margin: 0;
 }
 
-.analytics-view__section {
+.insights-view__section {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);
 }
 
-.analytics-view__section-head {
+.insights-view__section-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -81,14 +80,14 @@
   flex-wrap: wrap;
 }
 
-.analytics-view__section-text {
+.insights-view__section-text {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
   min-width: 0;
 }
 
-.analytics-view__section-note {
+.insights-view__section-note {
   margin: 0;
   max-width: 68ch;
   font-size: var(--ref-font-size-sm);
@@ -132,7 +131,7 @@
   background: var(--ref-color-red-150);
 }
 
-.analytics-view__section-title {
+.insights-view__section-title {
   font-family: var(--sys-text-style-h3-font-family);
   font-size: var(--sys-text-style-h3-size);
   font-weight: var(--sys-text-style-h3-weight);
@@ -143,7 +142,7 @@
 
 /* ---- Playbook health cards ---------------------------------------------- */
 
-.analytics-view__cards {
+.insights-view__cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--ref-spacing-sm);
@@ -346,7 +345,7 @@
 
 /* ---- Filters ------------------------------------------------------------ */
 
-.analytics-view__controls {
+.insights-view__controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -354,7 +353,7 @@
   flex-wrap: wrap;
 }
 
-.analytics-view__filters {
+.insights-view__filters {
   display: flex;
   gap: var(--ref-spacing-xxs);
   flex-wrap: wrap;
@@ -362,19 +361,19 @@
 
 /* `.ap-select` is width:100% by design (it normally fills a form field), so a
    filter has to be sized here. */
-.analytics-view__select {
+.insights-view__select {
   width: auto;
   min-width: 180px;
 }
 
-.analytics-view__count {
+.insights-view__count {
   font-size: var(--ref-font-size-sm);
   color: var(--sys-text-color-light);
 }
 
 /* ---- Objective table --------------------------------------------------- */
 
-.analytics-view__table {
+.insights-view__table {
   width: 100%;
 }
 
@@ -433,7 +432,7 @@
 
 /* ---- Editorial lead + its three widgets --------------------------------- */
 
-.analytics-view__editorial {
+.insights-view__editorial {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-md);
@@ -442,14 +441,14 @@
 /* Four across, fixed rather than auto-fit: auto-fit drops to three and leaves a
    lone fourth card on its own row, which reads as a mistake. Below the width four
    cards can hold, it halves to a 2×2 instead. */
-.analytics-view__mini-row {
+.insights-view__mini-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--ref-spacing-sm);
 }
 
 @media (max-width: 900px) {
-  .analytics-view__mini-row {
+  .insights-view__mini-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -501,7 +500,7 @@
   color: var(--ref-color-grey-60);
 }
 
-.analytics-view__empty {
+.insights-view__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -530,6 +529,24 @@
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: 2px;
   border-radius: var(--ref-border-radius-sm);
+}
+
+.insights-view__tabs {
+  margin-bottom: var(--ref-spacing-md);
+}
+
+.insights-view__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xl);
+}
+
+/* Each tab states its own range — Usage is deliberately long-history while
+   Performance stays bounded, so one page-level period would lie about half the hub. */
+.insights-tab__period {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
 }
 
 .ap-table-empty {
