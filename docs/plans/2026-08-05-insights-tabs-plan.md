@@ -1,7 +1,9 @@
 # Insights Tabs Implementation Plan
 
-> **For agentic workers:** steps use checkbox (`- [ ]`) syntax for tracking. Work one task at a time
-> and stop at each task's final commit for review before starting the next.
+> **For agentic workers:** use the `executing-plans` skill to work through this task-by-task. Steps use
+> checkbox (`- [ ]`) syntax for tracking. Stop at each task's final commit for review before starting
+> the next. (`subagent-driven-development` is the other option the format offers, but it is not
+> installed on this machine.)
 
 **Goal:** Turn the single stacked `/analytics` page into `Insights`, a four-tab hub whose landing tab
 is a "fun" usage surface, without changing what the existing page does.
