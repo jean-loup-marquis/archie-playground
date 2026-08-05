@@ -5,7 +5,7 @@ import { navigate } from "../../router.js?v=30";
 import { renderEmptyState } from "../../components/empty-state.js?v=1";
 import { flaggedCount } from "../../components/action-drawer.js?v=9";
 import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=4";
-import { renderUsageTab } from "./usage.js?v=2";
+import { renderUsageTab } from "./usage.js?v=3";
 
 // Insights — the portfolio layer above a single Playbook's detail, as four tabs.
 //

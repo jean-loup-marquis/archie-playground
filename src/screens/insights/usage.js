@@ -1,5 +1,6 @@
 import { escapeText } from "../../utils.js?v=21";
-import { archieUsage } from "../../mocks.js?v=74";
+import { archieUsage, toneDistribution } from "../../mocks.js?v=74";
+import { getContexts } from "../../contexts-store.js?v=48";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=2";
 import { renderMiniWidget } from "../../components/report-widget.js?v=3";
 
@@ -10,7 +11,7 @@ import { renderMiniWidget } from "../../components/report-widget.js?v=3";
 // forbidden, not a second range.
 
 export function renderUsageTab() {
-  const { lead, produced } = archieUsage();
+  const { lead, produced, work } = archieUsage();
 
   return `
     <p class="insights-tab__period">Last 30 days</p>
@@ -20,6 +21,19 @@ export function renderUsageTab() {
       <div class="insights-usage__produced">
         ${renderGauge(produced.keptRate)}
         ${produced.widgets.map((w) => renderMiniWidget(w)).join("")}
+      </div>
+    </section>
+    <section class="insights-view__section">
+      <h2 class="insights-view__section-title">How you work</h2>
+      <div class="insights-usage__work">
+        <div class="recap__widget">
+          ${renderBars(
+            "Where you publish",
+            work.networks.map((n) => ({ value: n.share, caption: `${n.label} · ${n.share}%` })),
+          )}
+          ${renderBars("The tone that recurs", toneBars())}
+        </div>
+        ${renderCalendar(work)}
       </div>
     </section>`;
 }
@@ -40,5 +54,51 @@ function renderGauge(rate) {
         <span class="insights-gauge__value">${escapeText(String(rate))}%</span>
       </div>
       <span class="recap__overview-narrative">Of 2,431 drafts generated.</span>
+    </div>`;
+}
+
+// A tone shown as a single value says nothing; three tones spread over four Playbooks
+// says something about the brand.
+function toneBars() {
+  const total = getContexts().length || 1;
+  return toneDistribution().map((t) => ({
+    value: (t.count / total) * 100,
+    caption: `${t.label} · ${t.count} ${t.count === 1 ? "Playbook" : "Playbooks"}`,
+  }));
+}
+
+function renderBars(title, rows) {
+  const bars = rows
+    .map(
+      (r) => `
+      <div class="insights-bars__row">
+        <div class="insights-bars__bar" style="width: ${Math.max(4, Math.round(r.value))}%"></div>
+        <span class="insights-bars__caption">${escapeText(r.caption)}</span>
+      </div>`,
+    )
+    .join("");
+  return `
+    <div class="insights-bars">
+      <h3 class="insights-bars__title">${escapeText(title)}</h3>
+      ${bars}
+    </div>`;
+}
+
+// Its own range label, so it does not contradict the tab's 30-day header.
+function renderCalendar({ calendar, calendarLabel, calendarNote, streak, longestStreak }) {
+  const cells = calendar
+    .map((level) => `<span class="insights-calendar__cell insights-calendar__cell--${level}"></span>`)
+    .join("");
+  return `
+    <div class="recap__widget">
+      <div class="insights-calendar__head">
+        <h3 class="insights-bars__title">${streak}-day streak</h3>
+        <span class="ap-status grey no-dot">Longest: ${longestStreak} days</span>
+      </div>
+      <span class="insights-calendar__range">${escapeText(calendarLabel)}</span>
+      <div class="insights-calendar__grid" role="img" aria-label="Creation activity over ${calendar.length} days">
+        ${cells}
+      </div>
+      <span class="recap__overview-narrative">${escapeText(calendarNote)}</span>
     </div>`;
 }
