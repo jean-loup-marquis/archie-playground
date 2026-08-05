@@ -629,7 +629,7 @@
 .insights-calendar__legend {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: var(--ref-spacing-xxxs);
   margin-bottom: var(--ref-spacing-xs);
 }
 
