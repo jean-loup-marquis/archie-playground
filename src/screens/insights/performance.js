@@ -1,6 +1,6 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=21";
-import { getContexts } from "../../contexts-store.js?v=49";
-import { objectiveCardsFor, archieImpact } from "../../mocks.js?v=75";
+import { getContexts } from "../../contexts-store.js?v=53";
+import { objectiveCardsFor, archieImpact } from "../../mocks.js?v=80";
 import { navigate } from "../../router.js?v=30";
 import { renderEmptyState } from "../../components/empty-state.js?v=1";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=3";
@@ -76,7 +76,6 @@ export function renderPerformanceTab() {
   }
 
   return `
-    <p class="insights-tab__period">Last 30 days</p>
     ${renderEditorial()}
     <section class="insights-view__section">
       <div class="insights-view__section-head">
@@ -101,18 +100,25 @@ export function renderPerformanceTab() {
     ${renderReportStudioBridge()}`;
 }
 
-// The lead sentence, then the figures it alludes to as real Report Studio
-// widgets — the same mini card a Playbook's report uses, so the hub reads as the
-// portfolio view of one product rather than a second design.
+// A heading, then the lead sentence, then the figures it alludes to as real Report
+// Studio widgets — the same mini card a Playbook's report uses, so the hub reads as
+// the portfolio view of one product rather than a second design.
+//
+// The heading is what stops the lead floating between the tabs and the first section:
+// it belongs to a block now, the same shape the Usage tab opens with. It also carries
+// the period this tab used to state in a bare line above everything — the lead's own
+// "in the last 30 days" says it in a sentence, which is where it reads.
 function renderEditorial() {
   const impact = archieImpact();
+  const lead = renderEditorialBanner(impact);
   const widgets = (impact?.widgets || []).map((w) => renderMiniWidget(w)).join("");
-  if (!widgets) return renderEditorialBanner(impact);
+  if (!lead && !widgets) return "";
 
   return `
-    <section class="insights-view__editorial">
-      ${renderEditorialBanner(impact)}
-      <div class="insights-view__mini-row">${widgets}</div>
+    <section class="insights-view__section">
+      <h2 class="insights-view__section-title">What your content did</h2>
+      ${lead}
+      ${widgets ? `<div class="insights-view__mini-row">${widgets}</div>` : ""}
     </section>`;
 }
 

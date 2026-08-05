@@ -1,15 +1,15 @@
 import { html, raw } from "../../utils.js?v=21";
-import { renderTopbar } from "../../components/topbar.js?v=300";
-import { getContexts, subscribe as subscribeContexts } from "../../contexts-store.js?v=49";
+import { renderTopbar } from "../../components/topbar.js?v=303";
+import { getContexts, subscribe as subscribeContexts } from "../../contexts-store.js?v=53";
 import { navigate } from "../../router.js?v=30";
-import { flaggedCount } from "../../components/action-drawer.js?v=10";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=11";
-import { renderUsageTab } from "./usage.js?v=13";
+import { flaggedCount } from "../../components/action-drawer.js?v=14";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=16";
+import { renderUsageTab } from "./usage.js?v=18";
 
 // Insights — the portfolio layer above a single Playbook's detail, as two tabs.
 //
-// This module knows the tabs' names, never their content: each entry owns its own
-// rendering and its own period. The header holds the one thing true of every tab —
+// This module knows the tabs' names, never their content: each entry owns what it
+// renders and how it frames it. The header holds the one thing true of every tab —
 // that N objectives need attention — so a user who never leaves Usage still sees it.
 
 const TABS = [
@@ -113,7 +113,7 @@ function renderTabNav(active) {
     </a>`,
   ).join("");
 
-  return `<nav class="ap-tabs insights-view__tabs" aria-label="Insights sections">
+  return `<nav class="ap-tabs" aria-label="Insights sections">
       <div class="ap-tabs-nav">${tabs}</div>
     </nav>`;
 }

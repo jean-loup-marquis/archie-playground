@@ -1,6 +1,6 @@
 import { escapeText } from "../../utils.js?v=21";
-import { archieUsage, toneDistribution } from "../../mocks.js?v=75";
-import { getContexts } from "../../contexts-store.js?v=49";
+import { archieUsage, toneDistribution } from "../../mocks.js?v=80";
+import { getContexts } from "../../contexts-store.js?v=53";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=3";
 import { renderMiniWidget } from "../../components/report-widget.js?v=5";
 
@@ -37,6 +37,10 @@ export function renderUsageTab() {
           ${renderBars("The tone that recurs", toneBars())}
         </div>
         <div class="insights-usage__col">
+          <div class="insights-usage__streaks">
+            ${renderStreak(work.streak)}
+            ${renderMiniWidget({ title: "Longest streak", value: dayCount(work.longestStreak) })}
+          </div>
           ${renderCalendar(work)}
           ${renderWorkNote(work.calendarNote)}
         </div>
@@ -146,18 +150,58 @@ function renderIntensityLegend() {
     </div>`;
 }
 
+function dayCount(n) {
+  return `${n} ${n === 1 ? "day" : "days"}`;
+}
+
+// The rungs a streak climbs, and the whole reason the badge can evolve: a raw count
+// has nothing to cross. One filled star per rung passed. It stops at 60 because a
+// fifth star nobody can reach is decoration, not a ladder.
+const STREAK_MILESTONES = [3, 7, 14, 30, 60];
+
+// The gamified half of the pair — a held streak is the one thing on this tab the
+// reader did rather than received, so it gets the count as the figure, the ladder as
+// the progress, and a next rung to aim at. Green, like the grid it is measured from,
+// and because this DS reserves green for something having gone right.
+function renderStreak(streak) {
+  const passed = STREAK_MILESTONES.filter((m) => streak >= m).length;
+  const next = STREAK_MILESTONES.find((m) => m > streak);
+  const stars = STREAK_MILESTONES.map(
+    (m, i) =>
+      `<i class="${i < passed ? "ap-icon-star_fill is-earned" : "ap-icon-star"}" aria-hidden="true" title="${m} days"></i>`,
+  ).join("");
+
+  return `
+    <div class="recap__widget recap__widget--mini">
+      <div class="recap__overview">
+        <span class="recap__overview-title">Current streak</span>
+        <div class="recap__overview-content">
+          <div class="recap__overview-metric">${escapeText(dayCount(streak))}</div>
+          <div
+            class="insights-streak__ladder"
+            role="img"
+            aria-label="${passed} of ${STREAK_MILESTONES.length} milestones reached"
+          >
+            ${stars}
+          </div>
+        </div>
+        <span class="recap__overview-narrative">
+          ${next ? `${escapeText(dayCount(next - streak))} to a ${next}-day streak.` : "Past every milestone."}
+        </span>
+      </div>
+    </div>`;
+}
+
 // Its own range label: 90 days is not the stretch the section above covers, and a
-// grid of 90 cells states no period on its own.
-function renderCalendar({ calendar, calendarLabel, streak, longestStreak }) {
+// grid of 90 cells states no period on its own. The streak figures used to sit in
+// this card's header — they are their own widgets now, so the grid is only the grid.
+function renderCalendar({ calendar, calendarLabel }) {
   const cells = calendar
     .map((level) => `<span class="insights-calendar__cell insights-calendar__cell--${level}"></span>`)
     .join("");
   return `
     <div class="recap__widget">
-      <div class="insights-calendar__head">
-        <h3 class="insights-bars__title">${streak}-day streak</h3>
-        <span class="ap-status grey no-dot">Longest: ${longestStreak} days</span>
-      </div>
+      <h3 class="insights-bars__title">Creation activity</h3>
       <span class="insights-calendar__range">${escapeText(calendarLabel)}</span>
       <div class="insights-calendar__grid" role="img" aria-label="${escapeText(calendarSummary(calendar))}">
         ${cells}

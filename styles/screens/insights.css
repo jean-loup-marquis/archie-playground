@@ -432,13 +432,11 @@
   color: var(--ref-color-red-150);
 }
 
-/* ---- Editorial lead + its three widgets --------------------------------- */
+/* ---- Editorial lead + its widgets --------------------------------------- */
 
-.insights-view__editorial {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-}
+/* .insights-view__editorial is gone: once the block gained a heading it was the same
+   shape as every other section — heading, then content — so it uses
+   .insights-view__section and inherits its 16px rhythm instead of its own 24px. */
 
 /* Four across, fixed rather than auto-fit: auto-fit drops to three and leaves a
    lone fourth card on its own row, which reads as a mistake. Below the width four
@@ -486,9 +484,9 @@
   border-radius: var(--ref-border-radius-sm);
 }
 
-.insights-view__tabs {
-  margin-bottom: var(--ref-spacing-md);
-}
+/* No margin-bottom here. .insights-view__page is a flex column with a 40px gap, so a
+   24px margin on top of it put 64px between the tab nav and the first thing under it
+   — the gap alone is the separation. */
 
 .insights-view__panel {
   display: flex;
@@ -496,13 +494,9 @@
   gap: var(--ref-spacing-xl);
 }
 
-/* Each tab states its own range — Usage is deliberately long-history while
-   Performance stays bounded, so one page-level period would lie about half the hub. */
-.insights-tab__period {
-  margin: 0;
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-}
+/* .insights-tab__period is gone with its last caller. Neither tab states a range in a
+   bare line above its content any more: Usage runs from the account's first day and
+   says so nowhere, Performance says "in the last 30 days" inside its lead sentence. */
 
 .insights-usage__produced {
   display: grid;
@@ -571,6 +565,37 @@
   gap: var(--ref-spacing-sm);
 }
 
+/* The streak pair sits above the grid it is measured from, two across rather than
+   stacked: they are one reading — where you are, and where your best was. */
+.insights-usage__streaks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+@media (max-width: 900px) {
+  .insights-usage__streaks {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The ladder, not a rating: every star is a fixed milestone, so an unearned one has
+   to stay visible for the earned ones to mean anything. Green because the DS keeps it
+   for something having gone right, and because the grid below runs on the same ramp. */
+.insights-streak__ladder {
+  display: flex;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.insights-streak__ladder > i {
+  color: var(--ref-color-grey-20);
+  font-size: var(--sys-icon-css-sm);
+}
+
+.insights-streak__ladder > i.is-earned {
+  color: var(--ref-color-green-150);
+}
+
 .insights-bars__title {
   margin: 0 0 var(--ref-spacing-xs);
   font-size: var(--ref-font-size-sm);
@@ -609,13 +634,6 @@
   font-size: var(--ref-font-size-sm);
   color: var(--sys-text-color-light);
   white-space: nowrap;
-}
-
-.insights-calendar__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-xs);
 }
 
 .insights-calendar__range {

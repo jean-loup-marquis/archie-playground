@@ -2180,6 +2180,10 @@ const ARCHIE_USAGE = {
     highlight: "148,200 words",
     after: "for you this month — enough to publish every week for two years.",
   },
+  // No `variation` on any of these. A percentage change needs a previous window to
+  // change against, and this block states no window — the figures run from the day
+  // the account started. The narrative is what a second line is for here: a rate or
+  // a ratio the cumulative figure does not show on its own.
   produced: {
     keptRate: 71,
     widgets: [
@@ -2187,7 +2191,6 @@ const ARCHIE_USAGE = {
         id: "usage-drafts",
         title: "Drafts generated",
         value: "2,431",
-        variation: 18,
         size: "mini",
         narrative: "81 a week on average.",
       },
@@ -2195,7 +2198,6 @@ const ARCHIE_USAGE = {
         id: "usage-posts",
         title: "Posts published",
         value: "318",
-        variation: 12,
         size: "mini",
         narrative: "13% of drafts make it online.",
       },
@@ -2203,7 +2205,6 @@ const ARCHIE_USAGE = {
         id: "usage-sources",
         title: "Sources digested",
         value: "67",
-        variation: 9,
         size: "mini",
         narrative: "12 of them reused more than once.",
       },
