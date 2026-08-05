@@ -7,3 +7,6 @@ ds/
 
 # Local demo footage for video-clip previews (not committed — too heavy)
 video/
+
+# Brainstorming mockups (visual companion) — local working files
+.superpowers/
