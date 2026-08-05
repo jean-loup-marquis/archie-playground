@@ -30,6 +30,7 @@ export function renderMiniWidget(w, { style = "" } = {}) {
             <span>${v >= 0 ? "+" : ""}${v}%</span>
           </div>
         </div>
+        ${w.narrative ? `<span class="recap__overview-narrative">${esc(w.narrative)}</span>` : ""}
       </div>
     </div>`;
 }

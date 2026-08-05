@@ -35,9 +35,9 @@ import { renderTopicsSettings } from "./screens/topics-settings.js?v=60";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=4";
 // Settings route removed — the prototype Admin controls moved to the sidebar
 // cog popover (see admin-menu.js + sidebar.js); Social accounts page dropped.
-import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=263";
-import { renderPlaybook } from "./screens/playbook.js?v=274";
-import { renderInsights } from "./screens/insights/shell.js?v=3";
+import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=264";
+import { renderPlaybook } from "./screens/playbook.js?v=275";
+import { renderInsights } from "./screens/insights/shell.js?v=4";
 import * as __capAddSource from "./components/add-source-modal.js?v=75";
 import * as __capBug from "./components/bug-report-modal.js?v=24";
 import * as __capFeedback from "./components/feedback-modal.js?v=26";
