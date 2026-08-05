@@ -1,15 +1,16 @@
-# Insights "Your Voice" Block Implementation Plan
+# Insights — Voice Block, Two Tabs, and the Gate: Implementation Plan
 
 > **For agentic workers:** use the `executing-plans` skill to work through this task-by-task. Steps use
 > checkbox (`- [ ]`) syntax for tracking. Stop at each task's final commit for review before starting
 > the next.
 
-**Goal:** Fold the Voice tab's content into Usage as a third block, drop the tab, and close the
-accessibility gate that the previous plan's Task 5 never ran.
+**Goal:** Fold the Voice tab's content into Usage as a third block, drop both the Voice and Team tabs,
+and close the accessibility gate that the previous plan's Task 5 never ran.
 
-**Architecture:** No new modules. `usage.js` gains a third block, `shell.js` loses a tab entry, and
-`#/insights/voice` redirects rather than 404s. The gate is a measurement pass over the whole hub, not a
-feature.
+**Architecture:** No new modules, and two fewer tabs. `usage.js` gains a third block; `shell.js` loses
+the `voice` and `team` entries and both placeholder renderers; `#/insights/voice` and `#/insights/team`
+redirect rather than 404. The hub ends at two tabs — Usage and Performance — which is where it stays.
+The gate is a measurement pass over the whole hub, not a feature.
 
 **Tech Stack:** Vanilla ES modules, no build step. Hash router (`src/router.js`). Agorapulse DS as CSS
 classes. Prettier + husky/lint-staged on commit.
@@ -19,8 +20,8 @@ classes. Prettier + husky/lint-staged on commit.
 - **Spec:** [`docs/specs/2026-08-05-insights-tabs-design.md`](../specs/2026-08-05-insights-tabs-design.md) — decision 2 (amended) and "Block 3 — Your voice".
 - **Predecessor plan:** [`docs/plans/2026-08-05-insights-tabs-plan.md`](2026-08-05-insights-tabs-plan.md) — steps 1–2, shipped as `5a79daf4` → `443e7414`. **Its Task 5 was never run; Task 2 below is that task, widened.**
 
-**Scope:** the Usage voice block, removing the Voice tab, and the gate. The **Team tab stays a
-placeholder** — see Out of scope.
+**Scope:** the Usage voice block, removing both deferred tabs, and the gate. **Team is rejected, not
+deferred** — the spec's "Team, and why it is not built" carries the reasoning; do not re-add it.
 
 ## Where the code actually is (verified 2026-08-05, head `443e7414`)
 
@@ -77,7 +78,7 @@ the Playbook detail panel. Baseline, not yours, do not fix it here.
 
 ---
 
-### Task 1: The "Your voice" block, and the Voice tab goes away
+### Task 1: The "Your voice" block, and the hub drops to two tabs
 
 **Files:**
 
@@ -93,11 +94,11 @@ the Playbook detail panel. Baseline, not yours, do not fix it here.
 On `#/insights/usage`:
 
 ```js
-check("three tabs", document.querySelectorAll(".ap-tabs-tab").length, 3);
+check("two tabs", document.querySelectorAll(".ap-tabs-tab").length, 2);
 check(
-  "no Voice tab",
-  [...document.querySelectorAll(".ap-tabs-tab")].some((t) => t.textContent.includes("Voice")),
-  false,
+  "no Voice or Team tab",
+  [...document.querySelectorAll(".ap-tabs-tab")].map((t) => t.textContent.trim()),
+  ["Usage", "Performance"],
 );
 check("voice block renders", !!document.querySelector(".insights-voice"), true);
 check("four superlatives", document.querySelectorAll(".insights-voice .recap__widget").length, 4);
@@ -105,7 +106,7 @@ check("four superlatives", document.querySelectorAll(".insights-voice .recap__wi
 
 - [ ] **Step 2: Run it and verify it fails**
 
-Expected: 4 tabs, a Voice tab present, no `.insights-voice`. All four FAIL.
+Expected: 4 tabs including Voice and Team, no `.insights-voice`. All four FAIL.
 
 - [ ] **Step 3: Add the data to `archieUsage()`**
 
@@ -189,26 +190,37 @@ In `styles/screens/insights.css`:
 }
 ```
 
-- [ ] **Step 6: Drop the tab and redirect its URL**
+- [ ] **Step 6: Drop both tabs and redirect their URLs**
 
-In `shell.js`, delete the `voice` entry from `TABS` and delete `renderVoicePlaceholder()`. In
-`src/app.js`, add the redirect above the `/insights/:tab` route:
+In `shell.js`, delete the `voice` and `team` entries from `TABS`, and delete both
+`renderVoicePlaceholder()` and `renderTeamPlaceholder()`. `renderEmptyState` may become an unused
+import — remove it if so.
+
+In `src/app.js`, add the redirects above the `/insights/:tab` route:
 
 ```js
-// The tab existed for half a day and its URL may have been shared.
+// Both tabs existed for half a day; their URLs may have been shared.
 route("/insights/voice", () => {
   navigate("/insights/usage");
   return () => {};
 });
+route("/insights/team", () => {
+  navigate("/insights/usage");
+  return () => {};
+});
 ```
+
+Team is **rejected, not postponed** — see the spec. Do not leave a commented-out entry behind: a
+commented tab is an invitation to uncomment it without reading why it went.
 
 Confirm the shell's unknown-tab fallback still catches everything else: `#/insights/nonsense` must land
 on Usage without a console error.
 
 - [ ] **Step 7: Update the docs**
 
-`ROUTES.md` — the `/insights/:tab` row lists the tabs; make it three and add the `voice` redirect.
-`FEATURES.md` — same count, and the Usage tab now has three blocks. `src/ff-catalog.js` — the
+`ROUTES.md` — the `/insights/:tab` row lists the tabs; make it two and add both redirects.
+`FEATURES.md` — same count, the Usage tab now has three blocks, and Team is recorded as rejected rather
+than upcoming. `src/ff-catalog.js` — the
 `rootAnalytics` prose names the tabs; **keep the flag id**.
 
 - [ ] **Step 8: Bump, format, run the assertion**
@@ -251,7 +263,7 @@ in the spec's data table as instrumentation to request, not smuggled in as fact.
 ### Task 2: The accessibility gate the previous plan never ran
 
 The predecessor plan's Task 5 was skipped. It matters more than it did then, because a measurement pass
-now covers three tabs' worth of surface — and because there are already three known failures.
+now covers both tabs and the new block — and because there are already three known failures.
 
 **Files:**
 
@@ -347,10 +359,10 @@ the base class. This pass walks every text node instead."
 
 ## Out of scope
 
-- **The Team tab.** It stays a placeholder, and deliberately has no plan: whether Archie should rank
-  colleagues at all is a product question, not a design one. Ranking dictation speed is harmless fun;
-  ranking a marketer's brand performance against a colleague's is performance-review data. That
-  question wants a brainstorm and possibly the answer "we don't build it".
+- **Re-adding Team in any form.** It was rejected on 2026-08-05, not deferred: it contradicts the
+  standing "no cross-account/team consolidation" limit the Report Studio bridge argues from, and nothing
+  in the prototype carries multi-user data. The nearest keeper is the anonymised "Vs. peers" benchmark,
+  which compares outside the organisation rather than inside it — unscheduled.
 - **Sortable table columns.** Still open from the audit: the table says "worst first" but its headers
   are not clickable.
 - **The tier vocabulary** (Strong / Watch / At risk).

@@ -30,17 +30,17 @@ page denser, and `src/screens/analytics.js` is ~420 lines before any addition.
 Every decision below was taken with the PM in session. Where a decision overrides an earlier one,
 that is called out — the earlier reasoning is not wrong, its premise changed.
 
-| #   | Decision                                                                   | Why                                                                                                                                                                                                                                                                                                                                             |
-| --- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | The nav entry becomes **Insights**, the page's H1 becomes **Insights**     | "Analytics" as both the nav entry and a tab inside it is what made the PM report a missing "Performance" entry earlier. The container and its contents must not share a name. Also mirrors Wispr.                                                                                                                                               |
-| 2   | **Three tabs: Usage · Performance · Team**                                 | _Amended 2026-08-05 after designing Voice: it lost its tab._ Voice turned out to be pure flattery — a favourite tone, a favourite hook — which is the same register as Usage. Two delight tabs beside one useful tab is a lopsided hub, so the content became a third Usage block. See "Tab 1 — Usage". Team stays as the Leaderboard analogue. |
-| 3   | **Usage is the landing tab**                                               | Chosen over performance-first. The PM's call: the hub should welcome before it triages.                                                                                                                                                                                                                                                         |
-| 4   | The **objective-triage CTA stays global**, in the header above the tab nav | Resolves the tension decision 3 creates. A user who never leaves Usage still sees that N objectives are slipping, and clicking opens the drawer without changing tab.                                                                                                                                                                           |
-| 5   | **No global period line.** Each tab states its own                         | _Overrides the audit fix that put "Last 30 days" in the header._ That fix was right for one page; with tabs, Usage is deliberately long-history (it is the fun surface) while Performance stays bounded. The invariant is not "one period per page" but **no number without a stated period**.                                                  |
-| 6   | **Shell + one module per tab**                                             | `analytics.js` would reach ~1500 lines otherwise. See Architecture.                                                                                                                                                                                                                                                                             |
-| 7   | **One URL per tab**                                                        | The router is already hash-based, so it costs almost nothing and it keeps the browser back button and shareable links working.                                                                                                                                                                                                                  |
-| 8   | **No Share button**, despite Wispr's                                       | Sharing dictation stats is harmless; these numbers touch a brand's commercial performance. It deserves its own thinking, not a copy-paste.                                                                                                                                                                                                      |
-| 9   | Page-level names follow the page, thing-level names do not                 | New files and page classes become `insights-*`; `analytics-card`, `analytics-row`, `analytics-trend` stay — they name a health card and an objective row, not the page. Avoids renaming ~40 classes for nothing.                                                                                                                                |
+| #   | Decision                                                                   | Why                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| --- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | The nav entry becomes **Insights**, the page's H1 becomes **Insights**     | "Analytics" as both the nav entry and a tab inside it is what made the PM report a missing "Performance" entry earlier. The container and its contents must not share a name. Also mirrors Wispr.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2   | **Two tabs: Usage · Performance**                                          | _Amended twice on 2026-08-05, as each deferred tab got designed._ **Voice** turned out to be pure flattery — same register as Usage — so it became a third Usage block rather than a lopsided fourth tab. **Team was dropped outright**: this log already lists "no cross-account/team consolidation" among the deliberate limits the Report Studio bridge argues from, so building it inside Archie would contradict a standing decision. Nothing multi-user exists in the prototype either. The nav survives at two because the two jobs are genuinely distinct — welcome, then triage. At one tab it goes. |
+| 3   | **Usage is the landing tab**                                               | Chosen over performance-first. The PM's call: the hub should welcome before it triages.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| 4   | The **objective-triage CTA stays global**, in the header above the tab nav | Resolves the tension decision 3 creates. A user who never leaves Usage still sees that N objectives are slipping, and clicking opens the drawer without changing tab.                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| 5   | **No global period line.** Each tab states its own                         | _Overrides the audit fix that put "Last 30 days" in the header._ That fix was right for one page; with tabs, Usage is deliberately long-history (it is the fun surface) while Performance stays bounded. The invariant is not "one period per page" but **no number without a stated period**.                                                                                                                                                                                                                                                                                                                |
+| 6   | **Shell + one module per tab**                                             | `analytics.js` would reach ~1500 lines otherwise. See Architecture.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 7   | **One URL per tab**                                                        | The router is already hash-based, so it costs almost nothing and it keeps the browser back button and shareable links working.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 8   | **No Share button**, despite Wispr's                                       | Sharing dictation stats is harmless; these numbers touch a brand's commercial performance. It deserves its own thinking, not a copy-paste.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 9   | Page-level names follow the page, thing-level names do not                 | New files and page classes become `insights-*`; `analytics-card`, `analytics-row`, `analytics-trend` stay — they name a health card and an objective row, not the page. Avoids renaming ~40 classes for nothing.                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ## Architecture
 
@@ -49,7 +49,6 @@ src/screens/insights/
   shell.js        the only module that knows about the nav
   usage.js        tab 1 — what Archie produced + how you work + your voice
   performance.js  tab 2 — verbatim extraction of today's analytics.js
-  team.js         tab 3 — who uses Archie in the org
 ```
 
 **`shell.js`** renders the header (H1, the global CTA) and the `.ap-tabs-nav`, then delegates to the
@@ -60,8 +59,9 @@ so adding or removing a tab is one line. It knows tab _names_, never tab _conten
 without opening any other. `performance.js` is a move, not a rewrite: today's page body goes in
 unchanged, including the Report Studio bridge, which belongs where it argues.
 
-**Routing.** `#/insights` redirects to `#/insights/usage`; the four tabs are `usage`, `performance`,
-`voice`, `team`. `#/analytics` redirects to `#/insights/usage` so links already shared keep working.
+**Routing.** `#/insights` redirects to `#/insights/usage`; the two tabs are `usage` and `performance`.
+`#/analytics`, `#/insights/voice` and `#/insights/team` all redirect to `#/insights/usage` — the first
+predates the rename, the other two existed long enough for a URL to be shared.
 
 **The action drawer is untouched.** It owns its own document-level delegation via
 `[data-open-action-drawer]`, so the shell's CTA works with no wiring, and the second door inside
@@ -179,15 +179,32 @@ Each step ships on its own.
 1. **Shell + Performance extraction.** No visible change beyond the rename and the tab nav appearing
    with one populated tab. Everything keeps working — this is the risky step, so it lands alone.
 2. **Usage tab.** The design above.
-3. **The "Your voice" block** inside Usage, and dropping the Voice tab.
-4. **Team tab.** Last, because it rests entirely on invented data, and because whether Archie should
-   rank colleagues at all is an unanswered product question rather than a design one.
+3. **The "Your voice" block** inside Usage, dropping both the Voice and the Team tabs.
 
 **Steps 1 and 2 shipped on 2026-08-05** (commits `5a79daf4` → `443e7414`). Step 3 is specified below
 and planned in
 [`docs/plans/2026-08-05-insights-voice-block-plan.md`](../plans/2026-08-05-insights-voice-block-plan.md).
-Step 4 is deliberately unplanned: whether Archie should rank colleagues at all is a product question,
-and designing the screen before answering it would be building for a problem nobody has stated.
+The Team tab was **rejected** on 2026-08-05 rather than deferred again — see decision 2 and the
+"Team, and why it is not built" section below.
+
+## Team, and why it is not built
+
+**Rejected 2026-08-05.** Wispr's Leaderboard was the reference, and it does not transfer.
+
+- **It contradicts a standing decision.** The exploration log lists "no cross-account/team
+  consolidation" among the _arbitrary_ limits — the ones chosen deliberately — that the Report Studio
+  bridge argues from. Shipping team consolidation inside Archie would remove an argument we decided to
+  keep.
+- **The comparison is not the same kind of comparison.** Ranking dictation speed between colleagues is
+  harmless fun; ranking a marketer's brand performance against a colleague's is performance-review
+  data. The register that makes Wispr's leaderboard pleasant is exactly what makes this one hostile.
+- **Nothing in the prototype carries it.** No colleagues, no seats, no members — one hardcoded user in
+  the sidebar. It would have been the only surface built on 100% invented data.
+
+**The nearest idea worth keeping** is already in the log: the anonymised _"Vs. peers"_ benchmark —
+comparing a Playbook against an aggregate of other Archie accounts in the same vertical. That compares
+outside the organisation rather than inside it, which is the distinction that matters. Still a bigger
+bet needing user density per vertical and a real anonymisation design; unscheduled, not adopted here.
 
 ## Out of scope
 
