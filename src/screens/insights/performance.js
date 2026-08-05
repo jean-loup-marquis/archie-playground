@@ -151,7 +151,7 @@ function renderHealthCard(context) {
   const objectives = objectiveCardsFor(context);
   if (objectives.length === 0) {
     return `
-      <article class="analytics-card analytics-card--empty" data-analytics-playbook="${escapeAttr(context.id)}">
+      <article class="ap-card analytics-card analytics-card--empty" data-analytics-playbook="${escapeAttr(context.id)}">
         <h3 class="analytics-card__name">${escapeText(context.name)}</h3>
         <p class="analytics-card__none">No goals declared yet</p>
       </article>`;
@@ -171,7 +171,7 @@ function renderHealthCard(context) {
     .join("");
 
   return `
-    <article class="analytics-card" data-analytics-playbook="${escapeAttr(context.id)}" role="button" tabindex="0">
+    <article class="ap-card analytics-card" data-analytics-playbook="${escapeAttr(context.id)}" role="button" tabindex="0">
       <div class="analytics-card__top">
         ${renderRing(score, tier)}
         <div class="analytics-card__id">
@@ -311,38 +311,47 @@ function renderTable(rows) {
 // feature list: Archie can only see what Archie published, so the comparison you
 // actually want is the one it cannot make. That's honest, and it's the only
 // version of this pitch a solo creator won't resent.
+// `.ap-infobox` rather than a hand-rolled banner: title + message + one action is
+// exactly its anatomy, and `has-title` centres the icon for the two-line form.
+// Locked uses feature-lock, the variant the DS reserves for premium — the pinned
+// ui-theme 20.x has not shipped it yet, so ds-patches.css forward-ports it.
 function renderReportStudioBridge() {
   const entitled = isFlagOn("agorapulseEntitlement");
 
   if (entitled) {
     return `
-      <section class="analytics-bridge analytics-bridge--entitled">
-        <div class="analytics-bridge__text">
-          <h2 class="analytics-bridge__title">Put this in a report</h2>
-          <p class="analytics-bridge__body">Drop these objectives into a Report Studio report alongside everything else you publish.</p>
+      <div class="ap-infobox info has-title">
+        <i class="ap-icon-bar-graph" aria-hidden="true"></i>
+        <div class="ap-infobox-content">
+          <div class="ap-infobox-texts">
+            <span class="ap-infobox-title">Put this in a report</span>
+            <span class="ap-infobox-message">
+              Drop these objectives into a Report Studio report alongside everything else you publish.
+            </span>
+          </div>
+          <button type="button" class="ap-button primary blue" data-analytics-bridge-cta>
+            <i class="ap-icon-plus"></i><span>Add to a report</span>
+          </button>
         </div>
-        <button type="button" class="ap-button primary blue" data-analytics-bridge-cta>
-          <i class="ap-icon-plus"></i><span>Add to a report</span>
-        </button>
-      </section>`;
+      </div>`;
   }
 
   return `
-    <section class="analytics-bridge analytics-bridge--locked">
-      <div class="analytics-bridge__text">
-        <h2 class="analytics-bridge__title">
-          <i class="ap-icon-lock" aria-hidden="true"></i>
-          Compare Archie's posts to everything else you publish
-        </h2>
-        <p class="analytics-bridge__body">
-          This page measures what Archie made. Seeing how it stacks up against the rest of your content needs
-          visibility into all of it — that's what Agorapulse adds.
-        </p>
+    <div class="ap-infobox feature-lock has-title">
+      <i class="ap-icon-feature-lock" aria-hidden="true"></i>
+      <div class="ap-infobox-content">
+        <div class="ap-infobox-texts">
+          <span class="ap-infobox-title">Compare Archie's posts to everything else you publish</span>
+          <span class="ap-infobox-message">
+            This page measures what Archie made. Seeing how it stacks up against the rest of your content needs
+            visibility into all of it — that's what Agorapulse adds.
+          </span>
+        </div>
+        <button type="button" class="ap-button stroked grey" data-analytics-bridge-cta>
+          <span>Learn more</span>
+        </button>
       </div>
-      <button type="button" class="ap-button stroked grey" data-analytics-bridge-cta>
-        <span>Learn more</span>
-      </button>
-    </section>`;
+    </div>`;
 }
 
 // Scoped to the tab's own panel, not the whole shell: the header and tab nav

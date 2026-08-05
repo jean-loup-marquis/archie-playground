@@ -30,27 +30,26 @@ page denser, and `src/screens/analytics.js` is ~420 lines before any addition.
 Every decision below was taken with the PM in session. Where a decision overrides an earlier one,
 that is called out — the earlier reasoning is not wrong, its premise changed.
 
-| #   | Decision                                                                   | Why                                                                                                                                                                                                                                                                                            |
-| --- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | The nav entry becomes **Insights**, the page's H1 becomes **Insights**     | "Analytics" as both the nav entry and a tab inside it is what made the PM report a missing "Performance" entry earlier. The container and its contents must not share a name. Also mirrors Wispr.                                                                                              |
-| 2   | **Four tabs: Usage · Performance · Voice · Team**                          | Usage and Performance are the two the PM asked for. Voice earns a tab because brand voice is the asset a competitor cannot copy and Archie already holds real data for it. Team is the Leaderboard analogue.                                                                                   |
-| 3   | **Usage is the landing tab**                                               | Chosen over performance-first. The PM's call: the hub should welcome before it triages.                                                                                                                                                                                                        |
-| 4   | The **objective-triage CTA stays global**, in the header above the tab nav | Resolves the tension decision 3 creates. A user who never leaves Usage still sees that N objectives are slipping, and clicking opens the drawer without changing tab.                                                                                                                          |
-| 5   | **No global period line.** Each tab states its own                         | _Overrides the audit fix that put "Last 30 days" in the header._ That fix was right for one page; with tabs, Usage is deliberately long-history (it is the fun surface) while Performance stays bounded. The invariant is not "one period per page" but **no number without a stated period**. |
-| 6   | **Shell + one module per tab**                                             | `analytics.js` would reach ~1500 lines otherwise. See Architecture.                                                                                                                                                                                                                            |
-| 7   | **One URL per tab**                                                        | The router is already hash-based, so it costs almost nothing and it keeps the browser back button and shareable links working.                                                                                                                                                                 |
-| 8   | **No Share button**, despite Wispr's                                       | Sharing dictation stats is harmless; these numbers touch a brand's commercial performance. It deserves its own thinking, not a copy-paste.                                                                                                                                                     |
-| 9   | Page-level names follow the page, thing-level names do not                 | New files and page classes become `insights-*`; `analytics-card`, `analytics-row`, `analytics-trend` stay — they name a health card and an objective row, not the page. Avoids renaming ~40 classes for nothing.                                                                               |
+| #   | Decision                                                                   | Why                                                                                                                                                                                                                                                                                                                                             |
+| --- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | The nav entry becomes **Insights**, the page's H1 becomes **Insights**     | "Analytics" as both the nav entry and a tab inside it is what made the PM report a missing "Performance" entry earlier. The container and its contents must not share a name. Also mirrors Wispr.                                                                                                                                               |
+| 2   | **Three tabs: Usage · Performance · Team**                                 | _Amended 2026-08-05 after designing Voice: it lost its tab._ Voice turned out to be pure flattery — a favourite tone, a favourite hook — which is the same register as Usage. Two delight tabs beside one useful tab is a lopsided hub, so the content became a third Usage block. See "Tab 1 — Usage". Team stays as the Leaderboard analogue. |
+| 3   | **Usage is the landing tab**                                               | Chosen over performance-first. The PM's call: the hub should welcome before it triages.                                                                                                                                                                                                                                                         |
+| 4   | The **objective-triage CTA stays global**, in the header above the tab nav | Resolves the tension decision 3 creates. A user who never leaves Usage still sees that N objectives are slipping, and clicking opens the drawer without changing tab.                                                                                                                                                                           |
+| 5   | **No global period line.** Each tab states its own                         | _Overrides the audit fix that put "Last 30 days" in the header._ That fix was right for one page; with tabs, Usage is deliberately long-history (it is the fun surface) while Performance stays bounded. The invariant is not "one period per page" but **no number without a stated period**.                                                  |
+| 6   | **Shell + one module per tab**                                             | `analytics.js` would reach ~1500 lines otherwise. See Architecture.                                                                                                                                                                                                                                                                             |
+| 7   | **One URL per tab**                                                        | The router is already hash-based, so it costs almost nothing and it keeps the browser back button and shareable links working.                                                                                                                                                                                                                  |
+| 8   | **No Share button**, despite Wispr's                                       | Sharing dictation stats is harmless; these numbers touch a brand's commercial performance. It deserves its own thinking, not a copy-paste.                                                                                                                                                                                                      |
+| 9   | Page-level names follow the page, thing-level names do not                 | New files and page classes become `insights-*`; `analytics-card`, `analytics-row`, `analytics-trend` stay — they name a health card and an objective row, not the page. Avoids renaming ~40 classes for nothing.                                                                                                                                |
 
 ## Architecture
 
 ```
 src/screens/insights/
   shell.js        the only module that knows about the nav
-  usage.js        tab 1 — what Archie produced + how you work
+  usage.js        tab 1 — what Archie produced + how you work + your voice
   performance.js  tab 2 — verbatim extraction of today's analytics.js
-  voice.js        tab 3 — portfolio view of brand voice
-  team.js         tab 4 — who uses Archie in the org
+  team.js         tab 3 — who uses Archie in the org
 ```
 
 **`shell.js`** renders the header (H1, the global CTA) and the `.ap-tabs-nav`, then delegates to the
@@ -80,7 +79,8 @@ badge (two adjacent badges counting different things). The count lives once, on 
 Validated as a mockup with the PM — kept alongside this spec at
 [`assets/2026-08-05-insights-usage-layout.html`](assets/2026-08-05-insights-usage-layout.html)
 (open it in a browser; the `B` / `C` tags mark which reference each piece came from).
-Two blocks under their own subheadings, familiar card chrome plus one signature piece.
+Three blocks under their own subheadings, familiar card chrome plus one signature piece. The third
+arrived on 2026-08-05, when Voice lost its tab.
 
 **Editorial lead**, full width, serif, one sentence with the figure in accent colour:
 _"Archie a écrit 148 200 mots pour toi ce mois-ci — de quoi publier chaque semaine pendant deux ans."_
@@ -106,6 +106,28 @@ narrative line.
 the volume cards are a month. That is not a contradiction as long as every one of them carries its
 range — which is the invariant from decision 5, applied within a tab rather than across the page. What
 is forbidden is a bare number.
+
+### Block 3 — "Your voice"
+
+Pure flattery, and honest about it: it informs nothing and is not meant to. Four superlatives, no
+verdict, no comparison — the register of Wispr's _Your voice_, which describes the person rather than
+the brand.
+
+**Subject is the operator, not the brand.** That is what makes the block brand-agnostic by
+construction, and it is the reason three earlier attempts failed. Averaging tones across brands is
+noise the moment an agency runs fourteen clients ("you write direct and conversational" is meaningless
+across fourteen voices); grouping by brand fixed that but over-fitted to four fixture Playbooks and
+implied a consistency verdict the data cannot support. Describing the operator's own habits sidesteps
+all of it — an agency operator does reach for the same tone and the same opening, across every client.
+
+The four figures: **favourite tone** · **favourite hook** · **signature word** · **what you always
+avoid**. Each one number or one quote, no bar chart, no trend.
+
+**Rejected:** any "consistency" or "voice drift" framing. Playbooks of one brand legitimately differ
+by audience and objective — the two Acme Playbooks share identical objectives and differ on all ten
+`voiceProfile` dimensions, every difference sensible. A flag there would only produce false positives,
+and detecting a real contradiction ("no emoji" vs "emoji encouraged") needs semantic comparison
+nothing here supports.
 
 **No "Top 0.4%"** as Wispr has. Ranking one brand against others is meaningless here, and the Team
 tab already covers the appetite for comparison.
@@ -137,9 +159,13 @@ obstacle to the prototype: mock it here, and hand the requirement over.
 | Words written by Archie                             | No aggregate anywhere                                                                                                                              | Aggregation problem                    |
 | **Drafts kept without editing (%)**                 | **Nothing records whether a draft was edited after generation**                                                                                    | New instrumentation required           |
 | **Creation streak / activity calendar**             | **No timestamp of creation activity is stored**                                                                                                    | New instrumentation required           |
+| **Hook usage frequency** (block 3)                  | **Nothing counts how often a signature hook is actually used** — so "favourite" is undecidable, only "your hooks" is                               | New instrumentation required           |
+| **Tone frequency by post** (block 3)                | `tones` counts Playbooks, not posts. Four Playbooks tie 2–2 on Direct and Conversational, so a superlative has no winner                           | New instrumentation required           |
+| **Signature word** (block 3)                        | Requires counting words across published posts                                                                                                     | Aggregation over existing post text    |
 
-The last two are the most attractive figures in the tab and the furthest from reality. Expect them to
-be the first thing a developer questions.
+The instrumentation rows are the most attractive figures in the tab and the furthest from reality.
+Expect them to be the first thing a developer questions. Block 3 is the worst offender: it promises the
+most and rests on the least, which is the price of a section whose only job is to be pleasant.
 
 **Shape.** One `archieUsage()` export in `src/mocks.js`, mirroring the existing `archieImpact()` —
 figures and their narrative strings in one place, plus a static deterministic array for the calendar.
@@ -153,13 +179,15 @@ Each step ships on its own.
 1. **Shell + Performance extraction.** No visible change beyond the rename and the tab nav appearing
    with one populated tab. Everything keeps working — this is the risky step, so it lands alone.
 2. **Usage tab.** The design above.
-3. **Voice tab.** Portfolio view of brand voice; scoped in its own session, using real data.
-4. **Team tab.** Last, because it rests entirely on invented data.
+3. **The "Your voice" block** inside Usage, and dropping the Voice tab.
+4. **Team tab.** Last, because it rests entirely on invented data, and because whether Archie should
+   rank colleagues at all is an unanswered product question rather than a design one.
 
-**The implementation plan following this spec covers steps 1 and 2 only.** Voice and Team are named
-here so the architecture accommodates them, but each needs its own design session — Voice to decide
-what a portfolio view of brand voice actually shows, Team to decide whether ranking colleagues is
-something Archie should do at all.
+**Steps 1 and 2 shipped on 2026-08-05** (commits `5a79daf4` → `443e7414`). Step 3 is specified below
+and planned in
+[`docs/plans/2026-08-05-insights-voice-block-plan.md`](../plans/2026-08-05-insights-voice-block-plan.md).
+Step 4 is deliberately unplanned: whether Archie should rank colleagues at all is a product question,
+and designing the screen before answering it would be building for a problem nobody has stated.
 
 ## Out of scope
 

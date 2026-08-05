@@ -19,31 +19,38 @@ import { isFlagOn } from "../feature-flags.js?v=18";
 
 let unsubscribe = null;
 let pageState = { query: "" };
+let boundTarget = null;
+let boundClick = null;
+let boundInput = null;
 
 export function renderContexts(_params, target) {
   renderTopbar();
+  teardown();
+  pageState = { query: "" };
+  paint(target);
+  bind(target);
+  unsubscribe = subscribeContexts(() => paint(target));
+
+  return teardown;
+}
+
+// `target` is the router's #app node, reused across every navigation rather
+// than recreated — so a listener bound here outlives this mount unless
+// something removes it before the next mount binds its own.
+function teardown() {
   if (unsubscribe) {
     unsubscribe();
     unsubscribe = null;
   }
-  pageState = { query: "" };
-  paint(target);
-  unsubscribe = subscribeContexts(() => paint(target));
-
-  // FIND-B: tear down the contexts-store subscription on route change so
-  // off-route notifications don't repaint a target that no longer holds
-  // this view.
-  return () => {
-    if (unsubscribe) {
-      unsubscribe();
-      unsubscribe = null;
-    }
-  };
+  if (boundTarget && boundClick) boundTarget.removeEventListener("click", boundClick);
+  if (boundTarget && boundInput) boundTarget.removeEventListener("input", boundInput);
+  boundTarget = null;
+  boundClick = null;
+  boundInput = null;
 }
 
 function paint(target) {
   target.innerHTML = html`<section class="screen contexts-view">${raw(renderPage())}</section>`;
-  bind(target);
 }
 
 function renderPage() {
@@ -252,7 +259,9 @@ function filter(list, { query }) {
 }
 
 function bind(root) {
-  root.addEventListener("click", (event) => {
+  boundTarget = root;
+
+  boundClick = (event) => {
     // Edit (pen icon) — opens the Playbook detail page, where the brief
     // panel handles in-place edits (rename, toggle chips, change brand
     // color, etc.).
@@ -326,9 +335,10 @@ function bind(root) {
       navigate(`/playbook/${card.dataset.contextsCard}`);
       return;
     }
-  });
+  };
+  root.addEventListener("click", boundClick);
 
-  root.addEventListener("input", (event) => {
+  boundInput = (event) => {
     if (event.target.matches("[data-contexts-search]")) {
       pageState.query = event.target.value || "";
       // Repaint the body in place so empty <-> grid transitions both
@@ -343,5 +353,6 @@ function bind(root) {
             : `<div class="contexts-view__grid">${visible.map(renderContextCard).join("")}</div>`;
       }
     }
-  });
+  };
+  root.addEventListener("input", boundInput);
 }

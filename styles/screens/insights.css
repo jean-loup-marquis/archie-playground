@@ -148,16 +148,12 @@
   gap: var(--ref-spacing-sm);
 }
 
+/* Surface, border, radius and padding come from `.ap-card` on the element —
+   only what makes this card a clickable health tile lives here. */
 .analytics-card {
   position: relative;
-  display: flex;
-  flex-direction: column;
   align-items: flex-start;
   gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-sm);
-  border: 1px solid var(--ref-color-grey-10);
-  border-radius: var(--ref-border-radius-md);
-  background: var(--ref-color-white);
   cursor: pointer;
   transition:
     border-color var(--ref-animation-short) var(--app-ease-out),
@@ -453,53 +449,6 @@
   }
 }
 
-/* ---- Report Studio bridge ---------------------------------------------- */
-
-.analytics-bridge {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-md);
-  padding: var(--ref-spacing-md);
-  border: 1px solid var(--ref-color-grey-10);
-  border-radius: var(--ref-border-radius-md);
-  flex-wrap: wrap;
-}
-
-/* Muted, and no coloured CTA: an Archie-only account is being told what exists,
-   not pushed. The locked state has to be resistible or it reads as a nag. */
-.analytics-bridge--locked {
-  background: var(--ref-color-grey-05);
-}
-
-.analytics-bridge--entitled {
-  background: var(--ref-color-white);
-}
-
-.analytics-bridge__text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-  flex: 1 1 320px;
-}
-
-.analytics-bridge__title {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin: 0;
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.analytics-bridge__body {
-  margin: 0;
-  font-size: var(--ref-font-size-sm);
-  color: var(--ref-color-grey-60);
-}
-
 .insights-view__empty {
   display: flex;
   flex-direction: column;
@@ -654,13 +603,13 @@
 .insights-calendar__grid {
   display: grid;
   grid-template-columns: repeat(18, 1fr);
-  gap: 3px;
+  gap: var(--ref-spacing-xxxs);
   margin-bottom: var(--ref-spacing-xs);
 }
 
 .insights-calendar__cell {
   aspect-ratio: 1;
-  border-radius: 2px;
+  border-radius: var(--ref-border-radius-sm);
   background: var(--ref-color-grey-10);
 }
 
