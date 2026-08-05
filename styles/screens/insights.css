@@ -559,10 +559,10 @@
   }
 }
 
-/* Two cards in one grid cell, so the calendar keeps the half-width it needs to
-   stay readable — 18 cells across a third of the row would shrink them back to
-   the size 443e7414 fixed. Transparent: the cards carry the surface. */
-.insights-usage__bars {
+/* Both cells stack their cards, which is what keeps the calendar at the half-width
+   it needs to stay readable — 18 cells across a third of the row would shrink them
+   back to the size 443e7414 fixed. Transparent: the cards carry the surface. */
+.insights-usage__col {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-sm);

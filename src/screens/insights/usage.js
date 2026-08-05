@@ -28,14 +28,17 @@ export function renderUsageTab() {
     <section class="insights-view__section">
       <h2 class="insights-view__section-title">How you work</h2>
       <div class="insights-usage__work">
-        <div class="insights-usage__bars">
+        <div class="insights-usage__col">
           ${renderBars(
             "Where you publish",
             work.networks.map((n) => ({ value: n.share, caption: `${n.label} · ${n.share}%` })),
           )}
           ${renderBars("The tone that recurs", toneBars())}
         </div>
-        ${renderCalendar(work)}
+        <div class="insights-usage__col">
+          ${renderCalendar(work)}
+          ${renderWorkNote(work.calendarNote)}
+        </div>
       </div>
     </section>
     ${renderVoiceBlock(voice)}`;
@@ -142,7 +145,7 @@ function renderIntensityLegend() {
 
 // Its own range label: 90 days is not the stretch the section above covers, and a
 // grid of 90 cells states no period on its own.
-function renderCalendar({ calendar, calendarLabel, calendarNote, streak, longestStreak }) {
+function renderCalendar({ calendar, calendarLabel, streak, longestStreak }) {
   const cells = calendar
     .map((level) => `<span class="insights-calendar__cell insights-calendar__cell--${level}"></span>`)
     .join("");
@@ -157,6 +160,19 @@ function renderCalendar({ calendar, calendarLabel, calendarNote, streak, longest
         ${cells}
       </div>
       ${renderIntensityLegend()}
-      <span class="recap__overview-narrative">${escapeText(calendarNote)}</span>
+    </div>`;
+}
+
+// The one conclusion on this tab, so it gets a card of its own rather than a line
+// pinned under the grid it was read from — the grid shows a pattern, this names it.
+//
+// A bare `p`, deliberately: `base.css` already puts --sys-text-style-body-* and
+// --sys-text-color-default on `body` and zeroes `p` margins, so prose IS the
+// default here. The muted italic it used to wear was the deviation, and it belonged
+// to a caption inside a card, not to a card that is only this sentence.
+function renderWorkNote(note) {
+  return `
+    <div class="recap__widget">
+      <p>${escapeText(note)}</p>
     </div>`;
 }
