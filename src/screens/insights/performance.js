@@ -1,6 +1,6 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=21";
-import { getContexts } from "../../contexts-store.js?v=47";
-import { objectiveCardsFor, archieImpact } from "../../mocks.js?v=73";
+import { getContexts } from "../../contexts-store.js?v=48";
+import { objectiveCardsFor, archieImpact } from "../../mocks.js?v=74";
 import { navigate } from "../../router.js?v=30";
 import { renderEmptyState } from "../../components/empty-state.js?v=1";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=2";

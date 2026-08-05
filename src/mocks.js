@@ -2162,6 +2162,89 @@ export function archieImpact(context) {
   return ARCHIE_IMPACT[context.id] || null;
 }
 
+// ---- Archie's usage (the Insights › Usage tab) -----------------------------
+//
+// The counterpoint to the objective tables: what Archie produced, and how you work
+// with it. Read once, warmly — a hook, not a scoreboard, hence a narrative line per
+// figure.
+//
+// `keptRate` and `calendar` are the two figures the platform records nowhere today:
+// nothing tracks whether a draft was edited after generation, and no timestamp of
+// creation activity is stored. The spec's data table carries that requirement.
+//
+// Playbook count and tone distribution are deliberately absent here — they are
+// derived from the real Playbooks so this tab cannot contradict /contexts.
+const ARCHIE_USAGE = {
+  lead: {
+    before: "Archie has written",
+    highlight: "148,200 words",
+    after: "for you this month — enough to publish every week for two years.",
+  },
+  produced: {
+    keptRate: 71,
+    widgets: [
+      {
+        id: "usage-drafts",
+        title: "Drafts generated",
+        value: "2,431",
+        variation: 18,
+        size: "mini",
+        narrative: "81 a week on average.",
+      },
+      {
+        id: "usage-posts",
+        title: "Posts published",
+        value: "318",
+        variation: 12,
+        size: "mini",
+        narrative: "13% of drafts make it online.",
+      },
+      {
+        id: "usage-sources",
+        title: "Sources digested",
+        value: "67",
+        variation: 9,
+        size: "mini",
+        narrative: "12 of them reused more than once.",
+      },
+    ],
+  },
+  work: {
+    networks: [
+      { label: "LinkedIn", share: 62 },
+      { label: "X", share: 24 },
+      { label: "Instagram", share: 14 },
+    ],
+    // 90 days of intensity, 0–3, hand-authored: this file forbids randomness, and a
+    // calendar that shifts per reload makes a screenshot useless as a reference.
+    calendar: [
+      0, 1, 2, 0, 3, 2, 0, 1, 3, 3, 0, 2, 1, 3, 2, 0, 3, 3, 1, 0, 2, 0, 3, 3, 1, 0, 2, 3, 0, 1, 2, 3, 0, 3, 2, 1, 3, 3,
+      0, 2, 0, 2, 1, 3, 0, 3, 2, 0, 3, 1, 2, 3, 3, 0, 1, 2, 3, 0, 3, 3, 3, 0, 1, 2, 3, 3, 0, 2, 1, 0, 3, 2, 3, 1, 0, 3,
+      2, 3, 3, 0, 2, 1, 3, 0, 3, 2, 1, 3, 0, 2,
+    ],
+    calendarLabel: "Last 90 days",
+    calendarNote: "Your Tuesday is your most productive day.",
+    streak: 6,
+    longestStreak: 21,
+  },
+};
+
+export function archieUsage() {
+  return ARCHIE_USAGE;
+}
+
+// Derived, never mocked: a hardcoded tone would let the Usage tab contradict the
+// Playbook list the moment someone edits a Playbook.
+export function toneDistribution() {
+  const counts = new Map();
+  for (const context of contexts) {
+    for (const tone of context.tones || []) counts.set(tone, (counts.get(tone) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
 // The metrics the Playbook's report shows, and where each one sits in it.
 //
 // The report is fixed: always the same six metrics, in the same places. It's a

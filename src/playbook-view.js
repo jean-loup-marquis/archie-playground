@@ -18,12 +18,12 @@ import { html, raw, escapeHtml as esc } from "./utils.js?v=21";
 import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=25";
 import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=1";
 import { isFlagOn } from "./feature-flags.js?v=18";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=39";
-import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=73";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=40";
+import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=74";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "./objective-scoring.js?v=1";
 import { renderEditorialBanner } from "./components/editorial-banner.js?v=2";
 import { renderMiniWidget } from "./components/report-widget.js?v=2";
-import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=8";
+import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=9";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
