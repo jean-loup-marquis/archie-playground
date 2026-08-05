@@ -5,7 +5,7 @@ import { navigate } from "../../router.js?v=30";
 import { renderEmptyState } from "../../components/empty-state.js?v=1";
 import { flaggedCount } from "../../components/action-drawer.js?v=9";
 import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=5";
-import { renderUsageTab } from "./usage.js?v=3";
+import { renderUsageTab } from "./usage.js?v=4";
 
 // Insights — the portfolio layer above a single Playbook's detail, as four tabs.
 //
@@ -29,8 +29,6 @@ const TABS = [
 const DEFAULT_TAB = "usage";
 
 let unsubscribe = null;
-let boundTarget = null;
-let boundClick = null;
 let unbindTab = null;
 
 export function renderInsights(params, target) {
@@ -60,10 +58,7 @@ function teardown() {
     unsubscribe();
     unsubscribe = null;
   }
-  if (boundTarget && boundClick) boundTarget.removeEventListener("click", boundClick);
   if (unbindTab) unbindTab();
-  boundTarget = null;
-  boundClick = null;
   unbindTab = null;
 }
 
@@ -73,14 +68,7 @@ function renderPage(active) {
     <div class="insights-view__page">
       ${renderHead()}
       ${renderTabNav(active)}
-      <div
-        class="insights-view__panel"
-        role="tabpanel"
-        id="insights-panel-${active}"
-        aria-labelledby="insights-tab-${active}"
-      >
-        ${tab.render()}
-      </div>
+      <div class="insights-view__panel">${tab.render()}</div>
     </div>`;
 }
 
@@ -109,24 +97,28 @@ function renderHead() {
     </header>`;
 }
 
+// Navigation, not the ARIA tab widget: each entry is its own URL, deep-linkable
+// and walked by the back button. role="tab" would promise arrow-key navigation
+// within one panel, and aria-controls would have to name three panels that are
+// not in the DOM — only the active tab renders. aria-current is the whole
+// contract a nav owes. `.ap-tabs` stays for the DS look, as content-workspace
+// already uses it with no roles at all.
 function renderTabNav(active) {
   const tabs = TABS.map(
     (t) => `
-    <button
-      type="button"
+    <a
       class="ap-tabs-tab ${t.id === active ? "active" : ""}"
-      role="tab"
-      id="insights-tab-${t.id}"
-      aria-selected="${t.id === active}"
-      aria-controls="insights-panel-${t.id}"
-      data-insights-tab="${t.id}"
+      href="#/insights/${t.id}"
+      ${t.id === active ? 'aria-current="page"' : ""}
     >
       <i class="${t.icon}" aria-hidden="true"></i>
       <span>${t.label}</span>
-    </button>`,
+    </a>`,
   ).join("");
 
-  return `<div class="ap-tabs insights-view__tabs"><div class="ap-tabs-nav" role="tablist">${tabs}</div></div>`;
+  return `<nav class="ap-tabs insights-view__tabs" aria-label="Insights sections">
+      <div class="ap-tabs-nav">${tabs}</div>
+    </nav>`;
 }
 
 function renderVoicePlaceholder() {
@@ -147,13 +139,9 @@ function renderTeamPlaceholder() {
   });
 }
 
-// Tabs navigate rather than mutating local state, so the back button walks them.
+// The tab nav needs no handler: its entries are `#/` links, which the hash
+// router already answers on hashchange. Only the active tab's own delegation
+// gets bound here.
 function bind(root, active) {
-  boundTarget = root;
-  boundClick = (event) => {
-    const tab = event.target.closest("[data-insights-tab]");
-    if (tab) navigate(`/insights/${tab.dataset.insightsTab}`);
-  };
-  root.addEventListener("click", boundClick);
   unbindTab = TABS.find((t) => t.id === active)?.bind?.(root) || null;
 }

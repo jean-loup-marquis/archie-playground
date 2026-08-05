@@ -586,10 +586,12 @@
   background: var(--ref-color-white);
 }
 
+/* Matches .recap__overview-metric: this is the block's headline rate, so it
+   cannot render smaller than the volumes sitting beside it. */
 .insights-gauge__value {
   position: relative;
-  font-size: var(--sys-text-style-h3-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-size: var(--ref-font-size-xl);
+  font-weight: var(--ref-font-weight-bold);
   color: var(--ref-color-grey-100);
 }
 
@@ -662,14 +664,46 @@
   background: var(--ref-color-grey-10);
 }
 
+/* green-60 rather than green-40 for the first step: against grey-10 that is
+   1.46:1 instead of 1.21:1 — still the best this ramp allows, since its full
+   span is only 4.19:1. The legend below is what makes the scale readable. */
 .insights-calendar__cell--1 {
-  background: var(--ref-color-green-40);
+  background: var(--ref-color-green-60);
 }
 .insights-calendar__cell--2 {
   background: var(--ref-color-green-100);
 }
 .insights-calendar__cell--3 {
   background: var(--ref-color-green-150);
+}
+
+.insights-calendar__legend {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: var(--ref-spacing-xs);
+}
+
+/* The legend's swatches are samples, not data, so they keep a fixed size
+   instead of inheriting the grid cell's aspect-ratio stretch. */
+.insights-calendar__legend .insights-calendar__cell {
+  width: 10px;
+  height: 10px;
+  aspect-ratio: auto;
+  flex: 0 0 auto;
+}
+
+.insights-calendar__legend-label {
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+.insights-calendar__legend-label:first-child {
+  margin-right: var(--ref-spacing-xxxs);
+}
+
+.insights-calendar__legend-label:last-child {
+  margin-left: var(--ref-spacing-xxxs);
 }
 
 .ap-table-empty {

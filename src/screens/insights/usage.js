@@ -84,6 +84,32 @@ function renderBars(title, rows) {
     </div>`;
 }
 
+const INTENSITY_LABELS = ["no activity", "light", "moderate", "heavy"];
+
+// Four shades of one hue cannot separate by 3:1 per step — the palette's whole
+// green ramp spans 4.19:1, so three steps give ~1.6:1 at best. The shades carry
+// the pattern; the legend and this sentence carry the meaning.
+function calendarSummary(calendar) {
+  const counts = INTENSITY_LABELS.map((_, level) => calendar.filter((v) => v === level).length);
+  const parts = counts.map((n, level) => `${n} ${INTENSITY_LABELS[level]}`);
+  return `Creation activity over ${calendar.length} days: ${parts.join(", ")}.`;
+}
+
+// A shade scale is unreadable without a key — the grid says "more here than
+// there", never how much. Ends labelled rather than every step: the middle two
+// are read by position between them.
+function renderIntensityLegend() {
+  const swatches = INTENSITY_LABELS.map(
+    (_, level) => `<span class="insights-calendar__cell insights-calendar__cell--${level}" aria-hidden="true"></span>`,
+  ).join("");
+  return `
+    <div class="insights-calendar__legend">
+      <span class="insights-calendar__legend-label">Less</span>
+      ${swatches}
+      <span class="insights-calendar__legend-label">More</span>
+    </div>`;
+}
+
 // Its own range label, so it does not contradict the tab's 30-day header.
 function renderCalendar({ calendar, calendarLabel, calendarNote, streak, longestStreak }) {
   const cells = calendar
@@ -96,9 +122,10 @@ function renderCalendar({ calendar, calendarLabel, calendarNote, streak, longest
         <span class="ap-status grey no-dot">Longest: ${longestStreak} days</span>
       </div>
       <span class="insights-calendar__range">${escapeText(calendarLabel)}</span>
-      <div class="insights-calendar__grid" role="img" aria-label="Creation activity over ${calendar.length} days">
+      <div class="insights-calendar__grid" role="img" aria-label="${escapeText(calendarSummary(calendar))}">
         ${cells}
       </div>
+      ${renderIntensityLegend()}
       <span class="recap__overview-narrative">${escapeText(calendarNote)}</span>
     </div>`;
 }
