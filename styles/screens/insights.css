@@ -587,13 +587,17 @@
   gap: var(--ref-spacing-xxxs);
 }
 
+/* grey-20 stays a --ref-*: the DS has no semantic token for the unfilled half of a
+   progress indicator, and every #D6DAE0 --comp-* is marked internal. */
 .insights-streak__ladder > i {
   color: var(--ref-color-grey-20);
   font-size: var(--sys-icon-css-sm);
 }
 
+/* --sys-color-success-light-text, not green-150 they both resolve to: an earned rung
+   means something went right, which is what the semantic token is for. */
 .insights-streak__ladder > i.is-earned {
-  color: var(--ref-color-green-150);
+  color: var(--sys-color-success-light-text);
 }
 
 .insights-bars__title {

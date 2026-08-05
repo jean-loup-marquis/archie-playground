@@ -166,10 +166,14 @@ const STREAK_MILESTONES = [3, 7, 14, 30, 60];
 function renderStreak(streak) {
   const passed = STREAK_MILESTONES.filter((m) => streak >= m).length;
   const next = STREAK_MILESTONES.find((m) => m > streak);
+  // No `title` on the stars. a94d3015 took a figure out of a tooltip on this page for
+  // the reason that applies here too: hover-only text is unreachable by keyboard, and
+  // on an aria-hidden element it reaches nothing at all. The rungs go in the ladder's
+  // own label instead, and the next one is on screen in the narrative below.
   const stars = STREAK_MILESTONES.map(
-    (m, i) =>
-      `<i class="${i < passed ? "ap-icon-star_fill is-earned" : "ap-icon-star"}" aria-hidden="true" title="${m} days"></i>`,
+    (_, i) => `<i class="${i < passed ? "ap-icon-star_fill is-earned" : "ap-icon-star"}" aria-hidden="true"></i>`,
   ).join("");
+  const ladderLabel = `${passed} of ${STREAK_MILESTONES.length} milestones reached — ${STREAK_MILESTONES.join(", ")} days`;
 
   return `
     <div class="recap__widget recap__widget--mini">
@@ -177,11 +181,7 @@ function renderStreak(streak) {
         <span class="recap__overview-title">Current streak</span>
         <div class="recap__overview-content">
           <div class="recap__overview-metric">${escapeText(dayCount(streak))}</div>
-          <div
-            class="insights-streak__ladder"
-            role="img"
-            aria-label="${passed} of ${STREAK_MILESTONES.length} milestones reached"
-          >
+          <div class="insights-streak__ladder" role="img" aria-label="${escapeText(ladderLabel)}">
             ${stars}
           </div>
         </div>
