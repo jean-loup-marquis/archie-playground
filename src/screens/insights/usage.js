@@ -14,7 +14,6 @@ export function renderUsageTab() {
   const { lead, produced, work, voice } = archieUsage();
 
   return `
-    <p class="insights-tab__period">Last 30 days</p>
     ${renderEditorialBanner({ lead })}
     <section class="insights-view__section">
       <h2 class="insights-view__section-title">What Archie produced</h2>
