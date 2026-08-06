@@ -4,7 +4,7 @@ import { getContexts, subscribe as subscribeContexts } from "../../contexts-stor
 import { navigate } from "../../router.js?v=30";
 import { flaggedCount } from "../../components/action-drawer.js?v=14";
 import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=16";
-import { renderUsageTab } from "./usage.js?v=21";
+import { renderUsageTab } from "./usage.js?v=24";
 
 // Insights — the portfolio layer above a single Playbook's detail, as two tabs.
 //

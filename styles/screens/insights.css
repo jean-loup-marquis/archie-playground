@@ -544,38 +544,43 @@
   color: var(--ref-color-grey-100);
 }
 
+/* One grid of four, not two columns of stacked cards.
+
+   Nesting a column inside a column let each side grow to its own length: the left
+   ran 514px, the right 652px, and the 138px difference read as a hole under the last
+   bars card. Four columns put every card on one module instead, so a row ends where
+   its neighbours end:
+
+     [ Where you publish  ][ Current ][ Longest ]   ← 148 / 150 / 150, near enough
+     [ The tone that recurs ][ Creation activity ]
+                             [ the conclusion    ]
+
+   The two-column cards land at the same 462px the old layout gave them, so the
+   calendar keeps the 18-cell width 443e7414 widened it to. */
 .insights-usage__work {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--ref-spacing-sm);
+}
+
+.insights-usage__wide {
+  grid-column: span 2;
+}
+
+/* Placed, not flowed: the conclusion belongs under the grid it was read off, and
+   auto-placement would put it in the next free cell — beside the calendar. */
+.insights-usage__note {
+  grid-column: 3 / span 2;
 }
 
 @media (max-width: 900px) {
   .insights-usage__work {
     grid-template-columns: minmax(0, 1fr);
   }
-}
 
-/* Both cells stack their cards, which is what keeps the calendar at the half-width
-   it needs to stay readable — 18 cells across a third of the row would shrink them
-   back to the size 443e7414 fixed. Transparent: the cards carry the surface. */
-.insights-usage__col {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-sm);
-}
-
-/* The streak pair sits above the grid it is measured from, two across rather than
-   stacked: they are one reading — where you are, and where your best was. */
-.insights-usage__streaks {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-
-@media (max-width: 900px) {
-  .insights-usage__streaks {
-    grid-template-columns: minmax(0, 1fr);
+  .insights-usage__wide,
+  .insights-usage__note {
+    grid-column: auto;
   }
 }
 

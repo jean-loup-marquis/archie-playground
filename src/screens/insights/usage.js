@@ -29,21 +29,12 @@ export function renderUsageTab() {
     <section class="insights-view__section">
       <h2 class="insights-view__section-title">How you work</h2>
       <div class="insights-usage__work">
-        <div class="insights-usage__col">
-          ${renderBars(
-            "Where you publish",
-            work.networks.map((n) => ({ value: n.share, caption: `${n.label} · ${n.share}%` })),
-          )}
-          ${renderBars("The tone that recurs", toneBars())}
-        </div>
-        <div class="insights-usage__col">
-          <div class="insights-usage__streaks">
-            ${renderStreak(work.streak)}
-            ${renderMiniWidget({ title: "Longest streak", value: dayCount(work.longestStreak) })}
-          </div>
-          ${renderCalendar(work)}
-          ${renderWorkNote(work.calendarNote)}
-        </div>
+        ${renderBars(
+          "Where you publish",
+          work.networks.map((n) => ({ value: n.share, caption: `${n.label} · ${n.share}%` })),
+        )}
+        ${renderStreak(work.streak)} ${renderLongestStreak(work)} ${renderBars("The tone that recurs", toneBars())}
+        ${renderCalendar(work)} ${renderWorkNote(work.calendarNote)}
       </div>
     </section>
     ${renderVoiceBlock(voice)}`;
@@ -116,7 +107,7 @@ function renderBars(title, rows) {
     )
     .join("");
   return `
-    <div class="recap__widget">
+    <div class="recap__widget insights-usage__wide">
       <div class="insights-bars">
         <h3 class="insights-bars__title">${escapeText(title)}</h3>
         ${bars}
@@ -192,6 +183,18 @@ function renderStreak(streak) {
     </div>`;
 }
 
+// The record, and how far the current run is from it — derived rather than mocked, so
+// the pair can never disagree. Without that second line the card was a title over a
+// number, stretched to match the height of the one beside it.
+function renderLongestStreak({ streak, longestStreak }) {
+  const gap = longestStreak - streak;
+  return renderMiniWidget({
+    title: "Longest streak",
+    value: dayCount(longestStreak),
+    narrative: gap > 0 ? `${dayCount(gap)} above your current one.` : "Your current run is your best.",
+  });
+}
+
 // Its own range label: 90 days is not the stretch the section above covers, and a
 // grid of 90 cells states no period on its own. The streak figures used to sit in
 // this card's header — they are their own widgets now, so the grid is only the grid.
@@ -200,7 +203,7 @@ function renderCalendar({ calendar, calendarLabel }) {
     .map((level) => `<span class="insights-calendar__cell insights-calendar__cell--${level}"></span>`)
     .join("");
   return `
-    <div class="recap__widget">
+    <div class="recap__widget insights-usage__wide">
       <h3 class="insights-bars__title">Creation activity</h3>
       <span class="insights-calendar__range">${escapeText(calendarLabel)}</span>
       <div class="insights-calendar__grid" role="img" aria-label="${escapeText(calendarSummary(calendar))}">
@@ -217,7 +220,7 @@ function renderCalendar({ calendar, calendarLabel }) {
 // full-width it would read as a conclusion about the whole section.
 function renderWorkNote(note) {
   return `
-    <p class="editorial-lead">
+    <p class="editorial-lead insights-usage__note">
       <i class="ap-icon-quote" aria-hidden="true"></i>
       ${escapeText(note)}
     </p>`;
