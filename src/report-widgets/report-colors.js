@@ -27,6 +27,7 @@ const DATA_TOKENS = [
 // repo) and 22.x (ui-charts), but both resolve to #5D6A82.
 const GREY_TOKENS = {
   10: "--ref-color-grey-10",
+  20: "--ref-color-grey-20",
   60: "--ref-color-grey-60",
   85: "--ref-color-grey-80",
   100: "--ref-color-grey-100",

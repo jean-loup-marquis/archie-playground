@@ -22,7 +22,8 @@ import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=
 import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGET_CHART_DAYS } from "./mocks.js?v=80";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "./objective-scoring.js?v=1";
 import { renderEditorialBanner } from "./components/editorial-banner.js?v=3";
-import { renderMiniWidget } from "./components/report-widget.js?v=5";
+import { renderWidgetCard, mountWidgetCharts } from "./report-widgets/widget-card.js?v=1";
+import { buildColumnChartSeries } from "./report-widgets/chart-builders.js?v=1";
 import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=14";
 
 // Audience & goals — chip fields (multi-value), in display order.
@@ -1726,200 +1727,46 @@ function renderObjectivesPanel(data) {
 // that nine columns keep a widget landscape rather than portrait.
 const WIDGET_SPANS = { mini: 3, small: 6 };
 
-// ── The chart ────────────────────────────────────────────────────────────
-//
-// Report Studio draws these with Highcharts, which can't come along: this repo
-// takes no external runtime dependency. So the SVG is written by hand against
-// the options the real chart is configured with (ChartColumnOptions.buildColumn +
-// ChartOptions.DEFAULT_OPTIONS in @agorapulse/ui-charts):
-//
-//   stacked columns, borderWidth 0, maxPointWidth 20
-//   borderRadius { radius: '50%', scope: 'stack', where: 'end' } — only the top
-//     of the whole stack is rounded, middle segments stay square
-//   grid lines + axis lines grey-10, 1px
-//   axis labels grey-85 at 12px, legend items grey-60 at 14px with 10px symbols
-//   series colours by index from the data palette
-const CHART_MAX_BAR = 20;
-const CHART_LABEL_SIZE = 12;
-const CHART_PAD = { top: 8, right: 20, bottom: 22, left: 38 }; // right = chart.spacingRight
-
-// A y-axis that stops on a round number, and the ticks to draw on the way up.
-function chartTicks(max, count = 4) {
-  if (max <= 0) return { top: 1, ticks: [0, 1] };
-  const rough = max / count;
-  const mag = 10 ** Math.floor(Math.log10(rough));
-  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= rough) ?? mag * 10;
-  const top = Math.ceil(max / step) * step;
-  const ticks = [];
-  for (let v = 0; v <= top + 1e-9; v += step) ticks.push(v);
-  return { top, ticks };
+// The x-axis labels the report uses for a 30-day range, as categories.
+function chartCategories() {
+  return WIDGET_CHART_DAYS.slice();
 }
 
-// Grouped thousands, matching the axis labels the report renders.
-function chartLabel(v) {
-  return v >= 1000 ? v.toLocaleString("en-US") : String(v);
+function toOverviewData(w) {
+  return {
+    title: w.title,
+    count: w.count,
+    unit: w.unit,
+    prefix: w.prefix,
+    variationPercent: w.variation,
+    narrative: w.narrative,
+  };
 }
 
-// A stack's top segment: rounded on the value side only, square where it meets
-// the segment below. Falls back to a plain rect when the segment is shorter than
-// its own corner radius, which is what stops a 2px sliver rendering as a blob.
-//
-// Every argument is a number — formatting happens here, at the end. Formatting on
-// the way in makes `y + h` string concatenation, which silently produces a path
-// full of NaN rather than an error.
-function stackTopPath(x, y, w, h, r) {
-  const f = (n) => n.toFixed(1);
-  const radius = Math.min(r, h);
-  if (radius <= 0.5) {
-    return `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}"></rect>`;
-  }
-  const d = [
-    `M${f(x)} ${f(y + h)}`,
-    `L${f(x)} ${f(y + radius)}`,
-    `Q${f(x)} ${f(y)} ${f(x + radius)} ${f(y)}`,
-    `L${f(x + w - radius)} ${f(y)}`,
-    `Q${f(x + w)} ${f(y)} ${f(x + w)} ${f(y + radius)}`,
-    `L${f(x + w)} ${f(y + h)}`,
-    "Z",
-  ].join(" ");
-  return `<path d="${d}"></path>`;
-}
-
-// `size` decides how many x labels fit — the real chart thins them the same way,
-// it just measures instead of counting.
-function renderChart(series, width, height, xLabelEvery) {
-  const days = WIDGET_CHART_DAYS.length;
-  const plotW = width - CHART_PAD.left - CHART_PAD.right;
-  const plotH = height - CHART_PAD.top - CHART_PAD.bottom;
-  if (plotW <= 0 || plotH <= 0) return "";
-
-  const totals = WIDGET_CHART_DAYS.map((_, i) => series.reduce((sum, s) => sum + (s.data[i] || 0), 0));
-  const { top, ticks } = chartTicks(Math.max(...totals));
-  const y = (v) => CHART_PAD.top + plotH - (v / top) * plotH;
-
-  const slot = plotW / days;
-  const barW = Math.min(CHART_MAX_BAR, slot * 0.72);
-
-  const grid = ticks
-    .map(
-      (t) =>
-        `<line x1="${CHART_PAD.left}" y1="${y(t).toFixed(1)}" x2="${width - CHART_PAD.right}" y2="${y(t).toFixed(1)}"></line>`,
-    )
-    .join("");
-
-  const yLabels = ticks
-    .map(
-      (t) => `<text x="${CHART_PAD.left - 8}" y="${(y(t) + 4).toFixed(1)}" text-anchor="end">${chartLabel(t)}</text>`,
-    )
-    .join("");
-
-  const xLabels = WIDGET_CHART_DAYS.map((d, i) =>
-    i % xLabelEvery
-      ? ""
-      : `<text x="${(CHART_PAD.left + slot * (i + 0.5)).toFixed(1)}" y="${height - 6}" text-anchor="middle">${d}</text>`,
-  ).join("");
-
-  // Bottom-up so the last series with a value owns the rounded cap.
-  const bars = WIDGET_CHART_DAYS.map((_, i) => {
-    const x = CHART_PAD.left + slot * (i + 0.5) - barW / 2;
-    let acc = 0;
-    const stack = series
-      .map((s, si) => {
-        const v = s.data[i] || 0;
-        if (v <= 0) return null;
-        const h = (v / top) * plotH;
-        const segY = y(acc + v);
-        acc += v;
-        return { si, segY, h, isTop: false, color: s.color };
-      })
-      .filter(Boolean);
-    if (stack.length) stack[stack.length - 1].isTop = true;
-    return stack
-      .map(
-        (seg) =>
-          `<g class="recap__chart-series recap__chart-series--${seg.color}">${
-            seg.isTop
-              ? stackTopPath(x, seg.segY, barW, seg.h, barW / 2)
-              : `<rect x="${x.toFixed(1)}" y="${seg.segY.toFixed(1)}" width="${barW.toFixed(1)}" height="${seg.h.toFixed(1)}"></rect>`
-          }</g>`,
-      )
-      .join("");
-  }).join("");
-
-  return `
-    <svg class="recap__chart" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="img" aria-label="Daily breakdown by profile">
-      <g class="recap__chart-grid">${grid}</g>
-      <g class="recap__chart-labels" font-size="${CHART_LABEL_SIZE}">${yLabels}${xLabels}</g>
-      <g class="recap__chart-bars">${bars}</g>
-    </svg>`;
-}
-
-// The legend the chart renders under it: a 10px dot plus the series name. The real
-// one paginates when the items don't fit, which is what the "1/3" pager is; how
-// many fit depends on the card's width, so it's driven off the size here.
-function renderChartLegend(series, { columns, visible }) {
-  const shown = series.slice(0, visible);
-  const pages = Math.ceil(series.length / visible);
-  return `
-    <div class="recap__chart-legend" style="--legend-columns: ${columns}">
-      ${shown
-        .map(
-          (s) => `
-        <span class="recap__legend-item">
-          <span class="recap__legend-dot recap__chart-series--${s.color}"></span>
-          <span class="recap__legend-name">${esc(s.name)}</span>
-        </span>`,
-        )
-        .join("")}
-      ${
-        pages > 1
-          ? `<span class="recap__legend-pager" aria-hidden="true">
-               <i class="ap-icon-arrow-up"></i><span>1/${pages}</span><i class="ap-icon-arrow-down"></i>
-             </span>`
-          : ""
-      }
-    </div>`;
-}
-
-// What the chart gets once the header and legend have taken theirs, at M's
-// nominal 489×320. The SVG carries a viewBox so it still scales cleanly if the
-// column ends up a little narrower — only M charts, S is the overview card.
-const CHART_LAYOUT = {
-  small: { w: 457, h: 184, xLabelEvery: 4, columns: 2, visible: 4 },
-};
-
-// ── The card ─────────────────────────────────────────────────────────────
-
-// M and up is the chart card: an h3 title, then the chart, then the legend.
-function renderChartBody(w) {
-  const layout = CHART_LAYOUT[w.size];
-  const series = chartSeriesFor(w.total);
-  return `
-    <div class="recap__widget-head">
-      <h3 class="recap__widget-title">${esc(w.title)}</h3>
-    </div>
-    <div class="recap__chart-wrapper">
-      ${renderChart(series, layout.w, layout.h, layout.xLabelEvery)}
-    </div>
-    ${renderChartLegend(series, layout)}`;
-}
-
-// The widget card, from widget-card.component.scss: 16px padding, 8px gap, a
-// grey-10 border at sys-border-radius-lg, and overflow hidden so a chart can't
-// spill. The real component splits this into a host plus an inner card because it
-// floats an action toolbar on the card's edge; there's nothing to float here.
-//
-// Placement is explicit rather than auto-flowed: the report's shape is fixed, and
-// spelling out each cell is what guarantees the chart lands beside its two stacked
-// neighbours instead of wherever the packing algorithm decides.
+// mini is the overview card; small and up is the chart card. Placement is explicit
+// rather than auto-flowed: the report's shape is fixed, and spelling out each cell is
+// what guarantees the chart lands beside its two stacked neighbours instead of
+// wherever the packing algorithm decides.
 function renderWidget(w) {
   const span = WIDGET_SPANS[w.size];
   const area = `grid-column: ${w.col} / span ${span}; grid-row: ${w.row} / span ${span}`;
-  if (w.size === "mini") return renderMiniWidget(w, { style: area });
-  return `
-    <div class="recap__widget recap__widget--${w.size}" style="${area}">
-      ${renderChartBody(w)}
-    </div>`;
+
+  if (w.size === "mini") {
+    return renderWidgetCard({ overviewData: toOverviewData(w) }, { style: area, size: "mini" });
+  }
+
+  return renderWidgetCard(
+    {
+      title: w.title,
+      chart: {
+        type: "column",
+        stacked: true,
+        categories: chartCategories(),
+        series: buildColumnChartSeries(chartSeriesFor(w.total)),
+      },
+    },
+    { style: area, size: w.size },
+  );
 }
 
 function renderPerformancePanel(data) {
@@ -2116,6 +1963,7 @@ function paint() {
 
   portalModal();
   attachScrollSpy();
+  mountWidgetCharts(mountTarget);
 }
 
 // The detail modals are moved to <body>: their backdrop is position:fixed, which

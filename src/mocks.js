@@ -2276,25 +2276,39 @@ export function toneDistribution() {
 //   ├─────┤     M     │   cols 4-9 rows 4-9
 //   │  S  │           │   cols 1-3 rows 7-9
 //   └─────┴───────────┘
+// `count` is the figure, unformatted — the ported formatCompactNumber decides how it
+// reads, so the report and the Insights hub cannot disagree about the same number.
+// `total` is a different quantity: what the widget's chart sums to over the 30 days.
 export const PLAYBOOK_REPORT = [
   {
     id: "avg-reach",
     title: "Avg reach per post",
-    value: "2,050",
+    count: 2050,
     total: 61500,
     variation: 6.2,
     size: "mini",
     col: 1,
     row: 1,
   },
-  { id: "eng-rate", title: "Engagement rate", value: "4.1%", total: 3400, variation: 0, size: "mini", col: 4, row: 1 },
-  { id: "cta", title: "CTA clicks", value: "126", total: 126, variation: 8.4, size: "mini", col: 7, row: 1 },
-  { id: "reach", title: "Reach", value: "18,400", total: 18400, variation: 30.2, size: "mini", col: 1, row: 4 },
-  { id: "views", title: "Video views", value: "9,320", total: 9320, variation: -25.1, size: "mini", col: 1, row: 7 },
+  {
+    id: "eng-rate",
+    title: "Engagement rate",
+    count: 4.1,
+    unit: "%",
+    total: 3400,
+    variation: 0,
+    size: "mini",
+    col: 4,
+    row: 1,
+  },
+  { id: "cta", title: "CTA clicks", count: 126, total: 126, variation: 8.4, size: "mini", col: 7, row: 1 },
+  { id: "reach", title: "Reach", count: 18400, total: 18400, variation: 30.2, size: "mini", col: 1, row: 4 },
+  { id: "views", title: "Video views", count: 9320, total: 9320, variation: -25.1, size: "mini", col: 1, row: 7 },
   {
     id: "followers",
     title: "Follower growth",
-    value: "+1,240",
+    count: 1240,
+    prefix: "+",
     total: 1240,
     variation: 12,
     size: "small",

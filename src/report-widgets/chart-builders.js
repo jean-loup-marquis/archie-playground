@@ -8,16 +8,30 @@ import { formatGroupedNumber } from "./number-formatting.js?v=1";
 // ChartOptions.DEFAULT_OPTIONS. Only the parts that survive without the zooming and
 // export chrome a report page carries and a prototype has no use for.
 function defaultOptions() {
-  const grey = { 10: greyColor(10), 60: greyColor(60), 85: greyColor(85), 100: greyColor(100) };
+  const grey = { 10: greyColor(10), 20: greyColor(20), 60: greyColor(60), 85: greyColor(85), 100: greyColor(100) };
   return {
     chart: { spacingRight: 20, style: { fontFamily: "var(--ref-font-family), Averta, sans-serif" } },
     credits: { enabled: false },
     title: { text: undefined },
+    // A profile name runs to forty characters, so it is truncated rather than allowed
+    // to claim a whole row: capping itemStyle.width lets several fit per line, and
+    // maxHeight caps the legend at two of them so it cannot eat the plot. What does
+    // not fit goes behind Highcharts' own pager — a real one, which paginates.
     legend: {
       borderWidth: 0,
       symbolHeight: 10,
-      itemStyle: { color: grey[60], fontSize: "14px", fontWeight: "normal" },
+      align: "left",
+      maxHeight: 46,
+      itemStyle: {
+        color: grey[60],
+        fontSize: "14px",
+        fontWeight: "normal",
+        width: 170,
+        whiteSpace: "nowrap",
+        textOverflow: "ellipsis",
+      },
       itemHoverStyle: { color: grey[100], fontWeight: "bold" },
+      navigation: { activeColor: grey[100], inactiveColor: grey[20], style: { color: grey[60], fontSize: "12px" } },
     },
     plotOptions: {
       series: { states: { hover: { brightness: 0 }, inactive: { enabled: true, opacity: 0.2 } }, connectNulls: true },
@@ -58,7 +72,16 @@ export function columnOptions({ stacked = false, categories } = {}) {
   return {
     ...base,
     chart: { ...base.chart, type: "column" },
-    xAxis: { ...base.xAxis, type: "category", categories, minTickInterval: 1 },
+    // Every 4th label, horizontal. 30 days cannot all be written across one card, and
+    // the report thins them rather than tilting them — a tilted date axis in a 470px
+    // card costs more height than the labels are worth.
+    xAxis: {
+      ...base.xAxis,
+      type: "category",
+      categories,
+      minTickInterval: 1,
+      labels: { ...base.xAxis.labels, rotation: 0, step: 4 },
+    },
     plotOptions: {
       ...base.plotOptions,
       column: {

@@ -7,15 +7,19 @@ import { formatCompactNumber, formatGroupedNumber, roundVariationPercent } from 
 // from a single object and so does this — `overviewData`, the same shape as
 // WidgetCardOverviewData:
 //
-//   { title, titleTooltip?, count?, metric?, unit?, variationPercent?,
+//   { title, titleTooltip?, count?, metric?, unit?, prefix?, variationPercent?,
 //     variationDisplayed?, roundedCountEnabled?, narrative? }
 //
 // `metric` (a string) wins over `count` (a number). That branch is what the Voice
 // widgets are — a favourite tone is a KPI whose value happens to be words — and it
 // is why they do not need a card of their own.
 //
-// `narrative` is the prototype's own addition, not in the real component: a second
-// line under the variation for the ratio a cumulative figure cannot show.
+// `roundedCountEnabled` is opt-in, the mirror of the report's ROUNDED overviewMetric
+// format: off, a count reads with grouped thousands ("18,400"); on, compact ("18.4K").
+//
+// Two additions, neither in the real component: `prefix`, for a figure that only
+// means anything signed ("+1,240" of follower growth), and `narrative`, a second line
+// carrying the ratio a cumulative figure cannot show on its own.
 
 const SIZE_CENTERED = new Set(["small", "medium", "large"]);
 
@@ -53,9 +57,8 @@ function renderMetric(data) {
   if (data.count === null || data.count === undefined) {
     return "<span>—</span>";
   }
-  const rounded = data.roundedCountEnabled !== false;
-  const shown = rounded ? formatCompactNumber(data.count, true) : formatGroupedNumber(data.count);
-  return `<span>${escapeText(String(shown))}${escapeText(data.unit || "")}</span>`;
+  const shown = data.roundedCountEnabled ? formatCompactNumber(data.count, true) : formatGroupedNumber(data.count);
+  return `<span>${escapeText(data.prefix || "")}${escapeText(String(shown))}${escapeText(data.unit || "")}</span>`;
 }
 
 // `bodyHtml` replaces the metric+variation pair for the two Usage widgets whose

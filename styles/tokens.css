@@ -86,7 +86,10 @@
      order. The DS ships them as --ref-color-data-*-100, but only from ui-theme
      21 — this repo is pinned to 20.3.5, where they don't exist. Mirrored here
      rather than bumping the DS for one section; when ui-theme moves to 21,
-     delete these and point at the --ref tokens. */
+     delete these and point at the --ref tokens.
+
+     No stylesheet reads these: src/report-widgets/report-colors.js resolves them
+     once and hands the hex strings to Highcharts, which cannot take a var(). */
   --app-chart-cyan: #12aaba;
   --app-chart-sun: #d98800;
   --app-chart-peony: #cc2878;
