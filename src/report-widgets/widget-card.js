@@ -29,10 +29,12 @@ function renderHeader(data) {
 }
 
 export function renderWidgetCard(data, { style = "", size = "mini" } = {}) {
-  const attrs = style ? ` style="${escapeAttr(style)}"` : "";
+  const attrs =
+    ` class="widget-card${data.className ? ` ${escapeAttr(data.className)}` : ""}"` +
+    (style ? ` style="${escapeAttr(style)}"` : "");
 
   if (data.overviewData) {
-    return `<div class="widget-card"${attrs}>${renderOverviewCard(data.overviewData, { size, bodyHtml: data.bodyHtml })}</div>`;
+    return `<div${attrs}>${renderOverviewCard(data.overviewData, { size, bodyHtml: data.bodyHtml })}</div>`;
   }
 
   let body = data.bodyHtml || "";
@@ -43,7 +45,7 @@ export function renderWidgetCard(data, { style = "", size = "mini" } = {}) {
   }
 
   return `
-    <div class="widget-card"${attrs}>
+    <div${attrs}>
       ${renderHeader(data)}
       ${body}
       ${data.footerHtml ? `<div class="widget-card__footer">${data.footerHtml}</div>` : ""}

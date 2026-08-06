@@ -5,6 +5,7 @@ import { navigate } from "../../router.js?v=30";
 import { flaggedCount } from "../../components/action-drawer.js?v=14";
 import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=16";
 import { renderUsageTab } from "./usage.js?v=24";
+import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=1";
 
 // Insights — the portfolio layer above a single Playbook's detail, as two tabs.
 //
@@ -39,6 +40,7 @@ export function renderInsights(params, target) {
   teardown();
   const paint = () => {
     target.innerHTML = html`<section class="screen insights-view">${raw(renderPage(active))}</section>`;
+    mountWidgetCharts(target);
   };
   paint();
   bind(target, active);

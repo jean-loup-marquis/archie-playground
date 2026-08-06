@@ -2,7 +2,9 @@ import { escapeText } from "../../utils.js?v=21";
 import { archieUsage, toneDistribution } from "../../mocks.js?v=80";
 import { getContexts } from "../../contexts-store.js?v=53";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=3";
-import { renderMiniWidget } from "../../components/report-widget.js?v=5";
+import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=1";
+import { renderOverviewCard, toOverviewData } from "../../report-widgets/widget-overview.js?v=1";
+import { buildCategoryBarChartSeries } from "../../report-widgets/chart-builders.js?v=1";
 
 // Insights › Usage — what Archie produced, how you work with it, and your voice.
 //
@@ -23,7 +25,7 @@ export function renderUsageTab() {
       ${renderEditorialBanner({ lead })}
       <div class="insights-usage__produced">
         ${renderGauge(produced.keptRate)}
-        ${produced.widgets.map((w) => renderMiniWidget(w)).join("")}
+        ${produced.widgets.map((w) => renderWidgetCard({ overviewData: toOverviewData(w) })).join("")}
       </div>
     </section>
     <section class="insights-view__section">
@@ -31,7 +33,8 @@ export function renderUsageTab() {
       <div class="insights-usage__work">
         ${renderBars(
           "Where you publish",
-          work.networks.map((n) => ({ value: n.share, caption: `${n.label} · ${n.share}%` })),
+          work.networks.map((n) => ({ label: n.label, value: n.share, valueLabel: `${n.share}%` })),
+          { colorByCategory: true },
         )}
         ${renderStreak(work.streak)} ${renderLongestStreak(work)} ${renderBars("The tone that recurs", toneBars())}
         ${renderCalendar(work)} ${renderWorkNote(work.calendarNote)}
@@ -42,43 +45,57 @@ export function renderUsageTab() {
 
 // Four equal things, written as a list and rendered through one path — which is what
 // stops a fifth one being pasted in with a different shape. None of them carries a
-// trend, so none gets a `variation`; the opening carries `quote` because a hook is a
-// snippet of writing, not a figure.
+// trend, so none gets a `variation`.
+//
+// They are KPI tiles whose value happens to be words rather than a figure, which the
+// overview card already has a branch for (`metric`) — so none of them needs a card of
+// its own. Only at mini: that branch clamps to two lines, and the centred sizes set
+// the metric to 64px, which no sentence survives. The opening keeps its quote marks
+// in the string rather than a quote block, so all four read as one row.
 function renderVoiceBlock(voice) {
   const cards = [
-    { title: "Favourite tone", value: voice.favouriteTone, narrative: `${voice.toneRunnerUp} runs a close second.` },
+    { title: "Favourite tone", metric: voice.favouriteTone, narrative: `${voice.toneRunnerUp} runs a close second.` },
     {
       title: "Favourite opening",
-      value: voice.favouriteHook.text,
-      quote: true,
+      metric: `“${voice.favouriteHook.text}”`,
       narrative: `Used ${voice.favouriteHook.uses} times.`,
     },
-    { title: "Signature word", value: `“${voice.signatureWord}”` },
-    { title: "Always avoided", value: voice.alwaysAvoid },
+    { title: "Signature word", metric: `“${voice.signatureWord}”` },
+    { title: "Always avoided", metric: voice.alwaysAvoid },
   ];
   return `
     <section class="insights-view__section">
       <h2 class="insights-view__section-title">Your voice</h2>
-      <div class="insights-voice">${cards.map((c) => renderMiniWidget(c)).join("")}</div>
+      <div class="insights-voice">
+        ${cards.map((c) => renderWidgetCard({ overviewData: toOverviewData(c) })).join("")}
+      </div>
     </section>`;
 }
 
 // A gauge expresses a part of a whole, so it is reserved for the one rate on this tab
-// — putting one on a volume like "2,431 drafts" would be a visual lie. Same annulus
-// as the Playbook health ring, so the two read as one system.
+// — putting one on a volume like "2,431 drafts" would be a visual lie.
+//
+// The dial stays hand-drawn rather than becoming the report's half-donut: it is the
+// same annulus as the Playbook health ring, and converting one of the pair without the
+// other would break the thing that makes them read as one system. So it borrows the
+// card and the title from the real tile and substitutes only the middle.
 function renderGauge(rate) {
+  const dial = `
+    <div
+      class="insights-gauge__dial"
+      style="--gauge-progress: ${rate}"
+      role="img"
+      aria-label="${rate}% of drafts kept without editing"
+    >
+      <span class="insights-gauge__value">${escapeText(String(rate))}%</span>
+    </div>`;
+
   return `
-    <div class="recap__widget recap__widget--mini insights-gauge">
-      <span class="recap__overview-title">Kept without editing</span>
-      <div
-        class="insights-gauge__dial"
-        style="--gauge-progress: ${rate}"
-        role="img"
-        aria-label="${rate}% of drafts kept without editing"
-      >
-        <span class="insights-gauge__value">${escapeText(String(rate))}%</span>
-      </div>
-      <span class="recap__overview-narrative">Of 2,431 drafts generated.</span>
+    <div class="widget-card insights-gauge">
+      ${renderOverviewCard(
+        { title: "Kept without editing", narrative: "Of 2,431 drafts generated." },
+        { bodyHtml: dial },
+      )}
     </div>`;
 }
 
@@ -87,32 +104,22 @@ function renderGauge(rate) {
 function toneBars() {
   const total = getContexts().length || 1;
   return toneDistribution().map((t) => ({
+    label: t.label,
     value: (t.count / total) * 100,
-    caption: `${t.label} · ${t.count} ${t.count === 1 ? "Playbook" : "Playbooks"}`,
+    valueLabel: `${t.count} ${t.count === 1 ? "Playbook" : "Playbooks"}`,
   }));
 }
 
 // One card per group, so a reader compares bars inside a frame and not across one.
-// `.insights-bars` carries no rule of its own any more but stays: it is the block
-// child that keeps the title's and rows' margins from compounding with the card's
-// own flex `gap`.
-function renderBars(title, rows) {
-  const bars = rows
-    .map(
-      (r) => `
-      <div class="insights-bars__row">
-        <div class="insights-bars__bar" style="width: ${Math.max(4, Math.round(r.value))}%"></div>
-        <span class="insights-bars__caption">${escapeText(r.caption)}</span>
-      </div>`,
-    )
-    .join("");
-  return `
-    <div class="recap__widget insights-usage__wide">
-      <div class="insights-bars">
-        <h3 class="insights-bars__title">${escapeText(title)}</h3>
-        ${bars}
-      </div>
-    </div>`;
+// The report's BAR chart, which is what a distribution is over there: the category
+// names go on the axis, each bar takes its own palette position, and the share sits at
+// the bar's end. `rows` arrives in reading order — the axis is reversed for it.
+function renderBars(title, rows, { colorByCategory = false } = {}) {
+  return renderWidgetCard({
+    title,
+    chart: { type: "bar", series: buildCategoryBarChartSeries(title, rows, { colorByCategory }) },
+    className: "insights-usage__wide",
+  });
 }
 
 const INTENSITY_LABELS = ["no activity", "light", "moderate", "heavy"];
@@ -166,20 +173,21 @@ function renderStreak(streak) {
   ).join("");
   const ladderLabel = `${passed} of ${STREAK_MILESTONES.length} milestones reached — ${STREAK_MILESTONES.join(", ")} days`;
 
+  const body = `
+    <div class="overview-card__metric">${escapeText(dayCount(streak))}</div>
+    <div class="insights-streak__ladder" role="img" aria-label="${escapeText(ladderLabel)}">
+      ${stars}
+    </div>`;
+
   return `
-    <div class="recap__widget recap__widget--mini">
-      <div class="recap__overview">
-        <span class="recap__overview-title">Current streak</span>
-        <div class="recap__overview-content">
-          <div class="recap__overview-metric">${escapeText(dayCount(streak))}</div>
-          <div class="insights-streak__ladder" role="img" aria-label="${escapeText(ladderLabel)}">
-            ${stars}
-          </div>
-        </div>
-        <span class="recap__overview-narrative">
-          ${next ? `${escapeText(dayCount(next - streak))} to a ${next}-day streak.` : "Past every milestone."}
-        </span>
-      </div>
+    <div class="widget-card">
+      ${renderOverviewCard(
+        {
+          title: "Current streak",
+          narrative: next ? `${dayCount(next - streak)} to a ${next}-day streak.` : "Past every milestone.",
+        },
+        { bodyHtml: body },
+      )}
     </div>`;
 }
 
@@ -188,29 +196,34 @@ function renderStreak(streak) {
 // number, stretched to match the height of the one beside it.
 function renderLongestStreak({ streak, longestStreak }) {
   const gap = longestStreak - streak;
-  return renderMiniWidget({
-    title: "Longest streak",
-    value: dayCount(longestStreak),
-    narrative: gap > 0 ? `${dayCount(gap)} above your current one.` : "Your current run is your best.",
+  return renderWidgetCard({
+    overviewData: {
+      title: "Longest streak",
+      metric: dayCount(longestStreak),
+      narrative: gap > 0 ? `${dayCount(gap)} above your current one.` : "Your current run is your best.",
+    },
   });
 }
 
-// Its own range label: 90 days is not the stretch the section above covers, and a
-// grid of 90 cells states no period on its own. The streak figures used to sit in
-// this card's header — they are their own widgets now, so the grid is only the grid.
+// The one widget on this tab whose CONTENT is not the library's: a 90-day
+// contributions grid is not a shape Report Studio draws, so it stays hand-built. Only
+// the frame is the real one — the card, its title, its height contract — which is what
+// keeps it lined up with the tiles beside it rather than looking like a second design.
+//
+// Its own range label: 90 days is not the stretch the section above covers, and a grid
+// of 90 cells states no period on its own.
 function renderCalendar({ calendar, calendarLabel }) {
   const cells = calendar
     .map((level) => `<span class="insights-calendar__cell insights-calendar__cell--${level}"></span>`)
     .join("");
-  return `
-    <div class="recap__widget insights-usage__wide">
-      <h3 class="insights-bars__title">Creation activity</h3>
-      <span class="insights-calendar__range">${escapeText(calendarLabel)}</span>
-      <div class="insights-calendar__grid" role="img" aria-label="${escapeText(calendarSummary(calendar))}">
-        ${cells}
-      </div>
-      ${renderIntensityLegend()}
-    </div>`;
+  const body = `
+    <span class="insights-calendar__range">${escapeText(calendarLabel)}</span>
+    <div class="insights-calendar__grid" role="img" aria-label="${escapeText(calendarSummary(calendar))}">
+      ${cells}
+    </div>
+    ${renderIntensityLegend()}`;
+
+  return renderWidgetCard({ title: "Creation activity", bodyHtml: body, className: "insights-usage__wide" });
 }
 
 // The one conclusion on this tab, and no card around it: a card frames data, and

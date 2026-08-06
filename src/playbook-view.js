@@ -23,6 +23,7 @@ import { chartSeriesFor, objectiveCardsFor, archieImpact, PLAYBOOK_REPORT, WIDGE
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS } from "./objective-scoring.js?v=1";
 import { renderEditorialBanner } from "./components/editorial-banner.js?v=3";
 import { renderWidgetCard, mountWidgetCharts } from "./report-widgets/widget-card.js?v=1";
+import { toOverviewData } from "./report-widgets/widget-overview.js?v=1";
 import { buildColumnChartSeries } from "./report-widgets/chart-builders.js?v=1";
 import { flaggedCount as drawerFlaggedCount } from "./components/action-drawer.js?v=14";
 
@@ -1730,17 +1731,6 @@ const WIDGET_SPANS = { mini: 3, small: 6 };
 // The x-axis labels the report uses for a 30-day range, as categories.
 function chartCategories() {
   return WIDGET_CHART_DAYS.slice();
-}
-
-function toOverviewData(w) {
-  return {
-    title: w.title,
-    count: w.count,
-    unit: w.unit,
-    prefix: w.prefix,
-    variationPercent: w.variation,
-    narrative: w.narrative,
-  };
 }
 
 // mini is the overview card; small and up is the chart card. Placement is explicit

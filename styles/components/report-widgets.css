@@ -162,8 +162,12 @@
 
 /* Not in the real component. A cumulative figure ("2,431 drafts") cannot show the
    rate that makes it mean something, and this tab states no period to compare
-   against — so the second line carries the ratio a variation would have. */
+   against — so the second line carries the ratio a variation would have.
+
+   A sibling of __content rather than a child, so __content's flex:1 pushes it to the
+   card's floor: across a row of four, the narratives then sit on one line. */
 .overview-card__narrative {
+  flex-shrink: 0;
   font-size: var(--ref-font-size-sm);
   font-style: italic;
   color: var(--sys-text-color-light);

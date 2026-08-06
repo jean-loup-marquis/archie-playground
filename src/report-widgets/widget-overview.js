@@ -23,6 +23,21 @@ import { formatCompactNumber, formatGroupedNumber, roundVariationPercent } from 
 
 const SIZE_CENTERED = new Set(["small", "medium", "large"]);
 
+// mocks.js describes a widget the way a report config does — `variation` rather than
+// `variationPercent`, plus the placement fields a grid needs. This is the one place
+// that difference is reconciled, so no screen carries a bespoke mapping.
+export function toOverviewData(w) {
+  return {
+    title: w.title,
+    count: w.count,
+    metric: w.metric,
+    unit: w.unit,
+    prefix: w.prefix,
+    variationPercent: w.variation,
+    narrative: w.narrative,
+  };
+}
+
 // Omitting `variationPercent` draws no row at all. Passing 0 is different and
 // deliberate: it draws the flat glyph, which claims a comparison was actually made.
 //
@@ -80,9 +95,7 @@ export function renderOverviewCard(data, { size = "mini", bodyHtml = "" } = {}) 
       <div class="overview-card__title">
         <${tag}${titleAttrs}>${escapeText(data.title)}</${tag}>
       </div>
-      <div class="overview-card__content">
-        ${body}
-        ${data.narrative ? `<span class="overview-card__narrative">${escapeText(data.narrative)}</span>` : ""}
-      </div>
+      <div class="overview-card__content">${body}</div>
+      ${data.narrative ? `<span class="overview-card__narrative">${escapeText(data.narrative)}</span>` : ""}
     </div>`;
 }

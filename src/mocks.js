@@ -2118,10 +2118,10 @@ const ARCHIE_IMPACT = {
     // Ordered as the story reads: how far it went, how much Archie made, how it
     // landed, what it drove.
     widgets: [
-      { id: "hub-reach", title: "Reach", value: "42,300", variation: 12, size: "mini" },
-      { id: "hub-posts", title: "Posts published", value: "18", variation: 20, size: "mini" },
-      { id: "hub-eng-rate", title: "Engagement rate", value: "4.2%", variation: 3.1, size: "mini" },
-      { id: "hub-cta", title: "CTA clicks", value: "486", variation: 8.4, size: "mini" },
+      { id: "hub-reach", title: "Reach", count: 42300, variation: 12, size: "mini" },
+      { id: "hub-posts", title: "Posts published", count: 18, variation: 20, size: "mini" },
+      { id: "hub-eng-rate", title: "Engagement rate", count: 4.2, unit: "%", variation: 3.1, size: "mini" },
+      { id: "hub-cta", title: "CTA clicks", count: 486, variation: 8.4, size: "mini" },
     ],
   },
   "ctx-acme": {
@@ -2190,21 +2190,21 @@ const ARCHIE_USAGE = {
       {
         id: "usage-drafts",
         title: "Drafts generated",
-        value: "2,431",
+        count: 2431,
         size: "mini",
         narrative: "81 a week on average.",
       },
       {
         id: "usage-posts",
         title: "Posts published",
-        value: "318",
+        count: 318,
         size: "mini",
         narrative: "13% of drafts make it online.",
       },
       {
         id: "usage-sources",
         title: "Sources digested",
-        value: "67",
+        count: 67,
         size: "mini",
         narrative: "12 of them reused more than once.",
       },

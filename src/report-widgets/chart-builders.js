@@ -119,8 +119,9 @@ export function barOptions() {
       labels: { ...base.xAxis.labels, align: "right" },
     },
     // maxPadding buys the room the value label needs: with the axis hidden the plot
-    // ends at the longest bar's tip, and the label would render past the card's edge.
-    yAxis: { ...base.yAxis, type: "linear", minTickInterval: 1, visible: false, endOnTick: false, maxPadding: 0.12 },
+    // ends at the longest bar's tip, and Highcharts flips a label that does not fit to
+    // the inside of the bar, where a light label on a saturated fill is unreadable.
+    yAxis: { ...base.yAxis, type: "linear", minTickInterval: 1, visible: false, endOnTick: false, maxPadding: 0.25 },
     plotOptions: {
       ...base.plotOptions,
       bar: {
@@ -152,21 +153,26 @@ export function buildColumnChartSeries(seriesData) {
   }));
 }
 
-// buildCategoryBarChartSeries — one series, `colorByPoint` giving each bar its own
-// palette position, which is how a distribution reads as categories not as a ramp.
+// buildCategoryBarChartSeries — one series, one bar per category.
+//
+// `colorByPoint` is opt-in, mirroring buildBars' optional `pointColors`: a bar takes
+// its own palette position only when the colour MEANS something elsewhere — a network,
+// a profile, something the reader will meet again in another chart. For categories that
+// exist only here the axis label is the identity, and six hues would be decoration.
 //
 // `valueLabel` is what sits at the end of the bar; the category's name is the axis
 // label, so repeating it there would print it twice.
-export function buildCategoryBarChartSeries(name, rows) {
+export function buildCategoryBarChartSeries(name, rows, { colorByCategory = false } = {}) {
   return [
     {
       type: "bar",
       name,
-      colorByPoint: true,
+      colorByPoint: colorByCategory,
+      color: getDataColor(0),
       data: rows.map((row, index) => ({
         name: row.label,
         y: row.value,
-        color: getDataColor(index),
+        ...(colorByCategory ? { color: getDataColor(index) } : {}),
         custom: { valueLabel: row.valueLabel },
       })),
     },

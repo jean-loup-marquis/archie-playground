@@ -4,7 +4,8 @@ import { objectiveCardsFor, archieImpact } from "../../mocks.js?v=80";
 import { navigate } from "../../router.js?v=30";
 import { renderEmptyState } from "../../components/empty-state.js?v=1";
 import { renderEditorialBanner } from "../../components/editorial-banner.js?v=3";
-import { renderMiniWidget } from "../../components/report-widget.js?v=5";
+import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=1";
+import { toOverviewData } from "../../report-widgets/widget-overview.js?v=1";
 import { showToast } from "../../components/toast.js?v=20";
 import { isFlagOn } from "../../feature-flags.js?v=19";
 import {
@@ -111,7 +112,9 @@ export function renderPerformanceTab() {
 function renderEditorial() {
   const impact = archieImpact();
   const lead = renderEditorialBanner(impact);
-  const widgets = (impact?.widgets || []).map((w) => renderMiniWidget(w)).join("");
+  const widgets = (impact?.widgets || [])
+    .map((w) => renderWidgetCard({ overviewData: toOverviewData(w) }, { size: "mini" }))
+    .join("");
   if (!lead && !widgets) return "";
 
   return `
