@@ -2118,6 +2118,26 @@ function paint() {
   attachScrollSpy();
 }
 
+// The detail modals are moved to <body>: their backdrop is position:fixed, which
+// an ancestor with a transform would trap inside the scrolling panel.
+function portalModal() {
+  if (refModalHost) {
+    refModalHost.remove();
+    refModalHost = null;
+  }
+  const modalEl = mountTarget?.querySelector(".recap__refmodal-backdrop, .recap__cmpmodal-backdrop");
+  if (!modalEl) return;
+  refModalHost = document.createElement("div");
+  refModalHost.className = "recap__refmodal-host";
+  refModalHost.appendChild(modalEl);
+  refModalHost.addEventListener("click", onClick);
+  refModalHost.addEventListener("input", onInput);
+  refModalHost.addEventListener("change", onChange);
+  refModalHost.addEventListener("keydown", onKeydown);
+  refModalHost.addEventListener("error", onLoadError, true);
+  document.body.appendChild(refModalHost);
+}
+
 // ── Section-nav scroll-spy ─────────────────────────────────────────────
 
 function setActiveNav(id) {
