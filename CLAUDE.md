@@ -23,7 +23,7 @@ The marketplace's `/design-prototype` **does not apply here** and cannot run: it
 
 ## Architecture
 
-**Vanilla JS only** — no build step, no bundler, no framework, no external runtime deps. A hash-based router (`src/router.js`) renders the matched route into `#app` on every `hashchange`. The persistent app shell (sidebar + topbar + right panel) lives outside `#app` and is updated by subscriptions. Each screen, modal, and component owns its own DOM and uses **pure event delegation** with `data-*` attributes.
+**Vanilla JS only** — no build step, no bundler, no framework. One vendored runtime dependency: **Highcharts 12.4.0** in `vendor/highcharts/`, pinned to platform's version so the report widgets draw the real charts instead of hand-written SVG (see `vendor/README.md`). Nothing else. A hash-based router (`src/router.js`) renders the matched route into `#app` on every `hashchange`. The persistent app shell (sidebar + topbar + right panel) lives outside `#app` and is updated by subscriptions. Each screen, modal, and component owns its own DOM and uses **pure event delegation** with `data-*` attributes.
 
 ### App shell
 
@@ -203,7 +203,7 @@ The **Admin** popover in the sidebar footer cog (`admin-menu.js`) is the prototy
 
 ### Module loading
 
-ES modules with `?v=N` cache-busting suffixes (`from "./assistant.js?v=40"`). **Bumping a module's version means updating every importer to the same version** — a singleton/store imported at two versions becomes two separate instances (separate state). All deps are local; no CDN/`esm.sh` imports. `package.json` exists only for the two DS npm packages + tooling (prettier/husky/lint-staged). A pre-commit hook runs `prettier --write` on staged files.
+ES modules with `?v=N` cache-busting suffixes (`from "./assistant.js?v=40"`). **Bumping a module's version means updating every importer to the same version** — a singleton/store imported at two versions becomes two separate instances (separate state). All deps are local; no CDN/`esm.sh` imports — Highcharts is committed under `vendor/`, imported by filename-versioned path (`highcharts-12.4.0.esm.js`) rather than `?v=N`, so a new version is a new URL. `package.json` exists only for the two DS npm packages, Highcharts (to refresh the vendored copy) + tooling (prettier/husky/lint-staged). A pre-commit hook runs `prettier --write` on staged files.
 
 ## Design System — READ FIRST before UI/CSS work
 
