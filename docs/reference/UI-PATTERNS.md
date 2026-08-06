@@ -39,6 +39,7 @@ Tous namespacés `--app-*`. Charte : _« prefer DS tokens first; fall back to th
 - **Logo mark** : `--app-archie-mark` (#ff3c00).
 - **Conversation navy** (brand tertiaire #0A1B33, remplace l'electric-blue dans le thread) : `--app-convo-navy(-deep/-05/-10/-20)`.
 - **Video-clips dark ramp** (seule palette sombre de l'app, alimente le modal clips + caption-editor) : `--app-vc-*` (surfaces, field, borders, text, accent, primary, danger, scrim, shadow). Commentaire : _« blue = selected/info, orange = primary/AI, red = destructive »_.
+- **Palette de séries de charts** : `--app-chart-{cyan,sun,peony,lime,iris,cherry,sky,tangerine,emerald,navy}` — les dix couleurs que `ChartColors.getDataColor(i)` assigne **par position**, dans cet ordre. Le DS ne les expose comme `--ref-color-data-*-100` qu'à partir de ui-theme 21 ; ce repo est épinglé en 20.3.5. **Aucune feuille de style ne les lit** : `src/report-widgets/report-colors.js` les résout une fois et passe les hex à Highcharts, qui n'accepte pas de `var()`.
 - **Radius** : `--app-radius-sm/-md/-lg`, `-button-sm` (6), `-starter` (10), `-card` (12), `-modal` (16), `-pill` (999), `-circle` (50%).
 - **Elevation** : `--app-shadow-subtle/-low/-popover-md/-lg/-drawer-left/-card/-modal/-orange-hover`.
 - **Easing** : `--app-ease-out/-bounce/-standard`.
@@ -60,6 +61,28 @@ Règle universelle (`chat.css`) : _« a light-blue wash on hover/focus (never na
 - Radius carte = `--app-radius-card` (12). Tuiles icône AI/brand = fond `--ref-color-orange-10` + glyphe orange.
 - ⛔️ **Jamais de liseré d'accent coloré sur un bord de carte** (`border-left: 3px solid …`). Règle catégorique de Matt. **L'état d'une carte va dans son contenu, pas sur son cadre** — un marqueur explicite (point + mot, ex. « • New ») dit la même chose sans repeindre la bordure. Un seul cas existait dans l'app (unseen sur `.topic-card`) et il a été retiré ; les `border-left`/`border-right` restants sont des séparateurs de panneau 1px dans la ramp sombre video-clips, pas des accents.
 - Cartes in-bubble : `.chat-bubble-card` (grey-05, border grey-10) via `bulletsBlock()` (`_analyse-common.js`).
+
+### Widgets de métrique (`.widget-card` / `.overview-card`)
+
+**Ne pas fabriquer une carte de chiffre à la main.** `src/report-widgets/` transcrit les vrais
+composants de `analytics/report/frontend/libs/report/report/widgets` (platform) : `renderWidgetCard()`
+prend un objet et rend la carte entière — tuile KPI, chart Highcharts, ou markup fourni.
+
+- **La variation est asymétrique** : hausse = vert (`--ref-color-green-150`) + `ap-icon-data-increase`.
+  Baisse **et** stagnation = gris + `data-decrease` / `data-stagnate`. **Jamais de rouge** — le glyphe
+  porte la direction, la couleur est réservée à la bonne nouvelle.
+- **`variationPercent` absent = pas de ligne du tout.** Passer `0` est différent et volontaire : ça
+  dessine la flèche plate, qui affirme qu'une comparaison a eu lieu. (Le vrai composant affiche « No
+  data » à la place, parce qu'un widget de report a toujours une période de référence ; l'onglet Usage
+  n'en a pas — `variationDisplayed: true` opte dans cette ligne.)
+- **La tuile a une branche texte** (`overviewData.metric`) : un KPI dont la valeur est des mots. Clamp
+  2 lignes, **en mini uniquement** — les tailles centrées passent la métrique à 64 px en dur.
+- `overviewData.narrative` est une **extension du proto**, pas du DS : sœur de `__content` (dont le
+  `flex:1` la pousse au plancher), donc les narratives d'une rangée s'alignent.
+- `.chart-wrapper` fait `calc(100% + 20px)` avec `overflow: hidden` — rognage volontaire de la
+  gouttière Highcharts, sinon le plot est en retrait de son propre titre.
+- Une couleur par catégorie (`colorByCategory`) seulement quand la couleur **désigne** quelque chose
+  qu'on retrouve ailleurs (un réseau, un profil). Sinon l'étiquette d'axe est l'identité.
 
 ### Boutons / CTAs
 

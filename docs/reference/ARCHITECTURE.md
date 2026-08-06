@@ -4,8 +4,8 @@
 
 ## Principes
 
-- **Vanilla JS pur** — pas de framework, pas de bundler, pas de build, pas de dépendance runtime externe.
-- **ES modules** servis directement depuis `src/`, avec suffixes `?v=N` pour le cache-bust (à bumper en cohérence cross-importers).
+- **Vanilla JS pur** — pas de framework, pas de bundler, pas de build. **Une** dépendance runtime, vendorée : Highcharts 12.4.0 dans `vendor/highcharts/`, épinglée sur la version de platform pour que les widgets report dessinent les vrais charts au lieu de SVG écrit à la main (cf. [`vendor/README.md`](../../vendor/README.md)). Elle est importée depuis un seul fichier, `src/report-widgets/widget-chart.js`.
+- **ES modules** servis directement depuis `src/`, avec suffixes `?v=N` pour le cache-bust (à bumper en cohérence cross-importers). Exception : le build vendoré porte sa version dans le nom de fichier — une nouvelle version est une nouvelle URL.
 - **Pure event delegation** — chaque écran/modal/composant attache un seul listener sur sa racine et dispatche via `data-*`. Aucun `onclick=` inline, aucun listener per-child sur les enfants interactifs.
 - **Mocks** — toutes les seed data sont dans `src/mocks.js`. Aucune persistance d'état app (seul `archie-user-mode`, les feature flags, l'état collapse de la sidebar et les `sessionStorage` handoffs survivent au reload).
 

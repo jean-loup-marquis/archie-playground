@@ -104,11 +104,20 @@ src/
   url-services.js       — recognises a service (Notion/Google Docs/…) from a pasted URL
   admin-menu.js         — sidebar cog Admin popover (user mode + feature flags + docs)
 
+  report-widgets/         — Report Studio's widget primitives, ported (see below)
+    widget-card.js        the .widget-card frame + mountWidgetCharts()
+    widget-overview.js    the .overview-card KPI tile (count branch AND text branch)
+    widget-chart.js       the ONLY module that imports Highcharts
+    chart-builders.js     series + options builders (column, bar, shared tooltip)
+    report-colors.js      the chart palette, read off the --app-chart-* tokens
+    number-formatting.js  formatCompactNumber / roundVariationPercent
+
   screens/
     dashboard.js, session.js, ideas.js, contexts.js, playbook.js,
     connectors.js, topics.js, topics-settings.js,
     welcome-alt.js, welcome-alt-recap.js
     _analyse-common.js  — shared "chat bubble + numbered picker bar" wizard primitives
+    insights/           — the two-tab hub: shell.js (tabs) + usage.js + performance.js
     session/
       intake-lifecycle.js — flips source-intake turns loading→ready as sources process
       thinking-chip.js    — animated "thinking…" composer chip + elapsed/credit counter
@@ -247,12 +256,31 @@ styles/
   ds-patches.css    — the only legitimate place to touch .ap-* selectors
   chat.css          — composer + thread chrome
   screens/          — dashboard, session, ideas, contexts, connectors, topics,
-                      topics-settings, posts, analyse, modals, sources, welcome
-  components/       — sidebar, right-panel, conversation-status-card,
+                      topics-settings, posts, analyse, modals, sources, insights, welcome
+  components/       — report-widgets (the ported .widget-card / .overview-card),
+                      sidebar, right-panel, conversation-status-card,
                       add-source-modal, connectors-modal, schedule-modal,
-                      video-clips-modal, clip-card, archie-loader,
+                      video-clips-modal, clip-card, archie-loader, editorial-banner,
                       topic-badge (shared by 3 surfaces), topic-modal, social-post-card
 ```
+
+### The report widgets are ported, not invented
+
+Anything that draws a metric — the Insights hub's tiles and bars, a Playbook's Performance
+section — goes through `src/report-widgets/`, which transcribes the real components from
+`analytics/report/frontend/libs/report/report/widgets` in the platform monorepo. Before adding
+a metric surface, check what that library already does; three rules it costs bugs to rediscover:
+
+- **The variation colour is asymmetric.** A rise is green (`--ref-color-green-150`); falling
+  **and** flat are both grey. Never red. The glyph carries the direction.
+- **`.chart-wrapper` is `calc(100% + 20px)` with `overflow: hidden`** on purpose — it crops the
+  gutter Highcharts reserves so the plot lines up with the card's padding.
+- **The KPI tile has a text branch** (`overviewData.metric`), which is what a metric whose value
+  is words already is. It clamps to two lines and only reads at mini — the centred sizes hard-code
+  the metric to 64px.
+
+Highcharts is instantiated in exactly one file, `report-widgets/widget-chart.js`. Keep it that way:
+grep for the import and the whole dependency surface is one line.
 
 ### Token tiers
 

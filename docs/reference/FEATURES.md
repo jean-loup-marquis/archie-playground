@@ -790,15 +790,15 @@ Le badge de la ligne **Topics** compte les **unseen**, pas le total : la ligne e
 
 ### Onglet Performance ([`insights/performance.js`](../../src/screens/insights/performance.js))
 
-Reprise du hub `/analytics` d'origine, sans le header (monté par le shell). Un health card par Playbook (gauge annulaire, score moyen pondéré de ses objectifs, baissé si la tendance est plate ou négative), puis tous les objectifs à plat dans une table triée pire-en-premier, filtrable par Playbook et par statut. Le bridge Report Studio en bas argue plutôt qu'il ne relance : deux états selon `agorapulseEntitlement`.
+Reprise du hub `/analytics` d'origine, sans le header (monté par le shell). Les quatre chiffres du portfolio (Reach, Posts published, Engagement rate, CTA clicks) sont des tuiles KPI portées ; le reste du tab est propre à cette page. Un health card par Playbook (gauge annulaire, score moyen pondéré de ses objectifs, baissé si la tendance est plate ou négative), puis tous les objectifs à plat dans une table triée pire-en-premier, filtrable par Playbook et par statut. Le bridge Report Studio en bas argue plutôt qu'il ne relance : deux états selon `agorapulseEntitlement`.
 
 ### Onglet Usage ([`insights/usage.js`](../../src/screens/insights/usage.js))
 
 Le contrepoint de Performance : rien n'y compare un chiffre à un objectif. Un lead éditorial (`editorial-banner`) puis trois blocs.
 
-1. **What Archie produced** — une jauge annulaire réservée au seul taux du tab (`drafts gardés sans édition`, 71 % : une jauge exprime une part d'un tout, la mettre sur un volume serait un mensonge visuel), plus trois cartes de volume avec une ligne narrative chacune.
-2. **How you work** — deux cartes : les barres (où tu publies / le ton qui revient, ce dernier **dérivé** de `contexts[].tones` et jamais mocké) et le calendrier de streak ~90 jours avec sa propre étiquette de période et sa légende d'intensité.
-3. **Your voice** — quatre superlatifs de poids égal (ton favori, accroche favorite, mot signature, ce que tu évites), sans tendance ni comparaison. Le sujet est **l'opérateur, pas la marque** : c'est ce qui rend le bloc indépendant du nombre de marques du compte. Aucune carte ne porte de `variation` — `renderMiniWidget` omet la ligne plutôt que d'afficher une flèche plate qui affirmerait une mesure inexistante.
+1. **What Archie produced** — une jauge annulaire réservée au seul taux du tab (`drafts gardés sans édition`, 71 % : une jauge exprime une part d'un tout, la mettre sur un volume serait un mensonge visuel), plus trois tuiles de volume avec une ligne narrative chacune.
+2. **How you work** — les deux distributions (où tu publies / le ton qui revient, ce dernier **dérivé** de `contexts[].tones` et jamais mocké) en **charts BAR Highcharts**, les deux streaks en tuiles, et le calendrier ~90 jours avec sa propre étiquette de période et sa légende d'intensité. Les réseaux prennent une couleur par catégorie — c'est la palette positionnelle que le chart du Playbook assigne aussi, donc les deux surfaces s'accordent sur ce que veut dire une couleur ; les tons gardent une seule teinte, la couleur n'y désignant rien.
+3. **Your voice** — quatre superlatifs de poids égal (ton favori, accroche favorite, mot signature, ce que tu évites), sans tendance ni comparaison. Le sujet est **l'opérateur, pas la marque** : c'est ce qui rend le bloc indépendant du nombre de marques du compte. Ce sont des **tuiles KPI dont la valeur est du texte** (la branche `metric` de la carte overview), en taille mini seulement : cette branche clampe à deux lignes, et les tailles centrées passent la métrique à 64 px. Aucune carte ne porte de `variation` — une `variationPercent` absente n'affiche pas de ligne plutôt qu'une flèche plate qui affirmerait une mesure inexistante.
 
 **Chaque bloc affiche sa période** (le lead = un mois, le calendrier = 90 jours) : l'interdit est le chiffre nu, pas la seconde période.
 
