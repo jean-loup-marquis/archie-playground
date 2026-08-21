@@ -49,12 +49,12 @@
 // draw one. flex:0 0 auto in research.css is the other half of that fix and is
 // still load-bearing — don't undo it.
 
-import { html, raw, escapeAttr } from "../utils.js?v=21";
-import { findReviewStatus } from "../research-catalog.js?v=26";
+import { html, raw, escapeAttr } from "../utils.js?v=24";
+import { findReviewStatus } from "../research-catalog.js?v=29";
 // One title per topic — the article's, not the scan's headline. See briefs-store.
-import { briefTitle } from "../briefs-store.js?v=74";
-import { isFlagOn } from "../feature-flags.js?v=23";
-import { pillarForBrief } from "../pillars-store.js?v=16";
+import { briefTitle } from "../briefs-store.js?v=77";
+import { isFlagOn } from "../feature-flags.js?v=26";
+import { pillarForBrief } from "../pillars-store.js?v=19";
 
 // No full stop — it is a caption on a menu row, not a sentence. This started as a
 // paragraph, became one line, and is now the shortest thing that still carries the
@@ -115,6 +115,21 @@ const UNIGNORE_HINT = "Back on this list to review";
 // aria-hidden on the bubble, with the label AND the hint on the trigger's aria-label:
 // a display:none element cannot be read through aria-describedby, so the accessible
 // name has to carry the explanation itself.
+// What a claim rests on: what was counted, then what it was counted against. One
+// function so no two surfaces can phrase the same comparison differently — the card,
+// the article and the chat all read from here.
+const REFERENCE_LABELS = Object.freeze({
+  "self-baseline": "against this Playbook's own 90-day average",
+  "playbook-median": "against this Playbook's median",
+  "industry-benchmark": "against the industry benchmark",
+  "declared-target": "against the target you set",
+});
+
+export function briefBasis(brief) {
+  if (!brief?.basis) return "";
+  return [brief.basis, REFERENCE_LABELS[brief.referenceKind]].filter(Boolean).join(" · ");
+}
+
 function renderStatusIcon(status) {
   const meta = findReviewStatus(status);
   // No icon in the catalog means the status renders no marker at all — New is the
@@ -293,6 +308,20 @@ export function renderBriefCard(
            the two-line block under a headline is self-evidently the summary, and
            the word ate a chunk of the first of only two visible lines. -->
       <span class="topics-card__summary" data-brief-summary>${brief.summary}</span>
+
+      <!-- The basis, and only the internal source carries one. A topic about a
+           competitor never has to say what it counted — nobody disputes what
+           somebody else published. A claim about the reader's OWN numbers is made to
+           their face on the one ground where they can check it, so it states what it
+           read and what it read it against, on the card, not in the article. Without
+           that line the same sentence is an assertion. -->
+      ${raw(
+        brief.basis
+          ? html`<span class="topics-card__basis"
+              ><i class="ap-icon-information-circle" aria-hidden="true"></i><span>${briefBasis(brief)}</span></span
+            >`
+          : "",
+      )}
 
       <!-- Why now and What changed used to sit here, each in a tinted block
            clamped to two lines. Both moved to the article's "Trend levels"

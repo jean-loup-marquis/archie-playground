@@ -18,10 +18,10 @@
 // Overlay arbitration goes through modal-coordinator so only one is ever up, and
 // so the source-feedback dialog can legitimately stack over the research form.
 
-import { html, raw, escapeAttr } from "../utils.js?v=21";
-import { navigate } from "../router.js?v=30";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=21";
-import { findResearchSource, findReviewStatus } from "../research-catalog.js?v=26";
+import { html, raw, escapeAttr } from "../utils.js?v=24";
+import { navigate } from "../router.js?v=33";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=24";
+import { findResearchSource, findReviewStatus } from "../research-catalog.js?v=29";
 import {
   ageMinutes,
   getBriefById,
@@ -32,18 +32,18 @@ import {
   unignoreBrief,
   setStatus,
   briefTitle,
-} from "../briefs-store.js?v=74";
+} from "../briefs-store.js?v=77";
 // The article dialog's footer is the feed's footer — same component, same three
 // verbs — so it comes from the same module rather than being re-written here.
-import { renderUseButtons } from "./brief-card.js?v=82";
-import { getLanes } from "../research-store.js?v=58";
+import { renderUseButtons } from "./brief-card.js?v=85";
+import { getLanes } from "../research-store.js?v=61";
 // The scope the whole app hangs off — this modal reads it instead of asking.
-import { getActivePlaybook, getActivePlaybookId } from "../active-playbook.js?v=91";
+import { getActivePlaybook, getActivePlaybookId } from "../active-playbook.js?v=94";
 // pillars-store, not contexts-store: this is the Content-strategy pillar a topic
 // gets FILED into, which is what decides whether it is ready to draft. The
 // getPillars imported below from contexts-store is the older per-Playbook pillar
 // list and a different object entirely.
-import { pillarForBrief } from "../pillars-store.js?v=16";
+import { pillarForBrief } from "../pillars-store.js?v=19";
 import {
   getContexts,
   getContextById,
@@ -54,15 +54,15 @@ import {
   addPillarFromTopic,
   addTopicToPillar,
   PILLAR_LIMIT,
-} from "../contexts-store.js?v=83";
+} from "../contexts-store.js?v=86";
 // No cycle: brief-flow reaches briefs-store / sources-stream / router, never back
 // into this file. The version dialog goes through it rather than calling
 // addReadySource directly so "use in chat" has one definition.
-import { openBriefInChat } from "../brief-flow.js?v=48";
-import { renderBriefCard } from "./brief-card.js?v=82";
-import { renderEmptyState } from "./empty-state.js?v=1";
-import { renderSocialPostCard } from "./social-post-card.js?v=45";
-import { showToast } from "./toast.js?v=21";
+import { openBriefInChat } from "../brief-flow.js?v=51";
+import { renderBriefCard } from "./brief-card.js?v=85";
+import { renderEmptyState } from "./empty-state.js?v=4";
+import { renderSocialPostCard } from "./social-post-card.js?v=48";
+import { showToast } from "./toast.js?v=24";
 
 const MODAL_ID = "research";
 
@@ -1145,7 +1145,16 @@ export function renderResearchArticle(brief, { withLabel = true, withTitle = tru
   // third invented affordance, and no button of its own here — the footer's primary is
   // the action this copy names, and a second orange button two inches above it would
   // be the same verb asking twice.
-  const later = brief.researchType === "content-strategy";
+  // ONE EXCEPTION, and it turns on the topic carrying a `basis` rather than on which
+  // source produced it: the discriminator is the property that makes the difference,
+  // not a hardcoded source id. A measured topic — one that says what it counted and
+  // what against — was written up by the scan, because the numbers ARE the scan's
+  // output and they exist whether or not the brand has assets lying around. Its
+  // reason for sitting in Topics-for-later is not a missing write-up, it is that a
+  // finding about the mix is a decision before it is a post, and its last paragraph
+  // says so. Showing "not enough data" over a claim that just quoted 32 posts would
+  // contradict the line directly above it.
+  const later = brief.researchType === "content-strategy" && !brief.basis;
   const bodySection = later
     ? renderEmptyState({
         icon: "ap-icon-note",

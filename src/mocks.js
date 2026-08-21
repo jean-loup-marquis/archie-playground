@@ -4670,13 +4670,15 @@ export const researchLanes = [
   // new-chat list assume when they talk about the next batch.
   {
     id: "topic-list-1",
-    name: "Acme competitors · weekly",
+    // Not "Acme competitors" any more: the lane now also reads Acme's own posts, so
+    // a name that promised only competitors described half of what arrives in it.
+    name: "Acme · weekly",
     playbookId: "ctx-acme",
-    // Competitor posts alone, and it has to be: `competitor-posts` is the only
-    // source with `live: true` in research-catalog, so it is the only one in
-    // LIVE_SOURCE_IDS — which is what briefs-store's defaultFilters() ticks. A
-    // brief on any other source is filtered out of its own feed on first paint.
-    sources: ["competitor-posts"],
+    // Two sources, and both must be `live: true` in research-catalog — that is what
+    // puts them in LIVE_SOURCE_IDS, which is what briefs-store's defaultFilters()
+    // ticks. A brief on a non-live source is filtered out of its own feed on first
+    // paint.
+    sources: ["competitor-posts", "own-posts"],
     websites: ["https://acme.example.com"],
     cadence: "weekly",
     notify: true,
@@ -4689,9 +4691,9 @@ export const researchLanes = [
   // on ctx-dwelling about the accounts not being the brief's competitors.
   {
     id: "topic-list-7",
-    name: "Modular & timber competitors · last 30 days",
+    name: "Modular & timber · last 30 days",
     playbookId: "ctx-dwelling",
-    sources: ["competitor-posts"],
+    sources: ["competitor-posts", "own-posts"],
     websites: ["https://www.thedwellingcompany.com/"],
     cadence: "monthly",
     notify: true,
@@ -7761,6 +7763,195 @@ export const researchBriefs = [
       },
     ],
     history: [{ status: "new", when: "4mo ago", note: "Surfaced from the weekly competitor scan (6 matching posts)." }],
+    seedStatus: "new",
+    seedReason: "",
+  },
+
+  // ── The internal source: `own-posts` ──────────────────────────────────────
+  //
+  // Topics about the brand's OWN published posts, arriving in the same lane as the
+  // market ones. They are not a different object — same card, same triage, same two
+  // types — and the type is what decides where they go, exactly as it does for a
+  // competitor topic:
+  //
+  //   ready-to-post    → there is a post to make now (a winner to send out again)
+  //   content-strategy → the finding is real but not publishable as it stands; it
+  //                      changes what the brand should be making, which is a
+  //                      strategy decision before it is a draft
+  //
+  // TWO FIELDS THE MARKET TOPICS DO NOT CARRY, and the reason they exist: this is a
+  // claim about the reader's own work, made to their face, on the one ground where
+  // they can check us.
+  //
+  //   basis         — what was counted ("on 32 posts · last 90 days")
+  //   referenceKind — what it was counted against (self-baseline | playbook-median |
+  //                   industry-benchmark | declared-target)
+  //
+  // An external topic never has to answer for either: nobody disputes what a
+  // competitor published. Numbers are DIFFERENTIATED PER PLAYBOOK on purpose — the
+  // analytics hub learned that globally-indexed mocks make every Playbook read the
+  // same, and a claim that reads the same everywhere is a claim nobody believes.
+  {
+    id: "br-own-1",
+    laneId: "topic-list-1",
+    sourceId: "own-posts",
+    ageLabel: "2h ago",
+    headline: "Video does 3× the reach on Acme, and 4 posts in 5 are text",
+    summary:
+      "Every video published this quarter beat the text average — by a lot. Video is still 18% of what goes out, " +
+      "which is the one lever here nobody has pulled.",
+    basis: "on 32 posts · last 90 days",
+    referenceKind: "playbook-median",
+    // content-strategy, not ready-to-post: "publish more video" is not a post. It
+    // is a decision about the mix, and it needs an angle and assets before anything
+    // can be drafted from it.
+    researchType: "content-strategy",
+    isTrending: false,
+    whyNow:
+      "The gap has widened every month this quarter — six videos against twenty-six text posts, and the ratio " +
+      "between their reach has not narrowed once.",
+    whyNowDetail:
+      "The six videos averaged 11,800 reach against 3,900 for the text posts. That held on every network this " +
+      "Playbook covers, and it held across the whole quarter rather than resting on one outlier — the weakest video " +
+      "still outperformed the strongest text post. Nothing in the later videos shows fatigue either: no drop in " +
+      "reach, no falling-off in the comments.",
+    research: {
+      title: "Video does 3× the reach on Acme, and 4 posts in 5 are text",
+      subheads: ["The format that works is the one you publish least", "Habit, not appetite"],
+      paragraphs: [
+        "Across the last 90 days this Playbook published 26 text posts and 6 videos. The videos averaged 11,800 reach; the text posts averaged 3,900. The ratio is stable across the quarter and across networks, which rules out a single lucky post carrying the average.",
+        "The gap is not a content problem. The same messages, the same proof points and the same customer names travel three times further in video — so the format is doing the work rather than the subject matter, and the subjects are already written.",
+        "What makes this worth acting on is that nothing about the mix looks deliberate. Video sits at 18% of output with no sign of a ceiling: no decline in the later videos, no fatigue in the replies. The constraint is production habit, not audience appetite.",
+        "It is not a post, though, which is why it sits here rather than in Draft-ready. Turning it into one means choosing which angle goes to video first and what has to be shot or cut for it — a decision about the mix, taken once, and then a series rather than a one-off.",
+      ],
+    },
+    posts: [],
+    history: [
+      {
+        status: "new",
+        when: "2 hours ago",
+        note: "Read 32 posts published under this Playbook over the last 90 days.",
+      },
+    ],
+    seedStatus: "new",
+    seedReason: "",
+  },
+  {
+    id: "br-own-2",
+    laneId: "topic-list-1",
+    sourceId: "own-posts",
+    ageLabel: "1d ago",
+    headline: "The pricing-objection post is your most saved, and nothing followed it",
+    summary:
+      "Saved 218 times five weeks ago — three times this Playbook's usual rate — on an average reach. Saves are " +
+      "people meaning to come back to it, and nobody was given anything to come back to.",
+    basis: "on 1 post · 5 weeks ago",
+    referenceKind: "self-baseline",
+    // ready-to-post: the follow-up writes itself. The audience named the subject by
+    // saving it, and the post it answers is already published and approved.
+    researchType: "ready-to-post",
+    isTrending: false,
+    whyNow:
+      "Five weeks with no follow-up, and the saves are still the highest this Playbook has recorded — the question " +
+      "is being carried around unanswered.",
+    whyNowDetail:
+      "218 saves against a Playbook average of 71, on a post whose reach was ordinary. That combination is the " +
+      "signal: reach is distribution, saves are intent. Nothing since has addressed the same objection, so the " +
+      "subject is uncontested and the audience has already told you it matters.",
+    research: {
+      title: "The pricing-objection post is your most saved, and nothing followed it",
+      subheads: ["A high save rate is an unanswered question", "The follow-up is already briefed"],
+      paragraphs: [
+        'The post answering the "why is it more expensive" objection was saved 218 times — three times this Playbook\'s usual rate — while its reach came in around average. People did not merely read it; they filed it to come back to.',
+        "Nothing followed it in the five weeks since. No thread, no expansion, no second objection handled the same way. The post is still the highest-intent thing this Playbook has published.",
+        "That makes the next post the cheapest one available: the subject is named by the audience, the register is proven, and the objection it answers is the one they are carrying. What is left is to write the sequel — the next objection, answered the same way.",
+      ],
+    },
+    posts: [],
+    history: [
+      {
+        status: "new",
+        when: "1 day ago",
+        note: "Compared one post's saves against this Playbook's 90-day average.",
+      },
+    ],
+    seedStatus: "new",
+    seedReason: "",
+  },
+  {
+    id: "br-own-3",
+    laneId: "topic-list-1",
+    sourceId: "own-posts",
+    ageLabel: "3d ago",
+    headline: "Average reach has been sliding for three weeks",
+    summary:
+      "Down 18% against this Playbook's own 90-day average, and falling each week rather than dipping once. " +
+      "Posting rhythm has not changed — what lands has.",
+    basis: "on 24 posts · last 3 weeks",
+    referenceKind: "self-baseline",
+    researchType: "content-strategy",
+    isTrending: false,
+    // A signal, and the honest one for this topic: the finding itself moved since it
+    // was first raised. `isUpdated` is an independent boolean, never a status — see
+    // the invariant at the top of briefs-store.
+    isUpdated: true,
+    whyNow:
+      "Three consecutive weeks down, not one bad week — and the fall continued after this was first raised, which " +
+      "is what moved it back up the lane.",
+    whyNowDetail:
+      "Average reach per post fell from 9,200 to 7,500 across three weeks, declining each week. Engagement rate " +
+      "held roughly flat over the same run, which points away from an audience that has stopped caring and towards " +
+      "a distribution or a novelty problem: the people who see the posts still respond, there are simply fewer of " +
+      "them each week.",
+    research: {
+      title: "Average reach has been sliding for three weeks",
+      subheads: ["Same rhythm, less reach", "One angle, worn out"],
+      paragraphs: [
+        "The cadence did not change over the last three weeks — eight posts a week, the same networks, the same mix. Average reach per post fell from 9,200 to 7,500, an 18% drop against the 90-day average, declining in each of the three weeks rather than dipping once.",
+        "Engagement rate held roughly flat across the same posts. That combination rules out the simplest explanation: the audience still responds to what it sees, so the loss is upstream of the response.",
+        "The recurring theme across those 24 posts is the one that carried the account all quarter. It is still the strongest thing in the Playbook, and it is showing the wear of being the only thing — which is a decision about what else to make, not a post to write today.",
+      ],
+    },
+    posts: [],
+    history: [{ status: "new", when: "3 days ago", note: "Read 24 posts against this Playbook's 90-day average." }],
+    seedStatus: "new",
+    seedReason: "",
+  },
+  // A second Playbook, with its own numbers — the differentiation the analytics hub
+  // learned to check first. Same source, same two types, a different brand's story.
+  {
+    id: "br-own-4",
+    laneId: "topic-list-7",
+    sourceId: "own-posts",
+    ageLabel: "5h ago",
+    headline: "The finished-house walkthrough did 4× your average, and never went out again",
+    summary:
+      "One walkthrough posted six weeks ago reached 24,600 against a monthly average of 5,800. It has never been " +
+      "reshared, cut down, or followed up.",
+    basis: "on 1 post · 6 weeks ago",
+    referenceKind: "self-baseline",
+    researchType: "ready-to-post",
+    isTrending: true,
+    whyNow:
+      "Six weeks on it is still the best-performing thing this Playbook has published, and the interest in the " +
+      "comments has not been answered.",
+    whyNowDetail:
+      "24,600 reach against 5,800 for that month, and the longest comment thread the account has had — most of it " +
+      "asking about cost and timeline. A post that outperformed by that margin with the questions still open is the " +
+      "cheapest content available: the filming and the client approval are already paid for.",
+    research: {
+      title: "The finished-house walkthrough did 4× your average, and never went out again",
+      subheads: ["Your best post is still only one post", "Five posts in one"],
+      paragraphs: [
+        "The finished-house walkthrough reached 24,600 people — a little over four times the 5,800 average for that month — and drew the longest comment thread the account has had all quarter. Nothing since has come close.",
+        "It has been published once. No reshare, no cut-down, no follow-up thread, and none of the four formats the material already supports: the cost breakdown, the timeline, the before-and-after, and the objection the comments keep raising.",
+        "The writing and the client approval are done, which is what makes this a post rather than a plan. What is left is the packaging.",
+      ],
+    },
+    posts: [],
+    history: [
+      { status: "new", when: "5 hours ago", note: "Compared one post against this Playbook's monthly average." },
+    ],
     seedStatus: "new",
     seedReason: "",
   },

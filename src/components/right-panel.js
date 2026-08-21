@@ -1,11 +1,11 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=105";
-import { isFlagOn } from "../feature-flags.js?v=23";
-import { ideas as MOCK_IDEAS } from "../mocks.js?v=97";
-import { isNewUser } from "../user-mode.js?v=22";
-import { getPath } from "../router.js?v=30";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=21";
-import { LANGUAGE_OPTIONS } from "../languages.js?v=1";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=24";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=108";
+import { isFlagOn } from "../feature-flags.js?v=26";
+import { ideas as MOCK_IDEAS } from "../mocks.js?v=100";
+import { isNewUser } from "../user-mode.js?v=25";
+import { getPath } from "../router.js?v=33";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=24";
+import { LANGUAGE_OPTIONS } from "../languages.js?v=4";
 import {
   getPosts,
   removePost,
@@ -13,39 +13,39 @@ import {
   updatePostContent,
   attachImageToDraft,
   subscribe as subscribePostsStore,
-} from "../posts-store.js?v=75";
-import { renderPostCard } from "./post-card.js?v=117";
-import { renderTopPostEcho } from "./top-post-card.js?v=143";
-import { renderClipCard } from "./clip-card.js?v=61";
-import { onFeedbackClick } from "./feedback-control.js?v=4";
+} from "../posts-store.js?v=78";
+import { renderPostCard } from "./post-card.js?v=120";
+import { renderTopPostEcho } from "./top-post-card.js?v=146";
+import { renderClipCard } from "./clip-card.js?v=64";
+import { onFeedbackClick } from "./feedback-control.js?v=7";
 // Shared compact idea card — same component the standalone Ideas page uses.
-import { renderCompactIdeaCard } from "./idea-card-compact.js?v=2";
-import { open as openVideoClipsModal } from "./video-clips-modal.js?v=99";
-import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=463";
+import { renderCompactIdeaCard } from "./idea-card-compact.js?v=5";
+import { open as openVideoClipsModal } from "./video-clips-modal.js?v=102";
+import { isSidebarCollapsed, setSidebarCollapsed, isAutoCollapsed } from "./sidebar.js?v=466";
 import {
   getSources as getStreamSources,
   subscribeSources,
   updateSourceClips,
   removeSources,
   renameSource,
-} from "../sources-stream.js?v=97";
-import { open as openAddSourceModal } from "./add-source-modal.js?v=108";
-import { open as openRenameModal } from "./rename-modal.js?v=2";
-import { getConnectedConnectors } from "../connectors-store.js?v=67";
-import { askConnector } from "../connector-ask.js?v=47";
-import { renderConnectorLogo } from "../connectors-view.js?v=49";
-import { open as openConnectorsModal } from "./connectors-modal.js?v=51";
-import { addMention as addComposerMention } from "../composer-mentions.js?v=73";
-import { iconFor } from "../file-kinds.js?v=20";
+} from "../sources-stream.js?v=100";
+import { open as openAddSourceModal } from "./add-source-modal.js?v=111";
+import { open as openRenameModal } from "./rename-modal.js?v=5";
+import { getConnectedConnectors } from "../connectors-store.js?v=70";
+import { askConnector } from "../connector-ask.js?v=50";
+import { renderConnectorLogo } from "../connectors-view.js?v=52";
+import { open as openConnectorsModal } from "./connectors-modal.js?v=54";
+import { addMention as addComposerMention } from "../composer-mentions.js?v=76";
+import { iconFor } from "../file-kinds.js?v=23";
 
 // Lot 15 — empty in first-time mode so the right-panel Ideas surface lines
 // up with the rest of the chrome (sidebar Recent list = empty, dashboard
 // = first-run welcome). Returning user gets the full seed.
 const IDEAS = isNewUser() ? [] : MOCK_IDEAS;
-import { open as openScheduleModal } from "./schedule-modal.js?v=101";
-import { open as openImageStudioModal } from "./image-studio/index.js?v=117";
-import { open as openImageStudioV2Modal } from "./image-studio-v2/index.js?v=95";
-import { open as openConfirmModal } from "./confirm-modal.js?v=22";
+import { open as openScheduleModal } from "./schedule-modal.js?v=104";
+import { open as openImageStudioModal } from "./image-studio/index.js?v=120";
+import { open as openImageStudioV2Modal } from "./image-studio-v2/index.js?v=120";
+import { open as openConfirmModal } from "./confirm-modal.js?v=25";
 
 // Global Right Panel — slides in from the right edge of the viewport, overlays
 // the session workspace, hosts two modes:
@@ -664,7 +664,7 @@ export function init() {
           updateSourceClips(srcId, nextClips);
           const edited = (nextClips || []).find((c) => c.id === ref.clipId);
           if (!edited) return;
-          import("../posts-store.js?v=75").then(({ updatePostClip }) => {
+          import("../posts-store.js?v=78").then(({ updatePostClip }) => {
             updatePostClip(sid, pid, {
               start: edited.start,
               end: edited.end,
@@ -736,7 +736,7 @@ export function init() {
       openVideoClipsModal(src, {
         onSaveClips: (id, nextClips) => updateSourceClips(id, nextClips),
         onUseClips: (selectedClips, source) => {
-          import("../screens/session.js?v=728").then(({ startClipDraftFlow }) => {
+          import("../screens/session.js?v=731").then(({ startClipDraftFlow }) => {
             startClipDraftFlow(
               sid,
               selectedClips.map((clip) => ({ clip, sourceName: source.filename, sourceId: source.id })),
@@ -753,7 +753,7 @@ export function init() {
       closeAllSourceMenus();
       if (!sid) return;
       const src = getStreamSources(sid).find((s) => s.id === reanalyzeBtn.dataset.rpanelSourceReanalyze);
-      import("./toast.js?v=21").then(({ showToast }) =>
+      import("./toast.js?v=24").then(({ showToast }) =>
         showToast(`Reanalyzing ${src?.filename || "source"}…`, { duration: 2600 }),
       );
       return;
@@ -919,7 +919,7 @@ export function init() {
       const sid = activeSessionId();
       if (!sid || !entry) return;
       const { clip, sourceName, sourceId } = entry;
-      import("../screens/session.js?v=728").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=731").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, [{ clip, sourceName, sourceId }]);
       });
       return;
@@ -937,7 +937,7 @@ export function init() {
       if (picked.length === 0) return;
       clipSelection = new Set();
       renderPanel();
-      import("../screens/session.js?v=728").then(({ startClipDraftFlow }) => {
+      import("../screens/session.js?v=731").then(({ startClipDraftFlow }) => {
         startClipDraftFlow(sid, picked);
       });
       return;
@@ -979,7 +979,7 @@ export function init() {
           }
           clipSelection = new Set();
           renderPanel();
-          import("./toast.js?v=21").then(({ showToast }) => {
+          import("./toast.js?v=24").then(({ showToast }) => {
             showToast(`${count} ${clipWord} deleted`, {
               action: {
                 label: "Undo",
@@ -1789,7 +1789,7 @@ function onPostRewrite(postId, intent = "fresh") {
   // streaming → commit. Loaded lazily so the rewrite code is only
   // pulled in when the user actually triggers a regen. `intent` biases
   // the rewrite (shorter / longer / warmer / formal / fresh).
-  import("../draft-rewrite.js?v=43").then(({ startRewrite }) => {
+  import("../draft-rewrite.js?v=46").then(({ startRewrite }) => {
     startRewrite(sid, postId, intent);
   });
 }
@@ -1880,7 +1880,7 @@ function onSectionDelete(network) {
         selectedDraftIds.delete(post.id);
       }
       renderPanel();
-      import("./toast.js?v=21").then(({ showToast }) => {
+      import("./toast.js?v=24").then(({ showToast }) => {
         showToast(`${count} ${draftWord} deleted`, {
           action: {
             label: "Undo",
@@ -1934,7 +1934,7 @@ function onSectionSave(network) {
   if (snapshot.length === 0) return;
   const count = snapshot.length;
   const draftWord = count === 1 ? "draft" : "drafts";
-  Promise.all([import("./save-folder-modal.js?v=48"), import("../folders-store.js?v=43")]).then(
+  Promise.all([import("./save-folder-modal.js?v=51"), import("../folders-store.js?v=46")]).then(
     ([{ open: openSaveModal }, { addDraftsToFolder }]) => {
       openSaveModal({
         count,
@@ -1949,7 +1949,7 @@ function onSectionSave(network) {
           const message = folder
             ? `${count} ${draftWord} saved to “${folder.name}”`
             : `${count} ${draftWord} saved as draft`;
-          import("./toast.js?v=21").then(({ showToast }) => {
+          import("./toast.js?v=24").then(({ showToast }) => {
             showToast(message, {
               action: {
                 label: "Undo",
@@ -1977,7 +1977,7 @@ function onPostSaveAsDraft(postId) {
   removePost(sid, postId);
   selectedDraftIds.delete(postId);
   renderPanel();
-  import("./toast.js?v=21").then(({ showToast }) => {
+  import("./toast.js?v=24").then(({ showToast }) => {
     showToast("Saved as draft", {
       action: {
         label: "Undo",
@@ -2024,7 +2024,7 @@ function onPostDelete(postId) {
   selectedDraftIds.delete(postId);
   const removed = removePost(sid, postId);
   if (!removed) return;
-  import("./toast.js?v=21").then(({ showToast }) => {
+  import("./toast.js?v=24").then(({ showToast }) => {
     showToast("Draft deleted", {
       action: {
         label: "Undo",
@@ -2095,7 +2095,7 @@ function onPostImageRemove(postId) {
   if (!sid) return;
   attachImageToDraft(sid, postId, null);
   renderPanel();
-  import("./toast.js?v=21").then(({ showToast }) => showToast("Image removed"));
+  import("./toast.js?v=24").then(({ showToast }) => showToast("Image removed"));
 }
 
 // --- Inline edit handlers ---------------------------------------------
@@ -2812,7 +2812,7 @@ function useIdea(ideaId) {
   if (!idea) return;
   const sid = activeSessionId();
   if (!sid) return;
-  import("../screens/session.js?v=728").then(({ askAngleQuestion }) => {
+  import("../screens/session.js?v=731").then(({ askAngleQuestion }) => {
     askAngleQuestion(sid, ideaId);
   });
 }

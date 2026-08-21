@@ -54,6 +54,40 @@
 // and leave running for months.
 
 export const RESEARCH_SOURCES = Object.freeze([
+  // The one source that reads INWARD. Every other source in this list watches the
+  // market; this one watches what the brand itself published and how it did — so
+  // what it produces is a claim about the reader's own work rather than an
+  // observation about someone else's.
+  //
+  // That difference is why it leads the list: a lane's own results come before the
+  // market's. It is also why the topics it produces carry a `basis` (see mocks.js) —
+  // a claim about your own numbers has to say what it counted, which is the one
+  // thing an external topic never has to answer for.
+  //
+  // `live: true`, and not aspirationally: the link between a post and its Playbook
+  // ships in production, and post statistics exist independently of an Agorapulse
+  // subscription. It also has to be live to be usable at all — LIVE_SOURCE_IDS is
+  // what defaultFilters() ticks, so a topic on a non-live source is filtered out of
+  // its own feed on first paint.
+  {
+    id: "own-posts",
+    name: "Your posts",
+    icon: "ap-icon-sparkles",
+    // The last unused ramp, and it is carrying IDENTITY here, not a verdict — this
+    // pip sits in a row of eight source pips, where amber is simply the hue nobody
+    // else took.
+    accent: "yellow",
+    live: true,
+    playbookAnchor: null,
+    defaultEnabled: true,
+    howItWorks:
+      "Every post published under this Playbook is read with its numbers attached, " +
+      "and each is measured against the Playbook's own recent average rather than " +
+      "an industry figure. What surfaces is where the brand's results and its output " +
+      "disagree — a format that outperforms and is rarely published, a post that " +
+      "beat its average and never went out again, an average that has been falling " +
+      "for weeks.",
+  },
   {
     id: "competitor-posts",
     name: "Competitors",

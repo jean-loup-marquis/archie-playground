@@ -383,6 +383,28 @@
   color: var(--ref-color-grey-80);
 }
 
+/* The basis, under the summary — only the internal source carries one. Caption
+   scale and the muted colour, because it qualifies the claim above it rather than
+   competing with it: it has to be legible on a second pass, not read first. The
+   icon shares the row so the line reads as an annotation and not as another
+   sentence of the summary. */
+.topics-card__basis {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  max-width: var(--topics-measure);
+  margin-top: var(--ref-spacing-xs);
+  font-family: var(--sys-text-style-caption-font-family);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+.topics-card__basis > i {
+  flex-shrink: 0;
+  font-size: var(--sys-icon-sm);
+}
+
 .topics-card__whynow {
   display: block;
   max-width: var(--topics-measure);

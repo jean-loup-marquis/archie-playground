@@ -74,3 +74,13 @@
   background: var(--ref-color-soft-blue-10);
   color: var(--ref-color-soft-blue-150);
 }
+
+/* The internal source — `own-posts`, the one source that reads the brand's own
+   published posts instead of the market. Amber because it is the last ramp the
+   eight sources leave free: the pip carries identity in a row of eight, not a
+   verdict, so the caution register the analytics surfaces give yellow doesn't
+   apply here. */
+.topic-badge--yellow {
+  background: var(--ref-color-yellow-10);
+  color: var(--ref-color-yellow-150);
+}

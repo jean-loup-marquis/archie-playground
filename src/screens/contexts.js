@@ -1,16 +1,16 @@
-import { html, raw, escapeText, escapeAttr } from "../utils.js?v=21";
-import { renderTopbar } from "../components/topbar.js?v=496";
+import { html, raw, escapeText, escapeAttr } from "../utils.js?v=24";
+import { renderTopbar } from "../components/topbar.js?v=499";
 import {
   getContexts,
   subscribe as subscribeContexts,
   duplicateContext,
   deleteContext,
-} from "../contexts-store.js?v=83";
-import { navigate } from "../router.js?v=30";
-import { setHandoff } from "../handoff.js?v=20";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=22";
-import { renderEmptyState } from "../components/empty-state.js?v=1";
-import { isFlagOn } from "../feature-flags.js?v=23";
+} from "../contexts-store.js?v=86";
+import { navigate } from "../router.js?v=33";
+import { setHandoff } from "../handoff.js?v=23";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=25";
+import { renderEmptyState } from "../components/empty-state.js?v=4";
+import { isFlagOn } from "../feature-flags.js?v=26";
 
 // Contexts library — standalone page (handoff §2.4).
 // Header → search → grid of ContextCards. Each card surfaces brand /
@@ -287,7 +287,7 @@ function bind(root) {
       event.stopPropagation();
       const copy = duplicateContext(dupBtn.dataset.contextsDuplicate);
       if (copy) {
-        import("../components/toast.js?v=21").then(({ showToast }) => showToast("Playbook duplicated"));
+        import("../components/toast.js?v=24").then(({ showToast }) => showToast("Playbook duplicated"));
         navigate(`/playbook/${copy.id}`);
       }
       return;
@@ -298,7 +298,7 @@ function bind(root) {
       const ctx = getContexts().find((c) => c.id === delBtn.dataset.contextsDelete);
       if (!ctx) return;
       if (getContexts().length <= 1) {
-        import("../components/toast.js?v=21").then(({ showToast }) =>
+        import("../components/toast.js?v=24").then(({ showToast }) =>
           showToast("Can't delete the last Playbook — every chat needs one."),
         );
         return;
@@ -313,7 +313,7 @@ function bind(root) {
         danger: true,
         onConfirm: () => {
           deleteContext(ctx.id);
-          import("../components/toast.js?v=21").then(({ showToast }) => showToast("Playbook deleted"));
+          import("../components/toast.js?v=24").then(({ showToast }) => showToast("Playbook deleted"));
         },
       });
       return;

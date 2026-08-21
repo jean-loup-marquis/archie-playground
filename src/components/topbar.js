@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=21";
-import { getPath, navigate } from "../router.js?v=30";
-import { parseHashParams } from "../url-state.js?v=21";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=22";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=24";
+import { getPath, navigate } from "../router.js?v=33";
+import { parseHashParams } from "../url-state.js?v=24";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=25";
 // Lot 19 — topbar no longer carries its own sidebar-toggle button. The
 // sidebar head exposes the toggle in both expanded (chevron-left) and
 // collapsed (view-list) states, so the duplicate in the topbar was just
@@ -14,25 +14,25 @@ import {
   getMode as getRightPanelMode,
   getActiveBatchRef as getActiveDraftsBatchRef,
   subscribe as subscribeRightPanel,
-} from "./right-panel.js?v=630";
-import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=97";
-import { getThread, subscribe as subscribeThread } from "../assistant.js?v=105";
-import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=99";
-import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=75";
+} from "./right-panel.js?v=633";
+import { getSources as getSessionSources, subscribeSources } from "../sources-stream.js?v=100";
+import { getThread, subscribe as subscribeThread } from "../assistant.js?v=108";
+import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=102";
+import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=78";
 import {
   isEnabled as isStatusCardEnabled,
   toggle as toggleStatusCard,
   subscribeVisibility as subscribeStatusCardVisibility,
-} from "./conversation-status-card.js?v=423";
-import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=46";
-import { open as openRenameModal } from "./rename-modal.js?v=2";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=83";
-import { isFlagOn } from "../feature-flags.js?v=23";
+} from "./conversation-status-card.js?v=426";
+import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=49";
+import { open as openRenameModal } from "./rename-modal.js?v=5";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=86";
+import { isFlagOn } from "../feature-flags.js?v=26";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,
   backToProfiles as topPostsBackToProfiles,
-} from "../top-posts-flow.js?v=126";
+} from "../top-posts-flow.js?v=129";
 
 // The playbook/context pill now lives in the composer (session.js
 // renderPlaybookControl) — selectable on a New Chat, then a static
@@ -298,7 +298,7 @@ export function initTopbar() {
     // renderWelcomeAltExit() above. The wizard chrome no longer carries
     // its own Exit affordance; this is the only entry.
     if (event.target.closest("[data-topbar-welcome-alt-exit]")) {
-      import("./confirm-modal.js?v=22").then(({ open }) => {
+      import("./confirm-modal.js?v=25").then(({ open }) => {
         open({
           title: "Exit onboarding?",
           body: "Your progress so far will be discarded. You can start over anytime from the dashboard.",

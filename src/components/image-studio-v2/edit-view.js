@@ -17,12 +17,12 @@
 // has its own sizing) and the crop confirm pair (its ratio options moved to the
 // tool palette, so only ✕ / ✓ stay on the canvas).
 
-import { escapeHtml } from "../../utils.js?v=21";
-import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=51";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=71";
-import { KEY } from "./context.js?v=66";
-import { outlineMetrics, shadowMetrics, cssFamily } from "../image-studio/canvas.js?v=2";
-import * as imageStudio from "../../image-studio.js?v=102";
+import { escapeHtml } from "../../utils.js?v=24";
+import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=54";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=74";
+import { KEY } from "./context.js?v=79";
+import { outlineMetrics, shadowMetrics, cssFamily } from "../image-studio/canvas.js?v=5";
+import * as imageStudio from "../../image-studio.js?v=105";
 
 // The working image is clipped inside .isv2-frame-clip while the frame itself is
 // overflow:visible, so on-element toolbars / popovers / handles can extend past

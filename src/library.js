@@ -13,21 +13,21 @@ import {
   ideas as seedIdeas,
   ideasBySession as seedIdeasBySession,
   recentSessions as seedRecentSessions,
-} from "./mocks.js?v=97";
-import { isNewUser } from "./user-mode.js?v=22";
+} from "./mocks.js?v=100";
+import { isNewUser } from "./user-mode.js?v=25";
 
 // Demo session ids — the recentSessions seed (s-acme-launch / s-riverside /
 // etc.). Only these sessions get the seeded ideas mock; brand-new
 // conversations (created at runtime via "+ New conversation") start empty
 // to match the user's mental model. Anything else looked-up — same path.
 const DEMO_SESSION_IDS = new Set(seedRecentSessions.map((s) => s.id));
-import { postAssistantMessage, postExtractionResult, startPending, finishPending } from "./assistant.js?v=105";
+import { postAssistantMessage, postExtractionResult, startPending, finishPending } from "./assistant.js?v=108";
 import {
   getSources as streamGetSources,
   subscribeSources,
   pushScriptedSource,
   completeScriptedSource,
-} from "./sources-stream.js?v=97";
+} from "./sources-stream.js?v=100";
 
 // --- Module state -------------------------------------------------------
 
