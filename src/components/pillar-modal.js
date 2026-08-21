@@ -28,11 +28,11 @@
 //   init()
 //   open({ playbookId?, onDone? })   — onDone receives the created pillar
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=27";
-import { escapeAttr } from "../utils.js?v=27";
-import { getActivePlaybookId } from "../active-playbook.js?v=97";
-import { addPillar, assetKindFor } from "../pillars-store.js?v=22";
-import { showToast } from "./toast.js?v=27";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=28";
+import { escapeAttr } from "../utils.js?v=38";
+import { getActivePlaybookId } from "../active-playbook.js?v=98";
+import { addPillar, assetKindFor } from "../pillars-store.js?v=23";
+import { showToast } from "./toast.js?v=37";
 
 const MODAL_ID = "pillar";
 

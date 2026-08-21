@@ -1,0 +1,739 @@
+/* Insights hub — the portfolio layer (/insights/:tab), shell + one tab panel.
+   Verdict colours are never written here: they come from `.ap-status`
+   modifiers picked in objective-scoring.js, so this file and the Playbook
+   detail can't drift apart. */
+
+.insights-view {
+  overflow-y: auto;
+}
+
+.insights-view__page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xl);
+  padding: var(--ref-spacing-xl);
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.insights-view__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+}
+
+.insights-view__head-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+/* The page's single call to action. Orange primary is the DS's AI/spotlight
+   button and this is the page's only action, so it can afford to be the loudest
+   thing after the title. */
+.insights-view__cta {
+  flex-shrink: 0;
+}
+
+.insights-view__all-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin: 0;
+  flex-shrink: 0;
+  font-size: var(--ref-font-size-sm);
+  color: var(--ref-color-green-150);
+}
+
+.insights-view__title {
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  font-weight: var(--sys-text-style-h1-weight);
+  line-height: var(--sys-text-style-h1-line-height);
+  color: var(--ref-color-grey-100);
+  margin: 0;
+}
+
+/* --sys-text-color-light, not grey-60: grey-60 measures 3.10:1 against the
+   #F9F9FA page background, under the 4.5:1 AA needs at 14px. This token is
+   5.18:1 and is what the rest of the app uses for secondary text. */
+.insights-view__sub {
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+  margin: 0;
+}
+
+.insights-view__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.insights-view__section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+  flex-wrap: wrap;
+}
+
+.insights-view__section-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.insights-view__section-note {
+  margin: 0;
+  max-width: 68ch;
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+/* Key for the card tints. Without it the amber/red split on the chips is
+   decoration — the chips show objective names, so colour is the only carrier. */
+.analytics-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-shrink: 0;
+}
+
+.analytics-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+.analytics-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--app-radius-circle);
+}
+
+.analytics-legend__swatch--strong {
+  background: var(--ref-color-green-150);
+}
+.analytics-legend__swatch--watch {
+  background: var(--ref-color-yellow-150);
+}
+.analytics-legend__swatch--at-risk {
+  background: var(--ref-color-red-150);
+}
+
+/* h3's 16px on an h2 element, on purpose. h2's 18px was tried and reverted: the
+   sections here are dividers inside one page, not chapters, and at 18px they pulled
+   attention off the figures. The token tier does not have to match the tag. */
+.insights-view__section-title {
+  font-family: var(--sys-text-style-h3-font-family);
+  font-size: var(--sys-text-style-h3-size);
+  font-weight: var(--sys-text-style-h3-weight);
+  line-height: var(--sys-text-style-h3-line-height);
+  color: var(--ref-color-grey-100);
+  margin: 0;
+}
+
+/* ---- Playbook health cards ---------------------------------------------- */
+
+.insights-view__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+/* Surface, border, radius and padding come from `.ap-card` on the element —
+   only what makes this card a clickable health tile lives here. */
+.analytics-card {
+  position: relative;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xs);
+  cursor: pointer;
+  transition:
+    border-color var(--ref-animation-short) var(--app-ease-out),
+    transform var(--ref-animation-short) var(--app-ease-out);
+}
+
+/* Gauge left, identity right — the score is the thing you scan across cards,
+   so it holds the same spot in every one of them. */
+.analytics-card__top {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  min-width: 0;
+}
+
+.analytics-card__id {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  min-width: 0;
+}
+
+.analytics-card:hover {
+  border-color: var(--ref-color-grey-40);
+  transform: translateY(-1px);
+}
+
+.analytics-card:focus-visible {
+  outline: none;
+  border-color: var(--ref-color-electric-blue-100);
+  box-shadow:
+    0 0 0 1px var(--ref-color-white),
+    0 0 0 3px var(--ref-color-electric-blue-100);
+}
+
+.analytics-card--empty {
+  cursor: default;
+  justify-content: center;
+}
+
+.analytics-card--empty:hover {
+  border-color: var(--ref-color-grey-10);
+  transform: none;
+}
+
+.analytics-card__verdict {
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  line-height: 1;
+}
+
+/* Watch is amber (yellow-150), NOT orange-150 — orange-150 resolves to a brick
+   #C83E07 that sits a hair from red-150 #D80505, so the two worst tiers became
+   indistinguishable at a glance, which defeats having three of them. The pale
+   chip tints keep using the DS `.ap-status orange`, which is unambiguous. */
+.analytics-card__verdict--strong {
+  color: var(--ref-color-green-150);
+}
+.analytics-card__verdict--watch {
+  color: var(--ref-color-yellow-150);
+}
+.analytics-card__verdict--at-risk {
+  color: var(--ref-color-red-150);
+}
+
+.analytics-card__name {
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-card__none {
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+  margin: 0;
+}
+
+/* Playbook identity dot — same six colours as the /contexts card swatch. */
+.analytics-card__dot {
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-grey-40);
+}
+
+.analytics-card__dot--orange {
+  background: var(--ref-color-orange-100);
+}
+.analytics-card__dot--blue {
+  background: var(--ref-color-electric-blue-100);
+}
+.analytics-card__dot--green {
+  background: var(--ref-color-green-100);
+}
+.analytics-card__dot--purple {
+  background: var(--ref-color-purple-100);
+}
+.analytics-card__dot--red {
+  background: var(--ref-color-red-100);
+}
+.analytics-card__dot--yellow {
+  background: var(--ref-color-yellow-100);
+}
+
+/* Annular gauge. `--ring-progress` is the 0–100 score, set inline per card;
+   the conic sweep paints that share and the inner disc punches the hole so it
+   reads as one score, not as a pie of parts. */
+.analytics-card__ring {
+  --ring-size: 52px;
+  --ring-thickness: 5px;
+  --ring-progress: 0;
+  --ring-color: var(--ref-color-grey-40);
+  position: relative;
+  flex-shrink: 0;
+  width: var(--ring-size);
+  height: var(--ring-size);
+  border-radius: var(--app-radius-circle);
+  background: conic-gradient(
+    var(--ring-color) calc(var(--ring-progress) * 1%),
+    var(--ref-color-grey-10) calc(var(--ring-progress) * 1%)
+  );
+  display: grid;
+  place-items: center;
+}
+
+.analytics-card__ring::before {
+  content: "";
+  position: absolute;
+  inset: var(--ring-thickness);
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-white);
+}
+
+/* The deeper 150 shades, not 100: at this stroke width the brighter tints read
+   as decoration rather than as a verdict. Watch is amber for the same reason as
+   the verdict text above. */
+.analytics-card__ring--strong {
+  --ring-color: var(--ref-color-green-150);
+}
+.analytics-card__ring--watch {
+  --ring-color: var(--ref-color-yellow-150);
+}
+.analytics-card__ring--at-risk {
+  --ring-color: var(--ref-color-red-150);
+}
+
+.analytics-card__ring-scale {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 2px;
+  background: var(--ref-color-white);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--sys-text-color-light);
+}
+
+.analytics-card__ring-value {
+  position: relative;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  line-height: 1;
+  color: var(--ref-color-grey-100);
+}
+
+.analytics-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxxs);
+  width: 100%;
+}
+
+.analytics-card__chip {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Filters ------------------------------------------------------------ */
+
+.insights-view__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.insights-view__filters {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+  flex-wrap: wrap;
+}
+
+/* `.ap-select` is width:100% by design (it normally fills a form field), so a
+   filter has to be sized here. */
+.insights-view__select {
+  width: auto;
+  min-width: 180px;
+}
+
+.insights-view__count {
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+/* ---- Objective table --------------------------------------------------- */
+
+.insights-view__table {
+  width: 100%;
+}
+
+.analytics-row {
+  cursor: pointer;
+}
+
+/* Deliberate extension of the DS table: a 3px accent inset on the leading cell
+   so scanning the left edge finds what needs work without reading a column. */
+.analytics-row.is-flagged td:first-child {
+  box-shadow: inset 3px 0 0 0 var(--row-accent);
+}
+
+/* Same amber-vs-red split as the cards, so one scan of the page teaches one
+   colour language. */
+.analytics-row.is-flagged--watch {
+  --row-accent: var(--ref-color-yellow-150);
+}
+
+.analytics-row.is-flagged--at-risk {
+  --row-accent: var(--ref-color-red-150);
+}
+
+.analytics-row__playbook {
+  gap: var(--ref-spacing-xxs);
+}
+
+.analytics-row__progress {
+  gap: var(--ref-spacing-xxs);
+}
+
+.analytics-row__pct {
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.analytics-row__goal {
+  color: var(--sys-text-color-light);
+}
+
+.analytics-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  color: var(--sys-text-color-light);
+  white-space: nowrap;
+}
+
+.analytics-trend.is-up {
+  color: var(--ref-color-green-150);
+}
+
+/* red-150, not red-100: the DS table stripes every other row, and red-100 clears
+   4.5:1 only against white — 4.40:1 on the stripe. -150 is also the step is-up and
+   the At-risk verdict already take, so the three tier colours stay one ramp. */
+.analytics-trend.is-down {
+  color: var(--ref-color-red-150);
+}
+
+/* ---- Editorial lead + its widgets --------------------------------------- */
+
+/* .insights-view__editorial is gone: once the block gained a heading it was the same
+   shape as every other section — heading, then content — so it uses
+   .insights-view__section and inherits its 16px rhythm instead of its own 24px. */
+
+/* Four across, fixed rather than auto-fit: auto-fit drops to three and leaves a
+   lone fourth card on its own row, which reads as a mistake. Below the width four
+   cards can hold, it halves to a 2×2 instead. */
+.insights-view__mini-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+@media (max-width: 900px) {
+  .insights-view__mini-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.insights-view__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xxl) var(--ref-spacing-md);
+  text-align: center;
+}
+
+/* The playbook name is a real <button> so the row is reachable by keyboard, but
+   it has to read as the plain cell text it replaced. */
+.analytics-row__open {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.analytics-row__open:hover {
+  text-decoration: underline;
+}
+
+.analytics-row__open:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+  border-radius: var(--ref-border-radius-sm);
+}
+
+/* No margin-bottom here. .insights-view__page is a flex column with a 40px gap, so a
+   24px margin on top of it put 64px between the tab nav and the first thing under it
+   — the gap alone is the separation. */
+
+.insights-view__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xl);
+}
+
+/* .insights-tab__period is gone with its last caller. Neither tab states a range in a
+   bare line above its content any more: Usage runs from the account's first day and
+   says so nowhere, Performance says "in the last 30 days" inside its lead sentence. */
+
+.insights-usage__produced {
+  display: grid;
+  grid-template-columns: 0.85fr repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+@media (max-width: 900px) {
+  .insights-usage__produced {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Same annulus technique as .analytics-card__ring: a conic sweep with an inner disc
+   punching the hole, so it reads as one rate rather than a pie of parts. */
+.insights-gauge__dial {
+  --gauge-progress: 0;
+  position: relative;
+  align-self: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--app-radius-circle);
+  background: conic-gradient(
+    var(--ref-color-green-150) calc(var(--gauge-progress) * 1%),
+    var(--ref-color-grey-10) calc(var(--gauge-progress) * 1%)
+  );
+  display: grid;
+  place-items: center;
+}
+
+.insights-gauge__dial::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: var(--app-radius-circle);
+  background: var(--ref-color-white);
+}
+
+/* Matches .recap__overview-metric: this is the block's headline rate, so it
+   cannot render smaller than the volumes sitting beside it. */
+.insights-gauge__value {
+  position: relative;
+  font-size: var(--ref-font-size-xl);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--ref-color-grey-100);
+}
+
+/* One grid of four, not two columns of stacked cards.
+
+   Nesting a column inside a column let each side grow to its own length: the left
+   ran 514px, the right 652px, and the 138px difference read as a hole under the last
+   bars card. Four columns put every card on one module instead, so a row ends where
+   its neighbours end:
+
+     [ Where you publish  ][ Current ][ Longest ]   ← 148 / 150 / 150, near enough
+     [ The tone that recurs ][ Creation activity ]
+                             [ the conclusion    ]
+
+   The two-column cards land at the same 462px the old layout gave them, so the
+   calendar keeps the 18-cell width 443e7414 widened it to. */
+.insights-usage__work {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+.insights-usage__wide {
+  grid-column: span 2;
+}
+
+/* Placed, not flowed: the conclusion belongs under the grid it was read off, and
+   auto-placement would put it in the next free cell — beside the calendar. */
+.insights-usage__note {
+  grid-column: 3 / span 2;
+}
+
+@media (max-width: 900px) {
+  .insights-usage__work {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insights-usage__wide,
+  .insights-usage__note {
+    grid-column: auto;
+  }
+}
+
+/* The ladder, not a rating: every star is a fixed milestone, so an unearned one has
+   to stay visible for the earned ones to mean anything. Green because the DS keeps it
+   for something having gone right, and because the grid below runs on the same ramp. */
+.insights-streak__ladder {
+  display: flex;
+  gap: var(--ref-spacing-xxxs);
+}
+
+/* grey-20 stays a --ref-*: the DS has no semantic token for the unfilled half of a
+   progress indicator, and every #D6DAE0 --comp-* is marked internal. */
+.insights-streak__ladder > i {
+  color: var(--ref-color-grey-20);
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* --sys-color-success-light-text, not green-150 they both resolve to: an earned rung
+   means something went right, which is what the semantic token is for. */
+.insights-streak__ladder > i.is-earned {
+  color: var(--sys-color-success-light-text);
+}
+
+.insights-bars__title {
+  margin: 0 0 var(--ref-spacing-xs);
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+/* Four superlatives, equal weight — none of them is the headline, and none of
+   them is a trend, so they get no gauge and no chart. */
+.insights-voice {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+}
+
+@media (max-width: 900px) {
+  .insights-voice {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.insights-bars__row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  margin-bottom: var(--ref-spacing-xxs);
+}
+
+.insights-bars__bar {
+  height: 16px;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-green-150);
+}
+
+.insights-bars__caption {
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+  white-space: nowrap;
+}
+
+.insights-calendar__range {
+  display: block;
+  margin-bottom: var(--ref-spacing-xs);
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+.insights-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(18, 1fr);
+  gap: var(--ref-spacing-xxxs);
+  margin-bottom: var(--ref-spacing-xs);
+}
+
+.insights-calendar__cell {
+  aspect-ratio: 1;
+  border-radius: var(--ref-border-radius-sm);
+  background: var(--ref-color-grey-10);
+}
+
+/* green-60 rather than green-40 for the first step: against grey-10 that is
+   1.46:1 instead of 1.21:1 — still the best this ramp allows, since its full
+   span is only 4.19:1. The legend below is what makes the scale readable. */
+.insights-calendar__cell--1 {
+  background: var(--ref-color-green-60);
+}
+.insights-calendar__cell--2 {
+  background: var(--ref-color-green-100);
+}
+.insights-calendar__cell--3 {
+  background: var(--ref-color-green-150);
+}
+
+.insights-calendar__legend {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  margin-bottom: var(--ref-spacing-xs);
+}
+
+/* The legend's swatches are samples, not data, so they keep a fixed size
+   instead of inheriting the grid cell's aspect-ratio stretch. */
+.insights-calendar__legend .insights-calendar__cell {
+  width: 10px;
+  height: 10px;
+  aspect-ratio: auto;
+  flex: 0 0 auto;
+}
+
+.insights-calendar__legend-label {
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+.insights-calendar__legend-label:first-child {
+  margin-right: var(--ref-spacing-xxxs);
+}
+
+.insights-calendar__legend-label:last-child {
+  margin-left: var(--ref-spacing-xxxs);
+}
+
+/* Own class rather than overriding .ap-table-empty: the DS cell is a centred block
+   and this one has to sit the Clear-filters button on the same line as the message. */
+.insights-view__table-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+/* The playbook level — the six metric cards, at the width the report gives them.
+   Three across rather than the report's nine-column canvas: this block answers a
+   card above it, so it is a row of figures, not a report page. See
+   src/screens/insights/performance.js. */
+.insights-view__widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  /* Rows sized by content, not by the panel: .widget-card is `height: 100%`, so a
+     stretched grid row hands one KPI tile the whole viewport. */
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-sm);
+}
+
+/* The selected card. A ring rather than a fill: the ring already carries the
+   score's colour, and tinting the whole card would put a second verdict on it. */
+.analytics-card.is-selected {
+  border-color: var(--sys-border-color-active);
+  box-shadow: inset 0 0 0 1px var(--sys-border-color-active);
+}

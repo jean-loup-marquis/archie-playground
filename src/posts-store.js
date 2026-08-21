@@ -7,9 +7,9 @@
 //   attachImageToDraft(sessionId, postId, imageUrl)
 //   subscribe(sessionId, fn)    → unsubscribe fn
 
-import { postsBySession as seedPostsBySession, recentSessions as seedRecentSessions } from "./mocks.js?v=103";
-import { isNewUser } from "./user-mode.js?v=28";
-import { createSessionNotifier } from "./store-utils.js?v=9";
+import { postsBySession as seedPostsBySession, recentSessions as seedRecentSessions } from "./mocks.js?v=104";
+import { isNewUser } from "./user-mode.js?v=29";
+import { createSessionNotifier } from "./store-utils.js?v=10";
 
 // Demo session ids — only these get the seeded posts mock. Brand-new
 // conversations start empty (cf. library.js for the same rationale).

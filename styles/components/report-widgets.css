@@ -1,0 +1,372 @@
+/* Report Studio's widget primitives, transcribed from the real components so the
+   prototype draws the same card as the product rather than a lookalike:
+
+     widget-card.component.scss           → .widget-card
+     widget-card-overview.component.scss  → .overview-card
+     widget-actions-toolbar.component.scss → .widget-actions-toolbar
+
+   The Angular host selectors become plain classes and the :host/::ng-deep nesting is
+   flattened; everything else — tokens, gaps, the asymmetric variation colour — is as
+   written there. One thing is deliberately absent: the AI-summary gradient border.
+
+   The toolbar carries a single action here, the chart-type switch from
+   widget-quick-edit-panel. Duplicate, edit, delete and the overflow menu are all real
+   buttons in the product, and all four would be inert in a fixed report — a toolbar of
+   four dead controls around one live one reads as a broken product, not a prototype.
+
+   Additions, marked as such below: .overview-card__narrative. */
+
+/* ── The card ──────────────────────────────────────────────────────────── */
+
+.widget-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  position: relative;
+  padding: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-xxs);
+  border-radius: var(--sys-border-radius-lg);
+  border: 1px solid var(--ref-color-grey-10);
+  background-color: var(--ref-color-white);
+  transition: border-color 0.15s ease-in-out;
+  overflow: hidden;
+}
+
+.widget-card .header-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.widget-card .title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--ref-spacing-xxs);
+}
+
+.widget-card .title-wrapper__title {
+  min-width: 0;
+  margin: 0;
+  font-size: var(--sys-text-style-h3-size);
+  line-height: var(--sys-text-style-h3-line-height);
+  font-weight: var(--sys-text-style-h3-weight);
+  color: var(--ref-color-grey-100);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.widget-card__footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: var(--ref-spacing-xxs);
+  border-top: 1px solid var(--ref-color-grey-10);
+}
+
+/* The +20px with overflow hidden is Report Studio's, not a mistake: it crops the
+   gutter Highcharts reserves on the left so the plot lines up with the card's
+   padding. Drop it and every chart sits visibly inset from its own title. */
+.chart-wrapper {
+  overflow: hidden;
+  margin: 0;
+  width: calc(100% + 20px);
+  flex: 1;
+  min-height: 0;
+}
+
+.chart-wrapper > div,
+.chart-wrapper .highcharts-container {
+  height: 100%;
+  width: 100%;
+  max-height: 100%;
+  max-width: 100%;
+}
+
+/* ── The KPI tile ──────────────────────────────────────────────────────── */
+
+.overview-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  position: relative;
+  gap: var(--ref-spacing-sm);
+}
+
+.overview-card__title {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  color: var(--ref-color-grey-80);
+  font-size: var(--ref-font-size-sm);
+  line-height: var(--ref-font-line-height-sm);
+}
+
+.overview-card__title--with-tooltip {
+  text-decoration: underline dotted;
+  text-decoration-thickness: 6.5%;
+  text-underline-offset: 9%;
+  text-underline-position: from-font;
+  cursor: help;
+}
+
+.overview-card__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  min-height: 0;
+}
+
+.overview-card__metric {
+  font-size: var(--ref-font-size-xl);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: var(--ref-font-line-height-lg);
+  color: var(--ref-color-grey-100);
+}
+
+/* Two lines, then ellipsis: the branch that renders words rather than a figure has
+   to have a floor, or one long tone description sets the whole row's height. */
+.overview-card__metric-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* Only a rise is green. Flat and falling both stay grey — the glyph carries the
+   direction, the colour is reserved for good news. */
+.overview-card__variation {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--ref-font-size-md);
+  font-weight: var(--ref-font-weight-bold);
+  line-height: var(--ref-font-line-height-sm);
+  color: var(--ref-color-grey-80);
+}
+
+.overview-card__variation--positive {
+  color: var(--ref-color-green-150);
+}
+
+.overview-card__variation i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+.overview-card__no-data {
+  color: var(--ref-color-grey-80);
+}
+
+/* Not in the real component. A cumulative figure ("2,431 drafts") cannot show the
+   rate that makes it mean something, and this tab states no period to compare
+   against — so the second line carries the ratio a variation would have.
+
+   A sibling of __content rather than a child, so __content's flex:1 pushes it to the
+   card's floor: across a row of four, the narratives then sit on one line. */
+.overview-card__narrative {
+  flex-shrink: 0;
+  font-size: var(--ref-font-size-sm);
+  font-style: italic;
+  color: var(--sys-text-color-light);
+}
+
+/* ── S and up: the metric centres and grows ────────────────────────────── */
+
+.overview-card--centered .overview-card__title-text {
+  margin: 0;
+  font-size: var(--ref-font-size-md);
+  line-height: var(--ref-font-line-height-md);
+  font-weight: var(--ref-font-weight-bold);
+}
+
+.overview-card--centered .overview-card__content {
+  gap: var(--ref-spacing-md);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.overview-card--centered .overview-card__metric {
+  font-size: 64px;
+  line-height: normal;
+}
+
+.overview-card--centered .overview-card__variation {
+  align-self: center;
+}
+
+/* ── The action toolbar ─────────────────────────────────────────────────────
+   widget-actions-toolbar.component.scss, and the structure confirmed against the
+   product: the toolbar is a SIBLING of the card, not a child. The card clips its own
+   overflow so a chart can't spill, and the toolbar is pulled up half its height to
+   straddle the card's top edge — inside the card it would be cut in two. Hence the
+   host, which is what `ap-widget-card.widget-card-host--editable` is in the product.
+
+   The host of the toolbar itself is sticky at spacing-xs: with a tall card scrolled
+   under it, the controls stay reachable instead of scrolling away. `pointer-events` off
+   on the strip and back on for the toolbar is what stops a zero-height invisible band
+   from swallowing clicks meant for the card. */
+.widget-card-host--editable {
+  position: relative;
+  min-width: 0;
+}
+
+.widget-card-host--editable > .widget-card {
+  height: 100%;
+}
+
+/* Hidden until the reader is on the widget, exactly as widget-card.component.scss has
+   it: opacity rather than display, so it fades instead of snapping, and the dropdown-
+   opened modifier holds it visible — a menu whose own toolbar vanishes when the pointer
+   drifts off would close under the reader's hand. The hover trigger itself is the app's
+   business, in welcome.css: this file must not know what a recap panel is. */
+.widget-actions-toolbar-host {
+  position: sticky;
+  top: var(--ref-spacing-xs);
+  z-index: 2;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.widget-actions-toolbar-host:has(.widget-actions-toolbar--dropdown-opened) {
+  opacity: 1;
+}
+
+.widget-actions-toolbar__anchor {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0;
+  display: flex;
+  justify-content: safe flex-end;
+  align-items: flex-start;
+  padding: 0 var(--ref-spacing-sm);
+  pointer-events: none;
+}
+
+.widget-actions-toolbar {
+  position: relative;
+  display: flex;
+  padding: 0 var(--ref-spacing-xxxs);
+  background: var(--ref-color-white);
+  border: 1px solid var(--ref-color-grey-20);
+  border-radius: var(--ref-border-radius-md);
+  /* Literal, as the real toolbar writes it: the DS ships no shadow token at this
+     depth — the --comp-* ones are all the 25px/6px dropdown pair at 15% — and the
+     product's computed value is exactly this rgba(52, 69, 99, 0.1). */
+  box-shadow: 0 3px 6px 0 rgb(52 69 99 / 10%);
+  pointer-events: auto;
+  transform: translateY(-50%);
+}
+
+/* ── The chart-type menu ────────────────────────────────────────────────────
+   The panel is ap-selection-dropdown's own CSS (its `--single` variant trades the
+   370px width for a 160px minimum). The row is ap-dropdown-item-single-one-line's
+   `.standalone-mode`, whose --comp-select-one-line-* values are written here as the
+   ref and sys tokens they resolve to, since app CSS doesn't use --comp-* directly:
+   40px min-height, xxs/sm padding, grey-100 at font-size-sm/regular, and for the
+   selected row electric-blue-10 behind accent-text at bold. Disabled is grey-40. */
+.ap-selection-dropdown__content {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxs));
+  /* ap-selection-dropdown is given defaultPosition="left" here, which is the panel
+     opening leftward from its trigger. In the product the trigger is the first of six
+     buttons so the panel falls inside the card either way; with one button pinned to
+     the card's right edge, anchoring left would hang the panel off the card. */
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+  overflow: hidden;
+  background-color: var(--ref-color-white);
+  border-radius: var(--sys-border-radius-sm);
+  box-shadow:
+    0 4px 25px -2px #34456326,
+    0 4px 6px -2px #34456326;
+  z-index: 1000;
+}
+
+.ap-selection-dropdown__content--single {
+  width: auto;
+  min-width: 160px;
+}
+
+.ap-selection-dropdown__items {
+  flex: 1;
+  min-height: 0;
+  padding: var(--ref-spacing-xxs) 0;
+  overflow-y: auto;
+}
+
+.ap-selection-dropdown__option {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  width: 100%;
+  min-height: 40px;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--ref-font-weight-regular);
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.ap-selection-dropdown__option > i:first-child {
+  flex-shrink: 0;
+  font-size: var(--sys-icon-css-sm);
+}
+
+.ap-selection-dropdown__option .option-item {
+  width: 100%;
+}
+
+/* margin-left: auto is the real rule — the check is pushed to the row"s
+  end
+  rather
+  than
+  sitting
+  against
+  the
+  label.
+  */
+.ap-selection-dropdown__option .option-selected {
+  margin-left: auto;
+  font-size: var(--sys-icon-css-sm);
+  color: var(--sys-color-accent-text);
+}
+
+.ap-selection-dropdown__option:hover:not([aria-disabled="true"]) {
+  background-color: var(--ref-color-electric-blue-10);
+}
+
+.ap-selection-dropdown__option:active:not([aria-disabled="true"]) {
+  background-color: var(--ref-color-electric-blue-20);
+}
+
+.ap-selection-dropdown__option[aria-selected="true"] {
+  background-color: var(--ref-color-electric-blue-10);
+  font-weight: var(--ref-font-weight-bold);
+  color: var(--sys-color-accent-text);
+}
+
+/* Unavailable visualisations stay listed rather than disappearing — the product shows
+   Table greyed out on widgets that cannot draw one, so the reader learns the type
+   exists and that this widget is why it's off. */
+.ap-selection-dropdown__option[aria-disabled="true"] {
+  color: var(--ref-color-grey-40);
+  cursor: default;
+}

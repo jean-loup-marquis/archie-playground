@@ -38,14 +38,14 @@
 //   init()
 //   open({ pillarId })
 
-import { html, raw, escapeAttr, escapeHtml } from "../utils.js?v=27";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=27";
-import { getPillarById, getPillarTimeline, setPillarFrozen, subscribe } from "../pillars-store.js?v=22";
+import { html, raw, escapeAttr, escapeHtml } from "../utils.js?v=38";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=28";
+import { getPillarById, getPillarTimeline, setPillarFrozen, subscribe } from "../pillars-store.js?v=23";
 // Read-only, and only for the lane a topic belongs to: the link has to name the feed
 // it navigates into, and a pillar source carries the briefId but not the lane.
-import { getBriefById } from "../briefs-store.js?v=80";
-import { renderDiff } from "../text-diff.js?v=7";
-import { showToast } from "./toast.js?v=27";
+import { getBriefById } from "../briefs-store.js?v=81";
+import { renderDiff } from "../text-diff.js?v=8";
+import { showToast } from "./toast.js?v=37";
 
 const MODAL_ID = "pillar-history";
 const PAGE = 6;

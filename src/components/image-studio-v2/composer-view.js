@@ -37,10 +37,10 @@
 // state.openPopover — that's the EDIT-mode flyouts. The generate panel's settings
 // sections are independent and live in state.collapsedGroups.
 
-import { escapeHtml } from "../../utils.js?v=27";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=77";
-import { KEY } from "./context.js?v=82";
-import * as imageStudio from "../../image-studio.js?v=108";
+import { escapeHtml } from "../../utils.js?v=38";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=78";
+import { KEY } from "./context.js?v=83";
+import * as imageStudio from "../../image-studio.js?v=109";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why

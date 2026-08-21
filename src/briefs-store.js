@@ -46,10 +46,10 @@
 //   updateSummary(briefId, text)       — Adapt mode commits through here
 //   subscribe(fn)                      → unsubscribe
 
-import { researchBriefs as seed } from "./mocks.js?v=103";
-import { isNewUser } from "./user-mode.js?v=28";
-import { createNotifier } from "./store-utils.js?v=9";
-import { DEFAULT_STATUS_IDS, DEFAULT_TYPE_IDS, LIVE_SOURCE_IDS, findReviewStatus } from "./research-catalog.js?v=32";
+import { researchBriefs as seed } from "./mocks.js?v=104";
+import { isNewUser } from "./user-mode.js?v=29";
+import { createNotifier } from "./store-utils.js?v=10";
+import { DEFAULT_STATUS_IDS, DEFAULT_TYPE_IDS, LIVE_SOURCE_IDS, findReviewStatus } from "./research-catalog.js?v=33";
 
 const briefs = isNewUser() ? [] : seed.map(cloneBrief);
 

@@ -14,13 +14,13 @@
 // Standard lifecycle via modal-coordinator — one overlay at a time, focus
 // restore, Esc / backdrop dismissal. Mirrors connectors-modal.js.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=27";
-import { html, raw } from "../utils.js?v=27";
-import { getTopicById, markSeen, dismissTopic, topicWhen, subscribe as subscribeTopics } from "../topics-store.js?v=41";
-import { findTopicSource } from "../topics-catalog.js?v=10";
-import { getContextById } from "../contexts-store.js?v=89";
-import { openTopicInChat } from "../topic-flow.js?v=51";
-import { renderSocialPostCard } from "./social-post-card.js?v=51";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=28";
+import { html, raw } from "../utils.js?v=38";
+import { getTopicById, markSeen, dismissTopic, topicWhen, subscribe as subscribeTopics } from "../topics-store.js?v=42";
+import { findTopicSource } from "../topics-catalog.js?v=11";
+import { getContextById } from "../contexts-store.js?v=90";
+import { openTopicInChat } from "../topic-flow.js?v=52";
+import { renderSocialPostCard } from "./social-post-card.js?v=52";
 
 const MODAL_ID = "topic";
 

@@ -8604,3 +8604,314 @@ export const pillars = [
     assets: [],
   },
 ];
+
+// ---- Archie's impact (the editorial lead + the hub's three widgets) -------
+//
+// The `lead` is one sentence, read once, warmly — a hook, not a scoreboard. The
+// hub's `widgets` are the same shape as PLAYBOOK_REPORT entries so they render
+// through the same mini widget component: the hub shows the portfolio's Reach /
+// Engagement rate / CTA clicks, a Playbook shows its own report below its lead.
+//
+// A Playbook needs no `widgets` here — its Performance section already has the
+// full PLAYBOOK_REPORT under the lead.
+//
+// Nothing in this repo aggregates reach / engagement across Playbooks today, so
+// the portfolio figures are illustrative. Wiring them to a real aggregation is a
+// separate job.
+const ARCHIE_IMPACT = {
+  portfolio: {
+    // Reconciled on purpose: the old sentence claimed "your engagement is beating
+    // the industry average" while the table underneath showed four objectives
+    // below that same median. Both were true — portfolio average vs per-objective
+    // — but nothing on screen said so, and praising the reader above the evidence
+    // against costs more credibility than the compliment buys. The caveat is
+    // static like every other figure here.
+    lead: {
+      highlight: "42,300 people reached",
+      after:
+        "in the last 30 days. Engagement is ahead of the industry median overall, though four objectives still trail it.",
+    },
+    // Ordered as the story reads: how far it went, how much Archie made, how it
+    // landed, what it drove.
+    widgets: [
+      { id: "hub-reach", title: "Reach", count: 42300, variation: 12, size: "mini" },
+      { id: "hub-posts", title: "Posts published", count: 18, variation: 20, size: "mini" },
+      { id: "hub-eng-rate", title: "Engagement rate", count: 4.2, unit: "%", variation: 3.1, size: "mini" },
+      { id: "hub-cta", title: "CTA clicks", count: 486, variation: 8.4, size: "mini" },
+    ],
+  },
+  "ctx-acme": {
+    lead: {
+      before: "Acme is having a good month —",
+      highlight: "18,400 people reached",
+      after: "and 92% of the way to its reach goal.",
+    },
+  },
+  "ctx-founder-voice": {
+    lead: {
+      before: "Your founder voice added",
+      highlight: "1,240 new followers",
+      after: "— the audience is compounding, even if reach lags.",
+    },
+  },
+  "ctx-customer": {
+    lead: {
+      before: "Customer stories reached",
+      highlight: "10,400 people",
+      after: "— down 9%, and the goal is slipping away.",
+    },
+  },
+  "ctx-dwelling": {
+    lead: {
+      before: "Pawtrack reached",
+      highlight: "17,600 people",
+      after: "— strong numbers, but flat two months running.",
+    },
+  },
+  "ctx-noba": {
+    lead: {
+      before: "Noba is being seen —",
+      highlight: "31,200 people reached",
+      after: "but only 41% of the way to its revenue goal, and the gap widened this month.",
+    },
+  },
+};
+
+// Portfolio-wide when called with nothing, one Playbook's own lead when given a
+// context. Returns null for a Playbook with no impact data rather than faking
+// one, so the lead can just not render.
+export function archieImpact(context) {
+  if (!context) return ARCHIE_IMPACT.portfolio;
+  return ARCHIE_IMPACT[context.id] || null;
+}
+
+// ---- Archie's usage (the Insights › Usage tab) -----------------------------
+//
+// The counterpoint to the objective tables: what Archie produced, and how you work
+// with it. Read once, warmly — a hook, not a scoreboard, hence a narrative line per
+// figure.
+//
+// `keptRate` and `calendar` are the two figures the platform records nowhere today:
+// nothing tracks whether a draft was edited after generation, and no timestamp of
+// creation activity is stored. The spec's data table carries that requirement.
+//
+// Playbook count and tone distribution are deliberately absent here — they are
+// derived from the real Playbooks so this tab cannot contradict /contexts.
+const ARCHIE_USAGE = {
+  lead: {
+    before: "Archie has written",
+    highlight: "148,200 words",
+    after: "for you this month — enough to publish every week for two years.",
+  },
+  // No `variation` on any of these. A percentage change needs a previous window to
+  // change against, and this block states no window — the figures run from the day
+  // the account started. The narrative is what a second line is for here: a rate or
+  // a ratio the cumulative figure does not show on its own.
+  produced: {
+    keptRate: 71,
+    widgets: [
+      {
+        id: "usage-drafts",
+        title: "Drafts generated",
+        count: 2431,
+        size: "mini",
+        narrative: "81 a week on average.",
+      },
+      {
+        id: "usage-posts",
+        title: "Posts published",
+        count: 318,
+        size: "mini",
+        narrative: "13% of drafts make it online.",
+      },
+      {
+        id: "usage-sources",
+        title: "Sources digested",
+        count: 67,
+        size: "mini",
+        narrative: "12 of them reused more than once.",
+      },
+    ],
+  },
+  work: {
+    networks: [
+      { label: "LinkedIn", share: 62 },
+      { label: "X", share: 24 },
+      { label: "Instagram", share: 14 },
+    ],
+    // 90 days of intensity, 0–3, hand-authored: this file forbids randomness, and a
+    // calendar that shifts per reload makes a screenshot useless as a reference.
+    calendar: [
+      0, 1, 2, 0, 3, 2, 0, 1, 3, 3, 0, 2, 1, 3, 2, 0, 3, 3, 1, 0, 2, 0, 3, 3, 1, 0, 2, 3, 0, 1, 2, 3, 0, 3, 2, 1, 3, 3,
+      0, 2, 0, 2, 1, 3, 0, 3, 2, 0, 3, 1, 2, 3, 3, 0, 1, 2, 3, 0, 3, 3, 3, 0, 1, 2, 3, 3, 0, 2, 1, 0, 3, 2, 3, 1, 0, 3,
+      2, 3, 3, 0, 2, 1, 3, 0, 3, 2, 1, 3, 0, 2,
+    ],
+    calendarLabel: "Last 90 days",
+    calendarNote: "Your Tuesday is your most productive day.",
+    streak: 6,
+    longestStreak: 21,
+  },
+  // Pure flattery, and honest about it — the register of Wispr's "Your voice",
+  // describing the operator rather than a brand. That subject is what makes it
+  // agnostic to how many brands the account runs: an agency operator still has
+  // habits across fourteen clients.
+  //
+  // Every figure here needs a frequency the platform does not record. `tones`
+  // counts Playbooks, not posts, and ties 2–2 across the four seeded ones, so a
+  // favourite has no winner without post-level counts. See the spec's data table.
+  voice: {
+    favouriteTone: "Direct",
+    toneRunnerUp: "Conversational",
+    favouriteHook: { text: "Unpopular opinion:", uses: 34 },
+    signatureWord: "shipped",
+    alwaysAvoid: "Emoji in B2B posts",
+  },
+};
+
+export function archieUsage() {
+  return ARCHIE_USAGE;
+}
+
+// Derived, never mocked: a hardcoded tone would let the Usage tab contradict the
+// Playbook list the moment someone edits a Playbook.
+export function toneDistribution() {
+  const counts = new Map();
+  for (const context of contexts) {
+    for (const tone of context.tones || []) counts.set(tone, (counts.get(tone) || 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+
+// The metrics the Playbook's report shows, and where each one sits in it.
+//
+// The report is fixed: always the same six metrics, in the same places. It's a
+// summary the Playbook owns, not a canvas the reader builds — so there's nothing
+// to pin, resize or choose, and no state behind it.
+//
+// Which six isn't a free choice either. A Playbook spans every network it
+// publishes to, so a metric only some networks report would read as a hole
+// rather than a number: Reach is a Facebook/Instagram idea, link clicks skip
+// Instagram and TikTok, video views only mean something where the post was a
+// video. The six here are the ones every network answers — which is why four of
+// them are exactly what Agorapulse aggregates across profiles (audience,
+// engagement, impressions, published), plus the rate and the growth derived from
+// those. The per-network specifics are what the locked row below teases.
+//
+// The numbers hold together on purpose: 3,410 engagements on 84,200 impressions
+// IS the 4.1% rate, and +1,240 on a 23,620 base IS the +5.3% audience move. A
+// summary whose own cards contradict each other reads as decoration.
+//
+// Placement is on the report's 9-column grid, rows 40px tall: a first line of
+// three S widgets, then the chart at M with two S stacked to its left.
+//
+//   ┌─────┬─────┬─────┐   cols 1-3 / 4-6 / 7-9, rows 1-3
+//   ├─────┼─────┴─────┤
+//   │  S  │           │   cols 1-3 rows 4-6
+//   ├─────┤     M     │   cols 4-9 rows 4-9
+//   │  S  │           │   cols 1-3 rows 7-9
+//   └─────┴───────────┘
+//
+// An S card is title + value + variation, so that's all it carries. `total` is
+// the chart's business — it's what the series get split out of — and the chart
+// card shows no headline number, so it carries no value or variation.
+//
+// `count` is the figure, unformatted — the ported formatCompactNumber decides how it
+// reads, so the report and the Insights hub cannot disagree about the same number.
+// `total` is a different quantity: what the widget's chart sums to over the 30 days.
+
+// Per-Playbook overrides of the six metrics below, and the reason they exist: the
+// six were authored once and read identically for every Playbook, so a portfolio
+// view drilling into two of them showed the same numbers twice. Same shape and
+// same fix as OBJECTIVE_METRICS_BY_CONTEXT — overrides keyed by widget id, over
+// the base row.
+const PLAYBOOK_REPORT_BY_CONTEXT = {
+  "ctx-acme": {
+    impressions: { count: 118400, variation: 14 },
+    engagements: { count: 5120, variation: 11.2 },
+    "eng-rate": { count: 4.3, variation: 1.4 },
+    audience: { count: 31200, variation: 6.1 },
+    published: { count: 32, variation: 8 },
+    "audience-growth": { total: 1810 },
+  },
+  "ctx-founder-voice": {
+    impressions: { count: 46700, variation: 22 },
+    engagements: { count: 3980, variation: 26 },
+    "eng-rate": { count: 8.5, variation: 3.2 },
+    audience: { count: 9740, variation: 12 },
+    published: { count: 18, variation: -6 },
+    "audience-growth": { total: 980 },
+  },
+  "ctx-customer": {
+    impressions: { count: 52300, variation: -4.2 },
+    engagements: { count: 1870, variation: -9 },
+    "eng-rate": { count: 3.6, variation: -1.1 },
+    audience: { count: 18450, variation: 2.4 },
+    published: { count: 11, variation: -31 },
+    "audience-growth": { total: 320 },
+  },
+  "ctx-dwelling": {
+    impressions: { count: 174600, variation: -11 },
+    engagements: { count: 9240, variation: -7.4 },
+    "eng-rate": { count: 5.3, variation: -0.8 },
+    audience: { count: 41800, variation: 3.9 },
+    published: { count: 64, variation: 2 },
+    "audience-growth": { total: 2140 },
+  },
+  "ctx-noba": {
+    impressions: { count: 96400, variation: 9.1 },
+    engagements: { count: 2740, variation: -14 },
+    "eng-rate": { count: 2.8, variation: -1.6 },
+    audience: { count: 22600, variation: 4.2 },
+    published: { count: 41, variation: 12 },
+    "audience-growth": { total: 760 },
+  },
+};
+
+/** The six metrics for one Playbook — the base row, with that Playbook's numbers. */
+export function playbookReportFor(context) {
+  const overrides = (context && PLAYBOOK_REPORT_BY_CONTEXT[context.id]) || null;
+  if (!overrides) return PLAYBOOK_REPORT.map((w) => ({ ...w }));
+  return PLAYBOOK_REPORT.map((w) => ({ ...w, ...(overrides[w.id] || {}) }));
+}
+
+export const PLAYBOOK_REPORT = [
+  { id: "impressions", title: "Impressions", count: 84200, variation: 6.2, size: "mini", col: 1, row: 1 },
+  { id: "engagements", title: "Engagements", count: 3410, variation: 8.4, size: "mini", col: 4, row: 1 },
+  { id: "eng-rate", title: "Engagement rate", count: 4.1, unit: "%", variation: 0, size: "mini", col: 7, row: 1 },
+  { id: "audience", title: "Audience", count: 24860, variation: 5.3, size: "mini", col: 1, row: 4 },
+  { id: "published", title: "Posts published", count: 38, variation: -12, size: "mini", col: 1, row: 7 },
+  { id: "audience-growth", title: "Audience growth", total: 1240, size: "small", col: 4, row: 4 },
+];
+
+// The three cards after those six — shown only under the `playbookPerfLock`
+// flag, because they're the pitch rather than the data.
+//
+// What's missing here isn't a metric, it's depth. The six above are a rolling
+// 30-day snapshot of the posts published under this Playbook, and that window
+// never grows: no deeper history, no year-on-year, and nothing about the posts
+// published outside it. So the locked slots name those three axes instead of
+// naming more metrics — a locked "Reach" card says the wrong thing, since reach
+// over 30 days is right there in Impressions.
+//
+// A locked slot shows a washed-out preview of the widget instead of its data,
+// which is what report-section-paywall.component does with its ppu-*.png. `ghost`
+// is that preview: bar heights, 0-1. Shapes rather than numbers on purpose — a
+// faint but legible 18,400 is a number someone can misread as theirs, and the
+// product's own preview flattens its sample chart past the point of reading.
+//
+// Three S cards on the row under the chart, cols 1-3 / 4-6 / 7-9 — the same
+// tiling as the first row, so the canvas still ends flush instead of on a dead
+// strip.
+export const PLAYBOOK_REPORT_LOCKED = [
+  { id: "locked-90d", title: "Last 90 days", ghost: [0.34, 0.58, 0.46, 0.78, 0.52, 0.66, 0.4, 0.6], col: 1, row: 10 },
+  { id: "locked-yoy", title: "Year over year", ghost: [0.5, 0.32, 0.62, 0.44, 0.72, 0.38, 0.56, 0.3], col: 4, row: 10 },
+  {
+    id: "locked-elsewhere",
+    title: "Posts published elsewhere",
+    ghost: [0.28, 0.44, 0.7, 0.54, 0.36, 0.62, 0.48, 0.74],
+    col: 7,
+    row: 10,
+  },
+];

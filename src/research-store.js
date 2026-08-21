@@ -28,11 +28,11 @@
 //     paused,                   — stopped listening; the topics it found stay
 //     showTrending }            — gates the banner AND the trending page entry
 
-import { researchLanes as seed } from "./mocks.js?v=103";
-import { getContexts } from "./contexts-store.js?v=89";
-import { isNewUser } from "./user-mode.js?v=28";
-import { createNotifier } from "./store-utils.js?v=9";
-import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findCadence, findResearchSource } from "./research-catalog.js?v=32";
+import { researchLanes as seed } from "./mocks.js?v=104";
+import { getContexts } from "./contexts-store.js?v=90";
+import { isNewUser } from "./user-mode.js?v=29";
+import { createNotifier } from "./store-utils.js?v=10";
+import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findCadence, findResearchSource } from "./research-catalog.js?v=33";
 
 // First-time user mode starts empty so /topic-feeds renders its empty state and the
 // sidebar row carries no count. Returning user keeps the mock seed. Same guard

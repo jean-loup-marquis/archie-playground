@@ -49,7 +49,7 @@
 // colours baked into the icon (they're SVG data-URI backgrounds, not font
 // glyphs), so nothing here has to hardcode a third-party hex.
 
-import { html, raw, escapeAttr } from "../utils.js?v=27";
+import { html, raw, escapeAttr } from "../utils.js?v=38";
 
 const NET_ICON = {
   linkedin: "ap-icon-linkedin-official",

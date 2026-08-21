@@ -195,4 +195,29 @@ export const FLAGS = Object.freeze([
       "the work starts. Verdicts come from objective-scoring.js and are derived, " +
       "never stored.",
   },
+  {
+    id: "insightsHub",
+    label: "Insights hub (/insights)",
+    default: true,
+    hides:
+      "When OFF, the Insights nav row and the /insights route disappear — the " +
+      "Topic Feed and the chat opening are untouched, since they carry their own " +
+      "findings. ON (default) adds the hub: a Usage tab (what Archie produced) and " +
+      "a Performance tab (a health card per Playbook, the objectives flattened " +
+      "worst-first, the six report widgets for the selected Playbook, and the " +
+      "Report Studio bridge). It is the one analytics surface the user chooses to " +
+      "open, which is why a wall of figures is legitimate here and nowhere else.",
+  },
+  {
+    id: "agorapulseEntitlement",
+    label: "Has an Agorapulse subscription",
+    default: false,
+    hides:
+      "Which of the two Report Studio bridges the Performance tab ends on. OFF " +
+      "(default) is an Archie-only account: the bridge argues structurally — Archie " +
+      "measures only what Archie published, and comparing that to everything else " +
+      "the brand publishes needs the platform by construction — behind a stroked, " +
+      "never coloured CTA. ON is a customer: a plain 'Add to a report' callout, " +
+      "because the deeper history is already theirs.",
+  },
 ]);

@@ -6,15 +6,15 @@
 // in-feed preview) + the footer; it delegates the generate panel to compose-view
 // and the edit canvas + action bar to edit-view.
 
-import { html, raw, escapeHtml } from "../../utils.js?v=27";
-import { getPosts } from "../../posts-store.js?v=81";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=77";
-import { renderPostCard } from "../post-card.js?v=123";
-import { KEY, ctx } from "./context.js?v=82";
-import { generateControls } from "./compose-view.js?v=94";
-import { actionBar, toolPalette, editCanvas } from "./edit-view.js?v=96";
-import { compositeOverlays } from "./canvas.js?v=8";
-import * as imageStudio from "../../image-studio.js?v=108";
+import { html, raw, escapeHtml } from "../../utils.js?v=38";
+import { getPosts } from "../../posts-store.js?v=82";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=78";
+import { renderPostCard } from "../post-card.js?v=124";
+import { KEY, ctx } from "./context.js?v=83";
+import { generateControls } from "./compose-view.js?v=95";
+import { actionBar, toolPalette, editCanvas } from "./edit-view.js?v=97";
+import { compositeOverlays } from "./canvas.js?v=9";
+import * as imageStudio from "../../image-studio.js?v=109";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over the
 // image, but the post-card preview can't (it just takes an image URL), so overlays
