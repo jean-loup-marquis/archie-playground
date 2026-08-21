@@ -2682,3 +2682,47 @@ body.hide-playbook-colors .composer-context__dot {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ── Objectives off track ───────────────────────────────────────────────────
+   The alert block in the empty chat. Same card and same measure as the topic
+   rows above it — one column, one left edge — because it is read in the same
+   pass. What it does NOT share is the row's prose column: an objective is a
+   number against a target, so the line under the title is a fact, not a
+   paragraph. See renderObjectiveAlertBlock in src/screens/session.js. */
+.objective-alert {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  max-width: var(--starter-measure, 760px);
+  margin: 0 auto;
+}
+
+/* The verdict pill sits at the far end of the head row, opposite the Playbook —
+   the same two anchors the topic card uses, so a reader's eye finds provenance
+   left and state right on both. */
+.starter-card--objective .starter-topic__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+}
+
+.objective-alert__gap {
+  display: block;
+  font-family: var(--sys-text-style-caption-font-family);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* Names what the cap hid. Caption scale, so it reads as a footnote to the list
+   rather than as a third row. */
+.objective-alert__more {
+  margin: 0;
+  font-family: var(--sys-text-style-caption-font-family);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}

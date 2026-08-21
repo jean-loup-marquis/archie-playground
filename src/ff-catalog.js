@@ -180,4 +180,19 @@ export const FLAGS = Object.freeze([
       "profiles, auto-extracted favicon), Archie can discover more from the " +
       "brand's market, and each one is editable in its own modal.",
   },
+  {
+    id: "objectiveAlerts",
+    label: "Objectives off track (chat opening)",
+    default: true,
+    hides:
+      "When OFF, the empty chat says nothing about the Playbook's declared " +
+      "objectives. ON (default) adds an 'Off track' block above Fresh topics to " +
+      "review, listing the objectives of the CHAT's Playbook whose verdict is " +
+      "Watch or At risk — two at most, worst first, with the gap in words and a " +
+      "prompt that lands in the composer. An objective verdict is the one finding " +
+      "that fits neither the Topic Feed (it names no subject to write about) nor a " +
+      "content pillar (it files under none), so it is an alert and it lives where " +
+      "the work starts. Verdicts come from objective-scoring.js and are derived, " +
+      "never stored.",
+  },
 ]);

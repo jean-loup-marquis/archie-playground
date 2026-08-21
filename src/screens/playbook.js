@@ -17,19 +17,19 @@
 // `loader` cfg, run the (mock) analysis on a timer, then `updateContext` with
 // the section patch — the loader flips to ready and paints the fresh data.
 
-import { navigate } from "../router.js?v=34";
-import { parseHashParams } from "../url-state.js?v=25";
-import { escapeHtml as esc } from "../utils.js?v=25";
-import { renderTopbar } from "../components/topbar.js?v=500";
-import { getContextById, getContexts, updateContext, deleteContext } from "../contexts-store.js?v=87";
-import { mount, snapshotEditable } from "../playbook-view.js?v=110";
-import { open as openRenameModal } from "../components/rename-modal.js?v=6";
-import { open as openConfirmModal } from "../components/confirm-modal.js?v=26";
-import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=62";
-import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=9";
-import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=29";
-import { sectionPatchFromAnalysis } from "../context-builder.js?v=467";
-import { isFlagOn } from "../feature-flags.js?v=27";
+import { navigate } from "../router.js?v=36";
+import { parseHashParams } from "../url-state.js?v=27";
+import { escapeHtml as esc } from "../utils.js?v=27";
+import { renderTopbar } from "../components/topbar.js?v=502";
+import { getContextById, getContexts, updateContext, deleteContext } from "../contexts-store.js?v=89";
+import { mount, snapshotEditable } from "../playbook-view.js?v=112";
+import { open as openRenameModal } from "../components/rename-modal.js?v=8";
+import { open as openConfirmModal } from "../components/confirm-modal.js?v=28";
+import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=64";
+import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=11";
+import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=31";
+import { sectionPatchFromAnalysis } from "../context-builder.js?v=469";
+import { isFlagOn } from "../feature-flags.js?v=29";
 
 const AUTOFILL_MS = 1500;
 
@@ -49,7 +49,7 @@ const STAGES = {
 };
 
 function toast(msg) {
-  import("../components/toast.js?v=25").then(({ showToast }) => showToast(msg));
+  import("../components/toast.js?v=27").then(({ showToast }) => showToast(msg));
 }
 
 function prettyUrl(url) {

@@ -3089,6 +3089,148 @@ for (const ctx of contexts) {
   }
 }
 
+// ---- Playbook objectives, measured (the alert's evidence) ------------------
+//
+// A Playbook declares its goals in `objective` ("Brand awareness", "Lead
+// generation"…). This is what each looks like once measured, so nothing here
+// declares a goal of its own: change a Playbook's goals and its cards change
+// with them.
+//
+// One metric per goal, and the full proof triplet:
+//   target    → `goal` + `progress` (% of goal)
+//   baseline  → `variationPercent` vs the previous 30 days (0 reads as "flat")
+//   benchmark → `benchmarkVsIndustry` vs the industry median
+// `value` and `goal` are pre-formatted: a prototype never computes, it shows. The
+// verdict is NOT stored — objective-scoring.js derives it from progress and trend,
+// so two surfaces can never disagree about the same objective.
+const OBJECTIVE_METRICS = {
+  "Brand awareness": {
+    metric: "reach",
+    value: "18,400",
+    goal: "20,000",
+    progress: 92,
+    variationPercent: 12,
+    benchmarkLabel: "industry median 14,200",
+    benchmarkVsIndustry: "+30%",
+    benchmarkAhead: true,
+  },
+  "Lead generation": {
+    metric: "CTA clicks",
+    value: "126",
+    goal: "150",
+    progress: 84,
+    variationPercent: 8,
+    benchmarkLabel: "industry median 140",
+    benchmarkVsIndustry: "−10%",
+    benchmarkAhead: false,
+  },
+  "Build personal brand": {
+    metric: "new followers",
+    value: "1,240",
+    goal: "1,500",
+    progress: 83,
+    variationPercent: 6,
+    benchmarkLabel: "industry median 980",
+    benchmarkVsIndustry: "+27%",
+    benchmarkAhead: true,
+  },
+  Sales: {
+    metric: "attributed revenue",
+    value: "€8,900",
+    goal: "€15,000",
+    progress: 59,
+    variationPercent: -4,
+    benchmarkLabel: "industry median €11,400",
+    benchmarkVsIndustry: "−22%",
+    benchmarkAhead: false,
+  },
+  "Community building": {
+    metric: "engagement rate",
+    value: "4.1%",
+    goal: "5.0%",
+    progress: 82,
+    variationPercent: 0,
+    benchmarkLabel: "industry median 3.2%",
+    benchmarkVsIndustry: "+0.9pt",
+    benchmarkAhead: true,
+  },
+};
+
+// Per-Playbook numbers, keyed by context id then goal label, layered over the
+// defaults. The map above is keyed by goal ALONE, so without this every Playbook
+// reads identically — and an alert whose job is to say which brand is slipping
+// would have nothing to say. Calibrated to span the three verdict tiers.
+//
+// Acme's reach declines ON PURPOSE, and it is the same story as the `own-posts`
+// drift topic in the feed ("Average reach has been sliding for three weeks") told
+// at a different altitude: the topic says what changed in the posts, the objective
+// says what that costs against the target. Two surfaces, one fact — if they
+// disagreed, neither would be believed.
+const OBJECTIVE_METRICS_BY_CONTEXT = {
+  "ctx-acme": {
+    "Brand awareness": {
+      value: "14,800",
+      progress: 74,
+      variationPercent: -8,
+      benchmarkVsIndustry: "+4%",
+      benchmarkAhead: true,
+    },
+  },
+  "ctx-founder-voice": {
+    "Brand awareness": {
+      value: "12,800",
+      progress: 64,
+      variationPercent: 3,
+      benchmarkVsIndustry: "−10%",
+      benchmarkAhead: false,
+    },
+  },
+  "ctx-customer": {
+    "Brand awareness": {
+      value: "10,400",
+      progress: 52,
+      variationPercent: -9,
+      benchmarkVsIndustry: "−27%",
+      benchmarkAhead: false,
+    },
+    "Lead generation": {
+      value: "107",
+      progress: 71,
+      variationPercent: -6,
+      benchmarkVsIndustry: "−24%",
+      benchmarkAhead: false,
+    },
+  },
+  "ctx-dwelling": {
+    "Brand awareness": {
+      value: "17,600",
+      progress: 88,
+      variationPercent: 0,
+      benchmarkVsIndustry: "+24%",
+      benchmarkAhead: true,
+    },
+  },
+  "ctx-noba": {
+    Sales: {
+      value: "€6,100",
+      progress: 41,
+      variationPercent: -11,
+      benchmarkVsIndustry: "−38%",
+      benchmarkAhead: false,
+    },
+  },
+};
+
+// The measured cards for one Playbook, in the order it declares its goals. A goal
+// with no metric behind it is skipped rather than faked.
+export function objectiveCardsFor(context) {
+  const goals = Array.isArray(context?.objective) ? context.objective : [];
+  const overrides = OBJECTIVE_METRICS_BY_CONTEXT[context?.id] || {};
+  return goals
+    .filter((label) => OBJECTIVE_METRICS[label])
+    .map((label) => ({ objective: label, ...OBJECTIVE_METRICS[label], ...overrides[label] }));
+}
+
 // ---- Topics (the dossiers Agorapulse listening produced) -------------------
 //
 // One topic = a claim Archie can defend: a headline, a written analysis, and the
