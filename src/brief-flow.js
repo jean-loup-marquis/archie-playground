@@ -28,12 +28,12 @@
 // copy at a different URL would keep its own. scripts/bump-cache.py --audit
 // enforces it.
 
-import { navigate } from "./router.js?v=33";
-import { setHandoff } from "./handoff.js?v=23";
-import { addReadySource } from "./sources-stream.js?v=100";
-import { getBriefById, getBriefVersions, briefTitle } from "./briefs-store.js?v=77";
-import { getLaneById } from "./research-store.js?v=61";
-import { findResearchSource } from "./research-catalog.js?v=29";
+import { navigate } from "./router.js?v=34";
+import { setHandoff } from "./handoff.js?v=24";
+import { addReadySource } from "./sources-stream.js?v=101";
+import { getBriefById, getBriefVersions, briefTitle } from "./briefs-store.js?v=78";
+import { getLaneById } from "./research-store.js?v=62";
+import { findResearchSource } from "./research-catalog.js?v=30";
 
 export const BRIEF_CHAT_HANDOFF = "pendingBriefChat";
 

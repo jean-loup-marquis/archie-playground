@@ -2660,3 +2660,25 @@ body.hide-playbook-colors .composer-context__dot {
     animation: none;
   }
 }
+
+/* The internal source, in the starter row's crumb. Same geometry as the Playbook
+   segment beside it — this is provenance, read on the same line, and a second
+   treatment would make one of the two look more important than the other. See
+   renderStarterTopicCard in src/screens/session.js. */
+.starter-topic__src {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.starter-topic__src > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

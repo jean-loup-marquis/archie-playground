@@ -1,12 +1,12 @@
-import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=24";
-import { navigate, getPath } from "../router.js?v=33";
-import { open as openBugReportModal } from "./bug-report-modal.js?v=27";
-import { open as openFeedbackModal } from "./feedback-modal.js?v=29";
-import { open as openConfirmModal } from "./confirm-modal.js?v=25";
-import { open as openRenameModal } from "./rename-modal.js?v=5";
-import { open as openSearchModal } from "./search-modal.js?v=58";
-import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=25";
-import { renderAdminMenu, applyUserMode, toggleFlag } from "../admin-menu.js?v=23";
+import { html, raw, escapeHtml, escapeAttr } from "../utils.js?v=25";
+import { navigate, getPath } from "../router.js?v=34";
+import { open as openBugReportModal } from "./bug-report-modal.js?v=28";
+import { open as openFeedbackModal } from "./feedback-modal.js?v=30";
+import { open as openConfirmModal } from "./confirm-modal.js?v=26";
+import { open as openRenameModal } from "./rename-modal.js?v=6";
+import { open as openSearchModal } from "./search-modal.js?v=59";
+import { toggle as toggleShortcutLegend } from "./shortcut-legend.js?v=26";
+import { renderAdminMenu, applyUserMode, toggleFlag } from "../admin-menu.js?v=24";
 import {
   getSessions,
   getSessionById,
@@ -15,26 +15,26 @@ import {
   togglePin as togglePinSession,
   togglePillar as togglePillarSession,
   subscribe as subscribeSessions,
-} from "../sessions-store.js?v=49";
-import { isFlagOn } from "../feature-flags.js?v=26";
-import { isNewUser } from "../user-mode.js?v=25";
-import { clearSession as clearLibrarySession } from "../library.js?v=102";
-import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=86";
-import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=70";
-import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=38";
-import { getPillarsForPlaybook, subscribe as subscribePillars } from "../pillars-store.js?v=19";
+} from "../sessions-store.js?v=50";
+import { isFlagOn } from "../feature-flags.js?v=27";
+import { isNewUser } from "../user-mode.js?v=26";
+import { clearSession as clearLibrarySession } from "../library.js?v=103";
+import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=87";
+import { getConnectedConnectors, subscribe as subscribeConnectors } from "../connectors-store.js?v=71";
+import { getUnseenCount as getUnseenTopicCount, subscribe as subscribeTopics } from "../topics-store.js?v=39";
+import { getPillarsForPlaybook, subscribe as subscribePillars } from "../pillars-store.js?v=20";
 import {
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=94";
-import { getLanes, subscribe as subscribeLanes } from "../research-store.js?v=61";
-import { countNewForLane, subscribe as subscribeBriefs } from "../briefs-store.js?v=77";
-import { closePanel as closeRightPanel } from "./right-panel.js?v=633";
-import { clearSession as clearAssistantSession } from "../assistant.js?v=108";
-import { clearSession as clearPostsSession } from "../posts-store.js?v=78";
-import { clearSession as clearSourcesSession } from "../sources-stream.js?v=100";
+} from "../active-playbook.js?v=95";
+import { getLanes, subscribe as subscribeLanes } from "../research-store.js?v=62";
+import { countNewForLane, subscribe as subscribeBriefs } from "../briefs-store.js?v=78";
+import { closePanel as closeRightPanel } from "./right-panel.js?v=634";
+import { clearSession as clearAssistantSession } from "../assistant.js?v=109";
+import { clearSession as clearPostsSession } from "../posts-store.js?v=79";
+import { clearSession as clearSourcesSession } from "../sources-stream.js?v=101";
 
 // Global app sidebar — Brand / + New conversation / Recent chats / User footer.
 // Rendered once at boot into #sidebar; re-rendered on every route change so the
@@ -1261,7 +1261,7 @@ function togglePinSidebar(sessionId) {
   if (!before) return;
   const after = togglePinSession(sessionId);
   if (!after) return;
-  import("./toast.js?v=24").then(({ showToast }) => {
+  import("./toast.js?v=25").then(({ showToast }) => {
     showToast(after.pinned ? "Chat pinned" : "Chat unpinned", {
       action: {
         label: "Undo",
@@ -1281,7 +1281,7 @@ function togglePinSidebar(sessionId) {
 function togglePillarSidebar(sessionId) {
   const after = togglePillarSession(sessionId);
   if (!after) return;
-  import("./toast.js?v=24").then(({ showToast }) => {
+  import("./toast.js?v=25").then(({ showToast }) => {
     showToast(after.contentPillar ? "Pinned as a Content Pillar" : "Removed from Content Pillar", {
       action: {
         label: "Undo",
@@ -1341,7 +1341,7 @@ function deleteSidebarSession(sessionId) {
         closeRightPanel();
         navigate("/");
       }
-      import("./toast.js?v=24").then(({ showToast }) => showToast("Chat deleted"));
+      import("./toast.js?v=25").then(({ showToast }) => showToast("Chat deleted"));
     },
   });
 }

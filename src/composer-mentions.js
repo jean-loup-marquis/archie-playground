@@ -15,9 +15,9 @@
 //   clearSession(sessionId)
 //   renderInto(container, sessionId)  // helper for session.js composer
 
-import { getIdeas } from "./library.js?v=102";
-import { escapeHtml, escapeAttr } from "./utils.js?v=24";
-import { createSessionNotifier } from "./store-utils.js?v=6";
+import { getIdeas } from "./library.js?v=103";
+import { escapeHtml, escapeAttr } from "./utils.js?v=25";
+import { createSessionNotifier } from "./store-utils.js?v=7";
 
 // Idea kind → DS .ap-tag color variant. Mirrors the per-kind palette the
 // right-panel idea cards use (rpanel-ideas__kind--*), so a mentioned idea's

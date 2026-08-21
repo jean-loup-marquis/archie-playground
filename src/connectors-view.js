@@ -11,8 +11,8 @@
 // Interactive hooks are data-* attributes bound identically on each surface:
 //   data-connector-open|connect|disconnect|try, data-connectors-category|search
 
-import { escapeHtml } from "./utils.js?v=24";
-import { getConnectors } from "./connectors-store.js?v=70";
+import { escapeHtml } from "./utils.js?v=25";
+import { getConnectors } from "./connectors-store.js?v=71";
 
 // Category display order — anything unlisted falls to the end alphabetically.
 export const CATEGORY_ORDER = [

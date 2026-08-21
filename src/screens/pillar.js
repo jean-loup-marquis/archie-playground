@@ -26,14 +26,14 @@
 // the user's own text, so it is quoted whole and marked as such — the one place
 // in this feature where a model must not restate the input.
 
-import { html, raw, escapeAttr } from "../utils.js?v=24";
-import { navigate, getPath } from "../router.js?v=33";
-import { renderTopbar } from "../components/topbar.js?v=499";
-import { showToast } from "../components/toast.js?v=24";
-import { isFlagOn } from "../feature-flags.js?v=26";
-import { parseHashParams } from "../url-state.js?v=24";
-import { renderDiff, hasDiff } from "../text-diff.js?v=4";
-import { open as openHistory } from "../components/pillar-history-modal.js?v=22";
+import { html, raw, escapeAttr } from "../utils.js?v=25";
+import { navigate, getPath } from "../router.js?v=34";
+import { renderTopbar } from "../components/topbar.js?v=500";
+import { showToast } from "../components/toast.js?v=25";
+import { isFlagOn } from "../feature-flags.js?v=27";
+import { parseHashParams } from "../url-state.js?v=25";
+import { renderDiff, hasDiff } from "../text-diff.js?v=5";
+import { open as openHistory } from "../components/pillar-history-modal.js?v=23";
 import {
   getPillarById,
   addAsset,
@@ -44,7 +44,7 @@ import {
   subscribe as subscribePillars,
   recordContextEdit,
   NAME_MAX,
-} from "../pillars-store.js?v=19";
+} from "../pillars-store.js?v=20";
 
 const PAGE = 8;
 

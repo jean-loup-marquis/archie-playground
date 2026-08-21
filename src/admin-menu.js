@@ -6,10 +6,10 @@
 // the side-effecting actions wired by the sidebar's delegated listeners. Every
 // change reloads the app so the stores re-seed under the new mode / flag.
 
-import { html, raw, escapeHtml } from "./utils.js?v=24";
-import { FLAGS } from "./ff-catalog.js?v=30";
-import { getFlags, setFlag } from "./feature-flags.js?v=26";
-import { getUserMode, setUserMode } from "./user-mode.js?v=25";
+import { html, raw, escapeHtml } from "./utils.js?v=25";
+import { FLAGS } from "./ff-catalog.js?v=31";
+import { getFlags, setFlag } from "./feature-flags.js?v=27";
+import { getUserMode, setUserMode } from "./user-mode.js?v=26";
 
 const ADMIN_MODE_OPTIONS = [
   { value: "returning", label: "Returning user", hint: "Populated mocks (default)" },
