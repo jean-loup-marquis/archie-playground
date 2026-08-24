@@ -14,14 +14,14 @@
 // via `cfg`; the edit state (editScope / snapshot) lives module-local and
 // is safe because only one route renders at a time.
 
-import { html, raw, escapeHtml as esc } from "./utils.js?v=41";
-import { openPillarInChat } from "./pillar-flow.js?v=33";
-import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=35";
-import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=11";
-import { isFlagOn } from "./feature-flags.js?v=40";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=81";
-import { open as openConfirmModal } from "./components/confirm-modal.js?v=32";
-import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=11";
+import { html, raw, escapeHtml as esc } from "./utils.js?v=42";
+import { openPillarInChat } from "./pillar-flow.js?v=34";
+import { analyzeWebsite, discoverCompetitors, competitorKey } from "./context-mock-analysis.js?v=36";
+import { LANGUAGE_OPTIONS, emptyVoiceEntry } from "./languages.js?v=12";
+import { isFlagOn } from "./feature-flags.js?v=41";
+import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=82";
+import { open as openConfirmModal } from "./components/confirm-modal.js?v=33";
+import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=12";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [

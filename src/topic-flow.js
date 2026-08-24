@@ -19,13 +19,13 @@
 // inline-question module instances are shared — each holds per-session state in
 // a module-local Map, and a second copy at a different URL would hold its own.
 
-import { navigate } from "./router.js?v=50";
-import { setHandoff } from "./handoff.js?v=30";
-import { postAssistantMessage, sendMessage } from "./assistant.js?v=115";
-import { addReadySource } from "./sources-stream.js?v=107";
-import * as inlineQuestion from "./inline-question.js?v=58";
-import { getTopicById, markSeen } from "./topics-store.js?v=45";
-import { findTopicSource } from "./topics-catalog.js?v=14";
+import { navigate } from "./router.js?v=51";
+import { setHandoff } from "./handoff.js?v=31";
+import { postAssistantMessage, sendMessage } from "./assistant.js?v=116";
+import { addReadySource } from "./sources-stream.js?v=108";
+import * as inlineQuestion from "./inline-question.js?v=59";
+import { getTopicById, markSeen } from "./topics-store.js?v=46";
+import { findTopicSource } from "./topics-catalog.js?v=15";
 
 export const TOPIC_CHAT_HANDOFF = "pendingTopicChat";
 

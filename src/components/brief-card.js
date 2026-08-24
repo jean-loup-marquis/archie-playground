@@ -49,12 +49,12 @@
 // draw one. flex:0 0 auto in research.css is the other half of that fix and is
 // still load-bearing — don't undo it.
 
-import { html, raw, escapeAttr } from "../utils.js?v=41";
-import { findReviewStatus } from "../research-catalog.js?v=36";
+import { html, raw, escapeAttr } from "../utils.js?v=42";
+import { findReviewStatus } from "../research-catalog.js?v=37";
 // One title per topic — the article's, not the scan's headline. See briefs-store.
-import { briefTitle } from "../briefs-store.js?v=84";
-import { isFlagOn } from "../feature-flags.js?v=40";
-import { pillarForBrief } from "../pillars-store.js?v=26";
+import { briefTitle } from "../briefs-store.js?v=85";
+import { isFlagOn } from "../feature-flags.js?v=41";
+import { pillarForBrief } from "../pillars-store.js?v=27";
 
 // No full stop — it is a caption on a menu row, not a sentence. This started as a
 // paragraph, became one line, and is now the shortest thing that still carries the

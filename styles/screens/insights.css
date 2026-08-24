@@ -7,6 +7,13 @@
   overflow-y: auto;
 }
 
+/* The page header is GONE, 2026-08-24 — the topbar names the section and carries
+   the segmented control, the way every other section of Archie does. What was
+   removed with it: __head, __head-text, __title, __sub, and the two slots the old
+   global triage CTA sat in (__cta, __all-clear). The `.insights-segments` control
+   needs no rules of its own: `.ap-segmented-control` carries it, exactly as the
+   Topic Feed's does. */
+
 .insights-view__page {
   display: flex;
   flex-direction: column;
@@ -18,54 +25,9 @@
   box-sizing: border-box;
 }
 
-.insights-view__head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ref-spacing-md);
-}
-
-.insights-view__head-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-}
-
-/* The page's single call to action. Orange primary is the DS's AI/spotlight
-   button and this is the page's only action, so it can afford to be the loudest
-   thing after the title. */
-.insights-view__cta {
-  flex-shrink: 0;
-}
-
-.insights-view__all-clear {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  margin: 0;
-  flex-shrink: 0;
-  font-size: var(--ref-font-size-sm);
-  color: var(--ref-color-green-150);
-}
-
-.insights-view__title {
-  font-family: var(--sys-text-style-h1-font-family);
-  font-size: var(--sys-text-style-h1-size);
-  font-weight: var(--sys-text-style-h1-weight);
-  line-height: var(--sys-text-style-h1-line-height);
-  color: var(--ref-color-grey-100);
-  margin: 0;
-}
-
 /* --sys-text-color-light, not grey-60: grey-60 measures 3.10:1 against the
    #F9F9FA page background, under the 4.5:1 AA needs at 14px. This token is
    5.18:1 and is what the rest of the app uses for secondary text. */
-.insights-view__sub {
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-  margin: 0;
-}
-
 .insights-view__section {
   display: flex;
   flex-direction: column;

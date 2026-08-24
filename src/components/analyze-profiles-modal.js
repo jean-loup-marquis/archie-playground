@@ -13,14 +13,14 @@
 //     it fires onConfirm(ids) then closes. A warning notes the overwrite.
 //   - Cancel / Esc / backdrop / close-X dismiss without firing.
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=31";
-import { escapeHtml as esc } from "../utils.js?v=41";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=32";
+import { escapeHtml as esc } from "../utils.js?v=42";
 import {
   getConnectedProfiles,
   NETWORK_ICON_BY_PLATFORM,
   BRAND_INITIALS,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=81";
+} from "../social-profiles.js?v=82";
 
 const MODAL_ID = "analyze-profiles";
 

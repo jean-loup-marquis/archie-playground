@@ -1,21 +1,21 @@
-import { escapeText, escapeAttr } from "../../utils.js?v=41";
-import { getContexts } from "../../contexts-store.js?v=93";
-import { objectiveCardsFor, archieImpact, playbookReportFor } from "../../mocks.js?v=107";
-import { navigate } from "../../router.js?v=50";
-import { renderEmptyState } from "../../components/empty-state.js?v=22";
-import { renderEditorialBanner } from "../../components/editorial-banner.js?v=23";
-import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=22";
-import { toOverviewData } from "../../report-widgets/widget-overview.js?v=21";
-import { showToast } from "../../components/toast.js?v=40";
-import { isFlagOn } from "../../feature-flags.js?v=40";
+import { escapeText, escapeAttr } from "../../utils.js?v=42";
+import { getContexts } from "../../contexts-store.js?v=94";
+import { objectiveCardsFor, archieImpact, playbookReportFor } from "../../mocks.js?v=108";
+import { navigate } from "../../router.js?v=51";
+import { renderEmptyState } from "../../components/empty-state.js?v=23";
+import { renderEditorialBanner } from "../../components/editorial-banner.js?v=24";
+import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=23";
+import { toOverviewData } from "../../report-widgets/widget-overview.js?v=22";
+import { showToast } from "../../components/toast.js?v=41";
+import { isFlagOn } from "../../feature-flags.js?v=41";
 import {
   objectiveTier,
   playbookScore,
   TIER_LABELS,
   TIER_ORDER,
   TIER_STATUS_CLASS,
-} from "../../objective-scoring.js?v=21";
-import { alertState, mutedUntilLabel, reopen, subscribe as subscribeAlerts } from "../../objective-alerts-store.js?v=2";
+} from "../../objective-scoring.js?v=22";
+import { alertState, mutedUntilLabel, reopen, subscribe as subscribeAlerts } from "../../objective-alerts-store.js?v=3";
 
 // Insights › Performance — the portfolio layer, above a single Playbook's detail.
 //
@@ -96,8 +96,8 @@ export function renderPerformanceTab() {
         <div class="insights-view__section-text">
           <h2 class="insights-view__section-title">Playbook health</h2>
           <p class="insights-view__section-note">
-            Scored out of 100 — the average progress of a Playbook's objectives, lowered when a trend
-            is flat or falling.
+            Across your ${contexts.length} ${contexts.length === 1 ? "Playbook" : "Playbooks"}. Scored out of 100 —
+            the average progress of a Playbook's objectives, lowered when a trend is flat or falling.
           </p>
         </div>
         ${renderTierLegend()}

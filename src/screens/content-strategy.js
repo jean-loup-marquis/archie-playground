@@ -21,15 +21,15 @@
 // Modelled on screens/research.js: flag guard, teardown/paint/bind, delegated
 // listeners, store subscriptions, teardown handed back to the router.
 
-import { html, raw, escapeAttr } from "../utils.js?v=41";
-import { navigate } from "../router.js?v=50";
-import { renderTopbar } from "../components/topbar.js?v=506";
-import { showToast } from "../components/toast.js?v=40";
-import { isFlagOn } from "../feature-flags.js?v=40";
-import { subscribe as subscribeContexts } from "../contexts-store.js?v=93";
-import { getActivePlaybook, getActivePlaybookId, subscribe as subscribeScope } from "../active-playbook.js?v=101";
-import { open as openConfirm } from "../components/confirm-modal.js?v=32";
-import { open as openPillarModal } from "../components/pillar-modal.js?v=93";
+import { html, raw, escapeAttr } from "../utils.js?v=42";
+import { navigate } from "../router.js?v=51";
+import { renderTopbar } from "../components/topbar.js?v=507";
+import { showToast } from "../components/toast.js?v=41";
+import { isFlagOn } from "../feature-flags.js?v=41";
+import { subscribe as subscribeContexts } from "../contexts-store.js?v=94";
+import { getActivePlaybook, getActivePlaybookId, subscribe as subscribeScope } from "../active-playbook.js?v=102";
+import { open as openConfirm } from "../components/confirm-modal.js?v=33";
+import { open as openPillarModal } from "../components/pillar-modal.js?v=94";
 import {
   getPillars,
   getPillarById,
@@ -38,7 +38,7 @@ import {
   updatePillar,
   unseenCountFor,
   subscribe as subscribePillars,
-} from "../pillars-store.js?v=26";
+} from "../pillars-store.js?v=27";
 
 // No view state left. The Playbook facet is gone — the rail's scope switcher IS
 // the filter now, and a second one on this page would be a way for the two to
