@@ -17,16 +17,16 @@
 // chooses "Save as global". updateContext is used by the section-edit flow
 // when scope is "Update everywhere".
 
-import { contexts as seed } from "./mocks.js?v=110";
-import { isNewUser } from "./user-mode.js?v=35";
-import { createNotifier } from "./store-utils.js?v=16";
-import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findTopicSource, findCadence } from "./topics-catalog.js?v=17";
+import { contexts as seed } from "./mocks.js?v=111";
+import { isNewUser } from "./user-mode.js?v=36";
+import { createNotifier } from "./store-utils.js?v=17";
+import { DEFAULT_ENABLED_IDS, DEFAULT_CADENCE, findTopicSource, findCadence } from "./topics-catalog.js?v=18";
 import {
   normalizeLanguages,
   mirrorPrimaryToTopLevel,
   syncTopLevelToPrimary,
   cloneVoiceByLanguage,
-} from "./languages.js?v=14";
+} from "./languages.js?v=15";
 
 // Lot 15 — first-time user mode starts empty so the standalone /contexts
 // page renders its empty state. Returning user keeps the mock seed. Every

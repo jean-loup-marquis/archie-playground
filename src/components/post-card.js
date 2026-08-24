@@ -19,10 +19,10 @@
 // id used to apply the focus pulse animation when navigating in via
 // `?focusPost=<id>`.
 
-import { html, raw } from "../utils.js?v=44";
-import { isPortraitFormat } from "../clip-formats.js?v=64";
-import { presetById } from "../clip-captions.js?v=18";
-import { renderFeedbackControl } from "./feedback-control.js?v=17";
+import { html, raw } from "../utils.js?v=45";
+import { isPortraitFormat } from "../clip-formats.js?v=65";
+import { presetById } from "../clip-captions.js?v=19";
+import { renderFeedbackControl } from "./feedback-control.js?v=18";
 
 export function renderPostCard(post, opts = {}) {
   const inlineEdit = opts.inlineEdit === true;

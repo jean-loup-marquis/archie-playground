@@ -33,14 +33,14 @@
 // teardown/paint/bind, delegated listeners, store subscriptions, teardown handed
 // back to the router.
 
-import { html, raw, escapeAttr } from "../utils.js?v=44";
-import { navigate } from "../router.js?v=53";
-import { renderTopbar } from "../components/topbar.js?v=509";
-import { showToast } from "../components/toast.js?v=43";
-import { isFlagOn } from "../feature-flags.js?v=43";
-import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=96";
-import { getLanes, duplicateLane, deleteLane, subscribe as subscribeLanes } from "../research-store.js?v=71";
-import { countNewForLane, countTrendingForLane, subscribe as subscribeBriefs } from "../briefs-store.js?v=87";
+import { html, raw, escapeAttr } from "../utils.js?v=45";
+import { navigate } from "../router.js?v=54";
+import { renderTopbar } from "../components/topbar.js?v=510";
+import { showToast } from "../components/toast.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=44";
+import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=97";
+import { getLanes, duplicateLane, deleteLane, subscribe as subscribeLanes } from "../research-store.js?v=72";
+import { countNewForLane, countTrendingForLane, subscribe as subscribeBriefs } from "../briefs-store.js?v=88";
 
 // Local view state. The Playbook facet lives here rather than in the URL: unlike
 // /topics, whose `?pb=` scope has to survive the round trip to a per-Playbook

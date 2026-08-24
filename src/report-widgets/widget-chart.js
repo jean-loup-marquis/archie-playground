@@ -5,7 +5,7 @@ import {
   distributionOptions,
   sharedTooltipFormatter,
   splineOptions,
-} from "./chart-builders.js?v=25";
+} from "./chart-builders.js?v=26";
 
 // The only module in this repo that touches Highcharts — the counterpart of
 // widget-card-charts.component.ts, which is likewise the single place Report Studio

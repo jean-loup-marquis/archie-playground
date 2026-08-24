@@ -5,10 +5,10 @@
 // footer's Generate CTA (see shell-view). `generateControls` is the single entry
 // point the shell composes into the panel.
 
-import { escapeHtml } from "../../utils.js?v=44";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=84";
-import { KEY } from "./context.js?v=89";
-import * as imageStudio from "../../image-studio.js?v=115";
+import { escapeHtml } from "../../utils.js?v=45";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=85";
+import { KEY } from "./context.js?v=90";
+import * as imageStudio from "../../image-studio.js?v=116";
 
 // Empty-state hint for the prompt field — a full structured brief, so the
 // placeholder itself shows the kind of rich prompt the box is built for (and why

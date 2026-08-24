@@ -529,50 +529,24 @@
   grid-column: span 2;
 }
 
-/* Placed, not flowed: the conclusion belongs under the grid it was read off, and
-   auto-placement would put it in the next free cell — beside the calendar. */
-.insights-usage__note {
-  grid-column: 3 / span 2;
-}
+/* The streak ladder and the 90-day activity grid were removed on 2026-08-24 with
+   the cards they drew (see renderUsageTab): this half proves what Archie is worth,
+   and a streak is the reader's own behaviour rendered as a game. Their rules went
+   with them rather than lingering as dead selectors. */
 
 @media (max-width: 900px) {
   .insights-usage__work {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .insights-usage__wide,
-  .insights-usage__note {
+  .insights-usage__wide {
     grid-column: auto;
   }
 }
 
-/* The ladder, not a rating: every star is a fixed milestone, so an unearned one has
-   to stay visible for the earned ones to mean anything. Green because the DS keeps it
-   for something having gone right, and because the grid below runs on the same ramp. */
-.insights-streak__ladder {
-  display: flex;
-  gap: var(--ref-spacing-xxxs);
-}
-
-/* grey-20 stays a --ref-*: the DS has no semantic token for the unfilled half of a
-   progress indicator, and every #D6DAE0 --comp-* is marked internal. */
-.insights-streak__ladder > i {
-  color: var(--ref-color-grey-20);
-  font-size: var(--sys-icon-css-sm);
-}
-
-/* --sys-color-success-light-text, not green-150 they both resolve to: an earned rung
-   means something went right, which is what the semantic token is for. */
-.insights-streak__ladder > i.is-earned {
-  color: var(--sys-color-success-light-text);
-}
-
-.insights-bars__title {
-  margin: 0 0 var(--ref-spacing-xs);
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
+/* The four .insights-bars__* rules that sat here are gone too, and they were dead
+   before this pass: renderBars draws a real widget card with a Highcharts bar
+   chart, so nothing in the JS ever carried those classes. */
 
 /* Four superlatives, equal weight — none of them is the headline, and none of
    them is a trend, so they get no gauge and no chart. */
@@ -586,87 +560,6 @@
   .insights-voice {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
-
-.insights-bars__row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  margin-bottom: var(--ref-spacing-xxs);
-}
-
-.insights-bars__bar {
-  height: 16px;
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-green-150);
-}
-
-.insights-bars__caption {
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-  white-space: nowrap;
-}
-
-.insights-calendar__range {
-  display: block;
-  margin-bottom: var(--ref-spacing-xs);
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-}
-
-.insights-calendar__grid {
-  display: grid;
-  grid-template-columns: repeat(18, 1fr);
-  gap: var(--ref-spacing-xxxs);
-  margin-bottom: var(--ref-spacing-xs);
-}
-
-.insights-calendar__cell {
-  aspect-ratio: 1;
-  border-radius: var(--ref-border-radius-sm);
-  background: var(--ref-color-grey-10);
-}
-
-/* green-60 rather than green-40 for the first step: against grey-10 that is
-   1.46:1 instead of 1.21:1 — still the best this ramp allows, since its full
-   span is only 4.19:1. The legend below is what makes the scale readable. */
-.insights-calendar__cell--1 {
-  background: var(--ref-color-green-60);
-}
-.insights-calendar__cell--2 {
-  background: var(--ref-color-green-100);
-}
-.insights-calendar__cell--3 {
-  background: var(--ref-color-green-150);
-}
-
-.insights-calendar__legend {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  margin-bottom: var(--ref-spacing-xs);
-}
-
-/* The legend's swatches are samples, not data, so they keep a fixed size
-   instead of inheriting the grid cell's aspect-ratio stretch. */
-.insights-calendar__legend .insights-calendar__cell {
-  width: 10px;
-  height: 10px;
-  aspect-ratio: auto;
-  flex: 0 0 auto;
-}
-
-.insights-calendar__legend-label {
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-}
-
-.insights-calendar__legend-label:first-child {
-  margin-right: var(--ref-spacing-xxxs);
-}
-
-.insights-calendar__legend-label:last-child {
-  margin-left: var(--ref-spacing-xxxs);
 }
 
 /* Own class rather than overriding .ap-table-empty: the DS cell is a centred block

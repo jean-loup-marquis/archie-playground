@@ -1,5 +1,5 @@
-import { escapeText, escapeAttr } from "../utils.js?v=44";
-import { formatCompactNumber, formatGroupedNumber, roundVariationPercent } from "./number-formatting.js?v=24";
+import { escapeText, escapeAttr } from "../utils.js?v=45";
+import { formatCompactNumber, formatGroupedNumber, roundVariationPercent } from "./number-formatting.js?v=25";
 
 // Port of report/widgets/ui/components/widget-card/widget-card-overview.
 //

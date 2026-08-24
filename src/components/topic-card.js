@@ -13,8 +13,8 @@
 // the clickable region: a button inside a button is invalid HTML, and the browser
 // resolves the nesting unpredictably.
 
-import { html, raw } from "../utils.js?v=44";
-import { topicWhen } from "../topics-store.js?v=48";
+import { html, raw } from "../utils.js?v=45";
+import { topicWhen } from "../topics-store.js?v=49";
 
 // Avatar tints, mirroring social-post-card's set — the footer stacks the post
 // authors, so the two surfaces have to agree on what a given accent looks like.

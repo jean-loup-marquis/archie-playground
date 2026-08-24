@@ -43,9 +43,9 @@
 //   mutedUntilLabel(playbookId)        the copy for "until when"
 //   subscribe(fn)                      → unsubscribe
 
-import { createNotifier } from "./store-utils.js?v=16";
-import { getLanes } from "./research-store.js?v=71";
-import { findCadence, DEFAULT_CADENCE } from "./research-catalog.js?v=39";
+import { createNotifier } from "./store-utils.js?v=17";
+import { getLanes } from "./research-store.js?v=72";
+import { findCadence, DEFAULT_CADENCE } from "./research-catalog.js?v=40";
 
 const states = new Map(); // `${playbookId}::${objective}` → "muted" | "aside"
 const armed = new Map(); // sessionId → { playbookId, objective }
