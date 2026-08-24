@@ -18,8 +18,8 @@
 // the stream is handled by re-looking up the target selector each tick
 // — when it disappears the stream aborts cleanly.
 
-import { getPosts, updatePostContent } from "./posts-store.js?v=82";
-import { escapeText } from "./utils.js?v=38";
+import { getPosts, updatePostContent } from "./posts-store.js?v=84";
+import { escapeText } from "./utils.js?v=40";
 
 const inFlight = new Map(); // postId → AbortController
 

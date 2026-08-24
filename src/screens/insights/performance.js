@@ -1,20 +1,20 @@
-import { escapeText, escapeAttr } from "../../utils.js?v=38";
-import { getContexts } from "../../contexts-store.js?v=90";
-import { objectiveCardsFor, archieImpact, playbookReportFor } from "../../mocks.js?v=104";
-import { navigate } from "../../router.js?v=47";
-import { renderEmptyState } from "../../components/empty-state.js?v=19";
-import { renderEditorialBanner } from "../../components/editorial-banner.js?v=20";
-import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=19";
-import { toOverviewData } from "../../report-widgets/widget-overview.js?v=18";
-import { showToast } from "../../components/toast.js?v=37";
-import { isFlagOn } from "../../feature-flags.js?v=37";
+import { escapeText, escapeAttr } from "../../utils.js?v=40";
+import { getContexts } from "../../contexts-store.js?v=92";
+import { objectiveCardsFor, archieImpact, playbookReportFor } from "../../mocks.js?v=106";
+import { navigate } from "../../router.js?v=49";
+import { renderEmptyState } from "../../components/empty-state.js?v=21";
+import { renderEditorialBanner } from "../../components/editorial-banner.js?v=22";
+import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=21";
+import { toOverviewData } from "../../report-widgets/widget-overview.js?v=20";
+import { showToast } from "../../components/toast.js?v=39";
+import { isFlagOn } from "../../feature-flags.js?v=39";
 import {
   objectiveTier,
   playbookScore,
   TIER_LABELS,
   TIER_ORDER,
   TIER_STATUS_CLASS,
-} from "../../objective-scoring.js?v=18";
+} from "../../objective-scoring.js?v=20";
 
 // Insights › Performance — the portfolio layer, above a single Playbook's detail.
 //

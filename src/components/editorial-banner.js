@@ -1,4 +1,4 @@
-import { escapeText } from "../utils.js?v=38";
+import { escapeText } from "../utils.js?v=40";
 
 // Editorial lead — one warm sentence, at 24px, introducing the widgets under it.
 //

@@ -14,9 +14,9 @@
 // On submit we simulate a ~1.4s round-trip and flash a success state; the
 // modal then closes itself. Nothing is actually posted.
 
-import { escapeHtml } from "../utils.js?v=38";
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=28";
-import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=8";
+import { escapeHtml } from "../utils.js?v=40";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=30";
+import { dropzoneHTML, bindDropzone } from "./dropzone.js?v=10";
 
 const MODAL_ID = "bugReport";
 

@@ -1,7 +1,7 @@
-import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=38";
-import { navigate } from "../router.js?v=47";
-import { renderTopbar } from "../components/topbar.js?v=503";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=104";
+import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=40";
+import { navigate } from "../router.js?v=49";
+import { renderTopbar } from "../components/topbar.js?v=505";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=106";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -11,15 +11,15 @@ import {
   NETWORK_ICON_BY_PLATFORM,
   NETWORK_LABEL,
   PROFILE_SEARCH_THRESHOLD,
-} from "../social-profiles.js?v=78";
-import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=58";
-import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=8";
-import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=53";
+} from "../social-profiles.js?v=80";
+import { FORMATS, formatsForNetwork, defaultFormatFor, clipFormatItems } from "../clip-formats.js?v=60";
+import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v=10";
+import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=55";
 // The rail is repainted by hand when the composer re-scopes the chat — see the
 // [data-playbook-pick] handler for why a store notify cannot do it here.
-import { renderSidebar } from "../components/sidebar.js?v=470";
-import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=90";
-import { isNewUser } from "../user-mode.js?v=29";
+import { renderSidebar } from "../components/sidebar.js?v=472";
+import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=92";
+import { isNewUser } from "../user-mode.js?v=31";
 import {
   getThread,
   sendMessage,
@@ -39,43 +39,43 @@ import {
   markConnectPromptResolved,
   toggleTopPostsWidgetPick,
   answerTopPostsWidget,
-} from "../assistant.js?v=112";
-import { iconFor as fileIconForKind } from "../file-kinds.js?v=27";
-import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=106";
-import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=95";
+} from "../assistant.js?v=114";
+import { iconFor as fileIconForKind } from "../file-kinds.js?v=29";
+import { getSources, getIdeas, extractVideoIdeas } from "../library.js?v=108";
+import { wireLibraryActions, renderSourcesBulkBar, renderIdeasBulkBar } from "../library-actions.js?v=97";
 import {
   renderInto as renderComposerMentions,
   removeMention as removeComposerMention,
   subscribe as subscribeComposerMentions,
   addMention as addComposerMention,
-} from "../composer-mentions.js?v=80";
-import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=82";
-import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=110";
-import { startActionPickerFlow, handleActionPick } from "../start-flow.js?v=92";
-import * as topPostsFlow from "../top-posts-flow.js?v=133";
+} from "../composer-mentions.js?v=82";
+import { getPosts, addPostDraft, setSubtitleStyle, subscribe as subscribePostsStore } from "../posts-store.js?v=84";
+import { startDraftFlow, executeDraft, executeDraftBatch, getAnglesForIdea } from "../draft-flow.js?v=112";
+import { startActionPickerFlow, handleActionPick } from "../start-flow.js?v=94";
+import * as topPostsFlow from "../top-posts-flow.js?v=135";
 import {
   renderTopPostsBoard,
   renderTopPostEcho,
   renderTopPostsWidget,
   TOP_POSTS_LIMIT,
-} from "../components/top-post-card.js?v=150";
-import { getTopPost } from "../top-posts-store.js?v=105";
-import { renderEmptyState } from "../components/empty-state.js?v=19";
-import * as sidebarWizard from "../sidebar-wizard.js?v=98";
-import * as inlineQuestion from "../inline-question.js?v=55";
-import * as clipStudio from "../clip-studio.js?v=76";
-import * as batchStudio from "../batch-studio.js?v=11";
-import { askConnector } from "../connector-ask.js?v=54";
-import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=74";
-import { renderConnectorLogo } from "../connectors-view.js?v=56";
+} from "../components/top-post-card.js?v=152";
+import { getTopPost } from "../top-posts-store.js?v=107";
+import { renderEmptyState } from "../components/empty-state.js?v=21";
+import * as sidebarWizard from "../sidebar-wizard.js?v=100";
+import * as inlineQuestion from "../inline-question.js?v=57";
+import * as clipStudio from "../clip-studio.js?v=78";
+import * as batchStudio from "../batch-studio.js?v=13";
+import { askConnector } from "../connector-ask.js?v=56";
+import { getConnectedConnectors, findConnector, setConnectorStatus } from "../connectors-store.js?v=76";
+import { renderConnectorLogo } from "../connectors-view.js?v=58";
 import {
   getActiveConnector,
   clearActiveConnector,
   subscribe as subscribeComposerConnector,
-} from "../composer-connector.js?v=9";
-import { isFlagOn } from "../feature-flags.js?v=37";
-import { pillarForBrief, getPillarsForPlaybook, subscribe as subscribePillars } from "../pillars-store.js?v=23";
-import { getActivePlaybook, getActivePlaybookId } from "../active-playbook.js?v=98";
+} from "../composer-connector.js?v=11";
+import { isFlagOn } from "../feature-flags.js?v=39";
+import { pillarForBrief, getPillarsForPlaybook, subscribe as subscribePillars } from "../pillars-store.js?v=25";
+import { getActivePlaybook, getActivePlaybookId } from "../active-playbook.js?v=100";
 
 // sessionId → pillarId attached in the composer. Module state rather than a
 // store: like the composer's @mentions it describes what THIS composer is about
@@ -87,27 +87,27 @@ import {
   countFreshTopics,
   subscribe as subscribeBriefs,
   briefTitle,
-} from "../briefs-store.js?v=81";
-import { BRIEF_CHAT_HANDOFF, attachBriefToChat, openBriefInChat } from "../brief-flow.js?v=55";
-import { PILLAR_CHAT_HANDOFF, attachPillarToChat } from "../pillar-flow.js?v=30";
-import { open as openPillarModal } from "../components/pillar-modal.js?v=90";
-import { getLaneById, getLanes } from "../research-store.js?v=65";
-import * as contextBuilder from "../context-builder.js?v=470";
-import { renderPicker } from "./_analyse-common.js?v=62";
-import { renderSourceCard } from "../components/source-card.js?v=40";
-import { renderIdeaCard } from "../components/idea-card.js?v=34";
-import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=9";
+} from "../briefs-store.js?v=83";
+import { BRIEF_CHAT_HANDOFF, attachBriefToChat, openBriefInChat } from "../brief-flow.js?v=57";
+import { PILLAR_CHAT_HANDOFF, attachPillarToChat } from "../pillar-flow.js?v=32";
+import { open as openPillarModal } from "../components/pillar-modal.js?v=92";
+import { getLaneById, getLanes } from "../research-store.js?v=67";
+import * as contextBuilder from "../context-builder.js?v=472";
+import { renderPicker } from "./_analyse-common.js?v=64";
+import { renderSourceCard } from "../components/source-card.js?v=42";
+import { renderIdeaCard } from "../components/idea-card.js?v=36";
+import { renderCompactIdeaCard } from "../components/idea-card-compact.js?v=11";
 import {
   contentState,
   renderContentWorkspace as renderSharedContentWorkspace,
   rerenderContentWorkspaceBody,
   renderContentEmptyState,
-} from "../components/content-workspace.js?v=32";
-import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=106";
-import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=114";
-import { open as openAddSourceModal } from "../components/add-source-modal.js?v=115";
-import { open as openConnectorsModal } from "../components/connectors-modal.js?v=58";
-import { dropzoneHTML } from "../components/dropzone.js?v=8";
+} from "../components/content-workspace.js?v=34";
+import { open as openVideoClipsModal } from "../components/video-clips-modal.js?v=108";
+import { open as openChatPickerModal } from "../components/chat-picker-modal.js?v=116";
+import { open as openAddSourceModal } from "../components/add-source-modal.js?v=117";
+import { open as openConnectorsModal } from "../components/connectors-modal.js?v=60";
+import { dropzoneHTML } from "../components/dropzone.js?v=10";
 import {
   classifyFile,
   startFileUpload,
@@ -123,32 +123,32 @@ import {
   extractClipsForSource,
   setSourceIdeaCount,
   addReadySource,
-} from "../sources-stream.js?v=104";
-import { renderClipCard } from "../components/clip-card.js?v=68";
-import { onFeedbackClick } from "../components/feedback-control.js?v=11";
-import { showToast } from "../components/toast.js?v=37";
+} from "../sources-stream.js?v=106";
+import { renderClipCard } from "../components/clip-card.js?v=70";
+import { onFeedbackClick } from "../components/feedback-control.js?v=13";
+import { showToast } from "../components/toast.js?v=39";
 // The composer's Add menu reaches Topic feeds through this picker; the catalog
 // gives the picked topic's source its icon, matching the card it came from.
-import { openIdeaArticle, openIdeaPicker, openPillarPicker } from "../components/research-modals.js?v=190";
-import { findResearchSource } from "../research-catalog.js?v=33";
-import { objectiveCardsFor } from "../mocks.js?v=104";
-import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../objective-scoring.js?v=18";
+import { openIdeaArticle, openIdeaPicker, openPillarPicker } from "../components/research-modals.js?v=192";
+import { findResearchSource } from "../research-catalog.js?v=35";
+import { objectiveCardsFor } from "../mocks.js?v=106";
+import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../objective-scoring.js?v=20";
 // The one place a basis line is phrased — the feed card, the article pane and this
 // row all read from it, so no two surfaces can word the same comparison differently.
-import { briefBasis } from "../components/brief-card.js?v=89";
+import { briefBasis } from "../components/brief-card.js?v=91";
 import {
   openDrafts as openDraftsPanel,
   openIdeas as openIdeasPanel,
   openClips as openClipsPanel,
   getMode as getRightPanelMode,
   subscribe as subscribeRightPanel,
-} from "../components/right-panel.js?v=637";
-import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=27";
-import { startTopicChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=52";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=28";
-import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=70";
-import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=78";
-import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=94";
+} from "../components/right-panel.js?v=639";
+import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=29";
+import { startTopicChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=54";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=30";
+import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=72";
+import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=80";
+import { rebindWizardKeyboard } from "./session/wizard-keyboard.js?v=96";
 // Pure thread-turn renderers — shared with the component handoff gallery so
 // the previews there never drift from the app (handoff/components.html).
 import {
@@ -160,7 +160,7 @@ import {
   renderSystemNotice,
   renderExtractingNotice,
   renderResultCard,
-} from "./session/thread-turns.js?v=8";
+} from "./session/thread-turns.js?v=10";
 
 // Default composer placeholder — restored whenever no connector is attached.
 // A connected connector swaps it for "Ask {name} anything…".
@@ -2176,12 +2176,19 @@ function chatPlaybookId() {
   return document.querySelector("[data-composer-playbook]")?.dataset.composerPlaybook || getActivePlaybookId();
 }
 
-function scopedLaneIds() {
+// `context` is the chat's Playbook when the caller knows it — the first paint does,
+// because renderAssistantPanel resolved it before the composer existed. Without it we
+// fall back to reading the rendered composer, which is right for the repaint paths
+// (the composer is in the DOM by then) and WRONG on a first paint: it still holds the
+// PREVIOUS chat's Playbook, so a chat opened on Acme showed Customer stories' crumbs
+// and, worse, resolved that brand's lanes — which is how the topic list disappeared
+// on a Playbook that has one.
+function scopedLaneIds(context = null) {
   // The CHAT's Playbook, not the rail's. The composer's select can re-scope a chat,
   // and a list headed "Fresh topics to review" sitting above a composer that says
   // Noba must not be showing Acme's topics — the same rule that put the rail's
   // Topic Feed dot on the chat's Playbook.
-  const scopeId = chatPlaybookId();
+  const scopeId = context?.id || chatPlaybookId();
   if (!scopeId) return null;
   return getLanes()
     .filter((l) => l.playbookId === scopeId)
@@ -2198,12 +2205,12 @@ function scopedLaneIds() {
 // this chat produces will be written for. That is the honest reading of the label on
 // these cards, and it is why they read the scope while the topic cards read their
 // own lane.
-function starterPlaybookHead() {
+function starterPlaybookHead(context = null) {
   // The chat's Playbook, per the note above: what this row names is where the work
   // is about to happen, and the work happens in this chat. Leaving it on the rail
   // put two brands on one screen the moment the composer re-scoped the chat — the
   // topic list following the chat and the workflow cards still naming the rail.
-  const brand = getContextById(chatPlaybookId());
+  const brand = context || getContextById(chatPlaybookId());
   if (!brand) return "";
   return `<span class="starter-topic__head"><span class="starter-topic__crumb"><span class="starter-topic__pb" title="For ${escapeHtml(
     brand.name,
@@ -2403,13 +2410,13 @@ const STARTER_TOPIC_LIMIT = 6;
 //
 // A row opens the article dialog (openIdeaArticle, wired in the delegated handler) —
 // the row is a trigger, not a destination.
-function renderStarterTopicSlot(sessionId) {
+function renderStarterTopicSlot(sessionId, context = null) {
   if (!isFlagOn("contentResearch")) return "";
   if (sessionId) syncStarterTopicSession(sessionId);
   // Scoped to the active Playbook, like everything else below the switcher. A
   // list titled "Fresh topics to review" that surfaced another brand's topics
   // was the loudest place the old free-for-all showed.
-  const laneIds = scopedLaneIds();
+  const laneIds = scopedLaneIds(context);
   const queue = getStarterTopics(laneIds);
   // No Topics at all (new-alt mode): no block, not a closing card. "See more in your
   // feed" is an answer to "I've read these", not to "there was never anything here".
@@ -2503,10 +2510,12 @@ function refreshStarterPlaybookHeads() {
 // Scoped to the CHAT's Playbook, like the topic list below it — an alert about
 // Noba's revenue over a composer that says Acme would be worse than no alert.
 //
-// Two rows at most, and it says so when it trims: the hero is a page you pass
-// through, and a queue of five verdicts turns it into the dashboard this whole
-// direction exists to avoid.
-const OBJECTIVE_ALERT_LIMIT = 2;
+// EVERY off-track objective, in the same scrolling panel the topic list uses. It was
+// two cards with a "and N more" line, on the argument that the hero is a page you
+// pass through — but a card that floats at 760px under a 1016px panel reads as a
+// different kind of object, and the trimmed ones were unreachable. The panel's own
+// scroller answers both: full width, worst first, and the cut row at the bottom is
+// what says there is more.
 
 // `attachedContext` is the CHAT's Playbook, passed down from the panel that
 // resolved it. Not chatPlaybookId(): that reads the rendered composer, which during
@@ -2572,16 +2581,20 @@ function renderObjectiveAlertCard(o) {
 function renderObjectiveAlertBlock(attachedContext = null) {
   const all = offTrackObjectives(attachedContext);
   if (!all.length) return "";
-  const shown = all.slice(0, OBJECTIVE_ALERT_LIMIT);
-  const hidden = all.length - shown.length;
-  // Says what it trimmed. A capped list that stays quiet about the cap reads as
-  // "that is all of them", which is the one thing an alert must never imply.
-  const more = hidden ? `<p class="objective-alert__more">and ${hidden} more on this Playbook</p>` : "";
+  // The topic list's own chrome — `.starter-topic` panel, `.starter-topic__list`
+  // scroller — because the two blocks are read in one pass and a second geometry
+  // makes one of them look like it belongs to another screen. What keeps them apart
+  // is what they SAY: a verdict pill on every row (nothing else on this screen has
+  // one), a figure against a target where a topic has prose, and their own label.
+  //
+  // tabindex on the scroller for the same reason the topic list has one: a keyboard
+  // user has to be able to reach rows below the cut.
   return `
     <h2 class="empty-chat__starter-label" id="objectiveAlertLabel">Off track</h2>
-    <div class="objective-alert" role="group" aria-labelledby="objectiveAlertLabel">
-      ${shown.map(renderObjectiveAlertCard).join("")}
-      ${more}
+    <div class="starter-topic starter-topic--objectives" role="group" aria-labelledby="objectiveAlertLabel">
+      <div class="starter-topic__panel">
+        <div class="starter-topic__list" tabindex="0">${all.map(renderObjectiveAlertCard).join("")}</div>
+      </div>
     </div>`;
 }
 
@@ -2589,8 +2602,8 @@ function renderObjectiveAlertBlock(attachedContext = null) {
 // the block it names — renderStarterTopicSlot returns "" in three cases (flag
 // off, no Topics, new-alt), and a heading with nothing under it would be worse
 // than no heading.
-function renderStarterTopicBlock(sessionId) {
-  const slot = renderStarterTopicSlot(sessionId);
+function renderStarterTopicBlock(sessionId, context = null) {
+  const slot = renderStarterTopicSlot(sessionId, context);
   if (!slot) return "";
   return `<h2 class="empty-chat__starter-label" id="starterTopicLabel">Fresh topics to review</h2>${slot}`;
 }
@@ -2619,7 +2632,7 @@ function renderEmptyHero(sessionId, composerMarkup = "", attachedContext = null)
         return `
           <div class="starter-card starter-card--${tone} starter-card--soon" data-starter="${s.id}" aria-disabled="true">
             <i class="starter-card__art ${s.icon}" aria-hidden="true"></i>
-            ${starterPlaybookHead()}
+            ${starterPlaybookHead(attachedContext)}
             <span class="starter-card__title">${s.title}</span>
             <span class="starter-card__subtitle">${s.subtitle}</span>
             <span class="starter-card__cta--soon ap-badge blue">${s.cta}</span>
@@ -2634,7 +2647,7 @@ function renderEmptyHero(sessionId, composerMarkup = "", attachedContext = null)
       return `
         <button type="button" class="starter-card starter-card--${tone}" data-starter="${s.id}"${actionAttr} data-starter-prompt="${escapeHtml(resolvedPrompt)}">
           <i class="starter-card__art ${s.icon}" aria-hidden="true"></i>
-          ${starterPlaybookHead()}
+          ${starterPlaybookHead(attachedContext)}
           <span class="starter-card__title">${s.title}</span>
           <span class="starter-card__subtitle">${s.subtitle}</span>
           <span class="starter-card__cta ap-link standalone small">${s.cta}<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
@@ -2666,7 +2679,7 @@ function renderEmptyHero(sessionId, composerMarkup = "", attachedContext = null)
            blocks below get read in: what to make next is a different decision when
            the plan is behind. It is also the shortest — two rows at most. -->
       ${raw(renderObjectiveAlertBlock(attachedContext))}
-      <div data-starter-topics-block>${raw(renderStarterTopicBlock(sessionId))}</div>
+      <div data-starter-topics-block>${raw(renderStarterTopicBlock(sessionId, attachedContext))}</div>
       <h2 class="empty-chat__starter-label" id="starterGridLabel">Or jump into a workflow</h2>
       <div class="starter-grid" role="group" aria-labelledby="starterGridLabel" data-starter-grid>${raw(cards)}</div>
     </div>

@@ -12,9 +12,9 @@
 // render; no module-local state (the active sort lives in top-posts-flow's
 // picker state).
 
-import { html, raw } from "../utils.js?v=38";
-import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=78";
-import { renderEmptyState } from "./empty-state.js?v=19";
+import { html, raw } from "../utils.js?v=40";
+import { profileForNetwork, NETWORK_ICON_BY_PLATFORM, BRAND_INITIALS } from "../social-profiles.js?v=80";
+import { renderEmptyState } from "./empty-state.js?v=21";
 
 const NET_ICON = {
   linkedin: "ap-icon-linkedin-official",

@@ -8,11 +8,11 @@
 // The state machine timers live here (not inside the modal) so uploads
 // continue in background after the user closes the modal.
 
-import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=104";
-import { isNewUser } from "./user-mode.js?v=29";
-import { createNotifier } from "./store-utils.js?v=10";
-import { detectUrlService } from "./url-services.js?v=8";
-import { isFlagOn } from "./feature-flags.js?v=37";
+import { sourcesBySession as seedByCsesssion } from "./mocks.js?v=106";
+import { isNewUser } from "./user-mode.js?v=31";
+import { createNotifier } from "./store-utils.js?v=12";
+import { detectUrlService } from "./url-services.js?v=10";
+import { isFlagOn } from "./feature-flags.js?v=39";
 
 // Canned extraction output attached to every Processed Video source.
 // Generic enough to plausibly come from any keynote / talk / demo video.

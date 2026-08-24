@@ -4,12 +4,12 @@
 // `actionBar` and `editCanvas` are the two entry points the shell composes; the
 // rest are their private building blocks.
 
-import { escapeHtml } from "../../utils.js?v=38";
-import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=58";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=78";
-import { KEY } from "./context.js?v=83";
-import { outlineMetrics, shadowMetrics, cssFamily } from "./canvas.js?v=9";
-import * as imageStudio from "../../image-studio.js?v=109";
+import { escapeHtml } from "../../utils.js?v=40";
+import { FORMATS, NETWORK_FORMATS } from "../../clip-formats.js?v=60";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=80";
+import { KEY } from "./context.js?v=85";
+import { outlineMetrics, shadowMetrics, cssFamily } from "./canvas.js?v=11";
+import * as imageStudio from "../../image-studio.js?v=111";
 
 // Edit mode — the floating AI reprompt bar over the canvas bottom: a single-row
 // composer card — the mermaid-sparkle cue (= generative AI), a borderless

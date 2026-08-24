@@ -1,5 +1,5 @@
-import { colorByName, getDataColor, greyColor } from "./report-colors.js?v=18";
-import { formatGroupedNumber } from "./number-formatting.js?v=18";
+import { colorByName, getDataColor, greyColor } from "./report-colors.js?v=20";
+import { formatGroupedNumber } from "./number-formatting.js?v=20";
 
 // Port of report/widgets/utils/widget-data-helpers/chart/chart.builders.ts, plus the
 // slice of @agorapulse/ui-charts' ChartOptions that shapes the result — the wrappers

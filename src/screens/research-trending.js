@@ -24,16 +24,16 @@
 // Cards here are deliberately REDUCED — single Use-in-chat button, no dropdown, no
 // Ignore, no status pill. See components/brief-card.js, variant "trending".
 
-import { html, raw } from "../utils.js?v=38";
-import { navigate } from "../router.js?v=47";
-import { renderTopbar } from "../components/topbar.js?v=503";
-import { isFlagOn } from "../feature-flags.js?v=37";
-import { renderBriefCard } from "../components/brief-card.js?v=89";
-import { openFullResearch } from "../components/research-modals.js?v=190";
-import { openBriefInChat } from "../brief-flow.js?v=55";
-import { getLaneById } from "../research-store.js?v=65";
-import { getAttentionForLane, setStatus, subscribe as subscribeBriefs } from "../briefs-store.js?v=81";
-import { findResearchSource, findCadence } from "../research-catalog.js?v=33";
+import { html, raw } from "../utils.js?v=40";
+import { navigate } from "../router.js?v=49";
+import { renderTopbar } from "../components/topbar.js?v=505";
+import { isFlagOn } from "../feature-flags.js?v=39";
+import { renderBriefCard } from "../components/brief-card.js?v=91";
+import { openFullResearch } from "../components/research-modals.js?v=192";
+import { openBriefInChat } from "../brief-flow.js?v=57";
+import { getLaneById } from "../research-store.js?v=67";
+import { getAttentionForLane, setStatus, subscribe as subscribeBriefs } from "../briefs-store.js?v=83";
+import { findResearchSource, findCadence } from "../research-catalog.js?v=35";
 
 let laneId = null;
 let unsubscribe = null;

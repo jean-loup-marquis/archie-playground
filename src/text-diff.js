@@ -17,7 +17,7 @@
 //   diffWords(before, after) → [{ type: "same" | "del" | "ins", text }]
 //   renderDiff(before, after) → HTML string with <del> / <ins>
 
-import { escapeHtml } from "./utils.js?v=38";
+import { escapeHtml } from "./utils.js?v=40";
 
 /** Split on whitespace, keeping the whitespace so the join is lossless. */
 function tokenize(text) {
