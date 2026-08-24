@@ -1,10 +1,10 @@
-import { html, raw } from "../../utils.js?v=42";
-import { renderTopbar, setTopbarActions, clearTopbarActions } from "../../components/topbar.js?v=507";
-import { subscribe as subscribeContexts } from "../../contexts-store.js?v=94";
-import { navigate } from "../../router.js?v=51";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=37";
-import { renderUsageTab } from "./usage.js?v=45";
-import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=23";
+import { html, raw } from "../../utils.js?v=44";
+import { renderTopbar, setTopbarActions, clearTopbarActions } from "../../components/topbar.js?v=509";
+import { subscribe as subscribeContexts } from "../../contexts-store.js?v=96";
+import { navigate } from "../../router.js?v=53";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=39";
+import { renderUsageTab } from "./usage.js?v=47";
+import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=25";
 
 // Insights — the portfolio layer above a single Playbook's detail, in two halves.
 //

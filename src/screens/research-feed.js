@@ -33,15 +33,15 @@
 // already looked at — both were tried and removed. Nothing overrides the filter
 // either; the feed's list stays exactly what the filter says it is.
 
-import { html, raw, escapeAttr } from "../utils.js?v=42";
-import { navigate } from "../router.js?v=51";
-import { parseHashParams } from "../url-state.js?v=32";
+import { html, raw, escapeAttr } from "../utils.js?v=44";
+import { navigate } from "../router.js?v=53";
+import { parseHashParams } from "../url-state.js?v=34";
 // The picker footer's "Create a Playbook" hands the context-builder its return route,
 // exactly as /contexts and the composer do.
-import { setHandoff } from "../handoff.js?v=31";
-import { renderTopbar, setTopbarActions, clearTopbarActions } from "../components/topbar.js?v=507";
-import { isFlagOn } from "../feature-flags.js?v=41";
-import { renderBriefCard, renderUseButtons, briefBasis } from "../components/brief-card.js?v=93";
+import { setHandoff } from "../handoff.js?v=33";
+import { renderTopbar, setTopbarActions, clearTopbarActions } from "../components/topbar.js?v=509";
+import { isFlagOn } from "../feature-flags.js?v=43";
+import { renderBriefCard, renderUseButtons, briefBasis } from "../components/brief-card.js?v=95";
 import {
   openIgnoreReason,
   // PARKED with its handler and its link — kept imported so restoring is one uncomment.
@@ -52,18 +52,18 @@ import {
   renderResearchArticle,
   // researchArticleSub went with the pane's subtitle — the card's source row says
   // the same thing. Still exported and still used by the Full-research dialog.
-} from "../components/research-modals.js?v=194";
-import { openBriefInChat } from "../brief-flow.js?v=59";
-import { showToast } from "../components/toast.js?v=41";
-import { unlinkBrief, pillarForBrief, subscribe as subscribePillars } from "../pillars-store.js?v=27";
+} from "../components/research-modals.js?v=196";
+import { openBriefInChat } from "../brief-flow.js?v=61";
+import { showToast } from "../components/toast.js?v=43";
+import { unlinkBrief, pillarForBrief, subscribe as subscribePillars } from "../pillars-store.js?v=29";
 import {
   getActivePlaybook,
   getActivePlaybookId,
   setActivePlaybook,
   subscribe as subscribeScope,
-} from "../active-playbook.js?v=102";
-import { open as openPillarPicker } from "../components/pillar-picker-modal.js?v=86";
-import { getLaneById, getLanes, toggleLanePause } from "../research-store.js?v=69";
+} from "../active-playbook.js?v=104";
+import { open as openPillarPicker } from "../components/pillar-picker-modal.js?v=88";
+import { getLaneById, getLanes, toggleLanePause } from "../research-store.js?v=71";
 import {
   getBriefById,
   briefTitle,
@@ -75,15 +75,15 @@ import {
   setStatus,
   unignoreBrief,
   subscribe as subscribeBriefs,
-} from "../briefs-store.js?v=85";
+} from "../briefs-store.js?v=87";
 import {
   RESEARCH_SOURCES,
   REVIEW_STATUSES,
   LIVE_SOURCE_IDS,
   findResearchSource,
   findCadence,
-} from "../research-catalog.js?v=37";
-import { getContextById, getContexts } from "../contexts-store.js?v=94";
+} from "../research-catalog.js?v=39";
+import { getContextById, getContexts } from "../contexts-store.js?v=96";
 
 // How long the mock generation appears to run. The handoff's ~1.6s: long enough
 // to register that I'm doing work, short enough that nobody waits for it.

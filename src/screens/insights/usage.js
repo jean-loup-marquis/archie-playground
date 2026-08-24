@@ -1,10 +1,10 @@
-import { escapeText } from "../../utils.js?v=42";
-import { archieUsage, toneDistribution } from "../../mocks.js?v=108";
-import { getContexts } from "../../contexts-store.js?v=94";
-import { renderEditorialBanner } from "../../components/editorial-banner.js?v=24";
-import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=23";
-import { renderOverviewCard, toOverviewData } from "../../report-widgets/widget-overview.js?v=22";
-import { buildCategoryBarChartSeries } from "../../report-widgets/chart-builders.js?v=23";
+import { escapeText } from "../../utils.js?v=44";
+import { archieUsage, toneDistribution } from "../../mocks.js?v=110";
+import { getContexts } from "../../contexts-store.js?v=96";
+import { renderEditorialBanner } from "../../components/editorial-banner.js?v=26";
+import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=25";
+import { renderOverviewCard, toOverviewData } from "../../report-widgets/widget-overview.js?v=24";
+import { buildCategoryBarChartSeries } from "../../report-widgets/chart-builders.js?v=25";
 
 // Insights › Usage — what Archie produced, how you work with it, and your voice.
 //

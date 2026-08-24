@@ -1,21 +1,21 @@
-import { escapeText, escapeAttr } from "../../utils.js?v=42";
-import { getContexts } from "../../contexts-store.js?v=94";
-import { objectiveCardsFor, archieImpact, playbookReportFor } from "../../mocks.js?v=108";
-import { navigate } from "../../router.js?v=51";
-import { renderEmptyState } from "../../components/empty-state.js?v=23";
-import { renderEditorialBanner } from "../../components/editorial-banner.js?v=24";
-import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=23";
-import { toOverviewData } from "../../report-widgets/widget-overview.js?v=22";
-import { showToast } from "../../components/toast.js?v=41";
-import { isFlagOn } from "../../feature-flags.js?v=41";
+import { escapeText, escapeAttr } from "../../utils.js?v=44";
+import { getContexts } from "../../contexts-store.js?v=96";
+import { objectiveCardsFor, archieImpact, playbookReportFor } from "../../mocks.js?v=110";
+import { navigate } from "../../router.js?v=53";
+import { renderEmptyState } from "../../components/empty-state.js?v=25";
+import { renderEditorialBanner } from "../../components/editorial-banner.js?v=26";
+import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=25";
+import { toOverviewData } from "../../report-widgets/widget-overview.js?v=24";
+import { showToast } from "../../components/toast.js?v=43";
+import { isFlagOn } from "../../feature-flags.js?v=43";
 import {
   objectiveTier,
   playbookScore,
   TIER_LABELS,
   TIER_ORDER,
   TIER_STATUS_CLASS,
-} from "../../objective-scoring.js?v=22";
-import { alertState, mutedUntilLabel, reopen, subscribe as subscribeAlerts } from "../../objective-alerts-store.js?v=3";
+} from "../../objective-scoring.js?v=24";
+import { alertState, mutedUntilLabel, reopen, subscribe as subscribeAlerts } from "../../objective-alerts-store.js?v=5";
 
 // Insights › Performance — the portfolio layer, above a single Playbook's detail.
 //
@@ -91,6 +91,7 @@ export function renderPerformanceTab() {
 
   return `
     ${renderEditorial()}
+    ${renderReportStudioBridge()}
     <section class="insights-view__section">
       <div class="insights-view__section-head">
         <div class="insights-view__section-text">
@@ -111,8 +112,7 @@ export function renderPerformanceTab() {
       </div>
       ${renderTableControls(contexts, visibleRows(rows).length, rows.length)}
       ${renderTable(visibleRows(rows))}
-    </section>
-    ${renderReportStudioBridge()}`;
+    </section>`;
 }
 
 // A heading, then the lead sentence, then the figures it alludes to as real Report
@@ -414,10 +414,19 @@ function renderTable(rows) {
     </table>`;
 }
 
-// Two states, one slot. Without Agorapulse the argument is STRUCTURAL, not a
-// feature list: Archie can only see what Archie published, so the comparison you
-// actually want is the one it cannot make. That's honest, and it's the only
-// version of this pitch a solo creator won't resent.
+// Two states, one slot, and the slot MOVED on 2026-08-24 — from the foot of the
+// page to directly under the lead, above the first figure.
+//
+// It reads as a pitch at the bottom of a page and as a SCOPE STATEMENT at the top,
+// and the second is what it actually is: every number below it counts the posts
+// Archie published and nothing else. A caveat on the data belongs where the data
+// starts. It also stops depending on someone scrolling past a thirteen-row table
+// to ever meet the one thing this page exists to say it cannot do.
+//
+// Without Agorapulse the argument is STRUCTURAL, not a feature list: Archie can
+// only see what Archie published, so the comparison you actually want is the one it
+// cannot make. That's honest, and it's the only version of this pitch a solo
+// creator won't resent.
 // `.ap-infobox` rather than a hand-rolled banner: title + message + one action is
 // exactly its anatomy, and `has-title` centres the icon for the two-line form.
 // Locked uses feature-lock, the variant the DS reserves for premium — the pinned
@@ -433,7 +442,8 @@ function renderReportStudioBridge() {
           <div class="ap-infobox-texts">
             <span class="ap-infobox-title">Put this in a report</span>
             <span class="ap-infobox-message">
-              Drop these objectives into a Report Studio report alongside everything else you publish.
+              This page counts the posts Archie published. Drop the same figures into a Report Studio report to read
+              them next to everything else you publish.
             </span>
           </div>
           <button type="button" class="ap-button primary blue" data-analytics-bridge-cta>
@@ -454,8 +464,18 @@ function renderReportStudioBridge() {
             visibility into all of it — that's what Agorapulse adds.
           </span>
         </div>
-        <button type="button" class="ap-button stroked grey" data-analytics-bridge-cta>
-          <span>Learn more</span>
+        <!-- .ap-button.locked — the DS's own lock affordance: purple, with the
+             locked symbol badged on the corner. It settles a register question this
+             CTA had open. The platform's paywall pattern says the upgrade button is
+             the screen's main action and therefore orange primary; that would
+             contradict the sentence directly above it, which is at pains to say we
+             are not selling intelligence. And a stroked grey button beside a purple
+             feature-lock box belongs to no family at all. Purple means feature-lock
+             in this design system and means nothing else — so the button says
+             "locked" without shouting "buy". -->
+        <button type="button" class="ap-button locked" data-analytics-bridge-cta>
+          <span>See what Agorapulse adds</span>
+          <span class="ap-locked-symbol"><i class="ap-icon-feature-lock" aria-hidden="true"></i></span>
         </button>
       </div>
     </div>`;

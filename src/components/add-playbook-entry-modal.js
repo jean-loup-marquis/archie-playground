@@ -23,8 +23,8 @@
 // name (a slug), never fetched: this is a prototype and a fake "verified" profile
 // URL would be worse than an obvious guess.
 
-import { html, raw, escapeAttr } from "../utils.js?v=42";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=32";
+import { html, raw, escapeAttr } from "../utils.js?v=44";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=34";
 
 const MODAL_ID = "add-playbook-entry";
 

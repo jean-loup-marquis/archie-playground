@@ -10,15 +10,15 @@
 // This module renders the shell and every stage state EXCEPT the edit canvas,
 // which edit-view owns (it carries the overlay/crop machinery).
 
-import { html, raw, escapeHtml } from "../../utils.js?v=42";
-import { getPosts } from "../../posts-store.js?v=86";
-import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=82";
-import { renderPostCard } from "../post-card.js?v=128";
-import { KEY, ctx } from "./context.js?v=87";
-import { composer, settingsPanel, toolPalette, footerBar } from "./composer-view.js?v=102";
-import { editCanvas } from "./edit-view.js?v=101";
-import { compositeOverlays } from "../image-studio/canvas.js?v=13";
-import * as imageStudio from "../../image-studio.js?v=113";
+import { html, raw, escapeHtml } from "../../utils.js?v=44";
+import { getPosts } from "../../posts-store.js?v=88";
+import { NETWORK_LABEL, NETWORK_ICON_BY_PLATFORM } from "../../social-profiles.js?v=84";
+import { renderPostCard } from "../post-card.js?v=130";
+import { KEY, ctx } from "./context.js?v=89";
+import { composer, settingsPanel, toolPalette, footerBar } from "./composer-view.js?v=104";
+import { editCanvas } from "./edit-view.js?v=103";
+import { compositeOverlays } from "../image-studio/canvas.js?v=15";
+import * as imageStudio from "../../image-studio.js?v=115";
 
 // In-feed preview — the edit canvas layers logo/text overlays as live DOM over
 // the image, but renderPostCard only takes a URL, so overlays wouldn't show. We

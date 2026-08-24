@@ -18,21 +18,21 @@
 // sources aren't built, and a switch that flips without doing anything is worse
 // than one that explains itself.
 
-import { html, raw, escapeAttr } from "../utils.js?v=42";
-import { navigate } from "../router.js?v=51";
-import { renderTopbar } from "../components/topbar.js?v=507";
-import { isFlagOn } from "../feature-flags.js?v=41";
-import { getContexts, getContextById } from "../contexts-store.js?v=94";
-import { getLaneById, getLanes, addLane, updateLane } from "../research-store.js?v=69";
-import { getActivePlaybookId } from "../active-playbook.js?v=102";
-import { openNeedSource, openPlaybookList } from "../components/research-modals.js?v=194";
+import { html, raw, escapeAttr } from "../utils.js?v=44";
+import { navigate } from "../router.js?v=53";
+import { renderTopbar } from "../components/topbar.js?v=509";
+import { isFlagOn } from "../feature-flags.js?v=43";
+import { getContexts, getContextById } from "../contexts-store.js?v=96";
+import { getLaneById, getLanes, addLane, updateLane } from "../research-store.js?v=71";
+import { getActivePlaybookId } from "../active-playbook.js?v=104";
+import { openNeedSource, openPlaybookList } from "../components/research-modals.js?v=196";
 import {
   RESEARCH_SOURCES,
   CADENCES,
   DEFAULT_ENABLED_IDS,
   DEFAULT_CADENCE,
   isLiveSource,
-} from "../research-catalog.js?v=37";
+} from "../research-catalog.js?v=39";
 
 // The in-flight draft. Ephemeral by definition — it only becomes a lane on save,
 // so it lives here rather than in the store. Cancel just drops it.

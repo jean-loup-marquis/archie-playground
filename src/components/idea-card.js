@@ -27,8 +27,8 @@ function potentialFor(confidence) {
   return { label: "Low potential", color: "grey" };
 }
 
-import { iconFor } from "../file-kinds.js?v=31";
-import { installMoreMenu } from "./more-menu.js?v=12";
+import { iconFor } from "../file-kinds.js?v=33";
+import { installMoreMenu } from "./more-menu.js?v=14";
 
 // ── Overflow menu — one open at a time (shared behaviour) ──────────────
 // idea-card keeps a module-local listener (below) for the Sources toggle and

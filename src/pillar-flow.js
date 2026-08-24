@@ -22,10 +22,10 @@
 // contexts-store — each keeps module-local state, and a second copy at a
 // different URL would keep its own. scripts/bump-cache.py --audit enforces it.
 
-import { navigate } from "./router.js?v=51";
-import { setHandoff } from "./handoff.js?v=31";
-import { addReadySource } from "./sources-stream.js?v=108";
-import { getContextById, getPillarById } from "./contexts-store.js?v=94";
+import { navigate } from "./router.js?v=53";
+import { setHandoff } from "./handoff.js?v=33";
+import { addReadySource } from "./sources-stream.js?v=110";
+import { getContextById, getPillarById } from "./contexts-store.js?v=96";
 
 export const PILLAR_CHAT_HANDOFF = "pendingPillarChat";
 

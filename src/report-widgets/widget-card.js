@@ -1,5 +1,5 @@
-import { escapeText, escapeAttr } from "../utils.js?v=42";
-import { renderOverviewCard } from "./widget-overview.js?v=22";
+import { escapeText, escapeAttr } from "../utils.js?v=44";
+import { renderOverviewCard } from "./widget-overview.js?v=24";
 
 // Port of report/widgets/ui/components/widget-card.
 //
@@ -68,7 +68,7 @@ export function renderWidgetCard(data, { style = "", size = "mini", toolbarHtml 
 // not leak the spec into the next one.
 export async function mountWidgetCharts(root) {
   if (!pendingCharts.size) return;
-  const { renderChart } = await import("./widget-chart.js?v=23");
+  const { renderChart } = await import("./widget-chart.js?v=25");
   for (const node of root.querySelectorAll("[data-widget-chart]")) {
     const spec = pendingCharts.get(node.dataset.widgetChart);
     if (spec) renderChart(node, spec);
