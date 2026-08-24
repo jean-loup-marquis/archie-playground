@@ -20,22 +20,22 @@
 // Pure canvas helpers (bake / crop / text metrics) are shared with v1 — they
 // carry no design, so there is nothing to redesign in them.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=30";
-import { showToast } from "../toast.js?v=39";
-import { getPosts, attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=84";
-import { getSessionById } from "../../sessions-store.js?v=55";
-import { getContextById } from "../../contexts-store.js?v=92";
-import { MODAL_ID, KEY, ctx, state } from "./context.js?v=85";
-import { compositeOverlays, loadImg, shadowMetrics, outlineMetrics } from "../image-studio/canvas.js?v=11";
-import { renderStudio } from "./stage-view.js?v=104";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=31";
+import { showToast } from "../toast.js?v=40";
+import { getPosts, attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=85";
+import { getSessionById } from "../../sessions-store.js?v=56";
+import { getContextById } from "../../contexts-store.js?v=93";
+import { MODAL_ID, KEY, ctx, state } from "./context.js?v=86";
+import { compositeOverlays, loadImg, shadowMetrics, outlineMetrics } from "../image-studio/canvas.js?v=12";
+import { renderStudio } from "./stage-view.js?v=105";
 import {
   openFilePicker,
   openLogoPicker,
   startOverlayGesture,
   startCropGesture,
   applyCropSelection,
-} from "./interactions.js?v=87";
-import * as imageStudio from "../../image-studio.js?v=111";
+} from "./interactions.js?v=88";
+import * as imageStudio from "../../image-studio.js?v=112";
 
 let backdrop;
 let initialized = false;

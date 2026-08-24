@@ -15,9 +15,9 @@
 //   addSession(session)          → Session     (used by future "new chat" flows)
 //   subscribe(fn)                → unsubscribe
 
-import { recentSessions as seed } from "./mocks.js?v=106";
-import { isNewUser } from "./user-mode.js?v=31";
-import { createNotifier } from "./store-utils.js?v=12";
+import { recentSessions as seed } from "./mocks.js?v=107";
+import { isNewUser } from "./user-mode.js?v=32";
+import { createNotifier } from "./store-utils.js?v=13";
 
 // First-time user starts with an empty session list (matches every other
 // store's first-run mode); returning users get the seeded conversations.

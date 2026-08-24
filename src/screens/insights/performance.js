@@ -1,20 +1,21 @@
-import { escapeText, escapeAttr } from "../../utils.js?v=40";
-import { getContexts } from "../../contexts-store.js?v=92";
-import { objectiveCardsFor, archieImpact, playbookReportFor } from "../../mocks.js?v=106";
-import { navigate } from "../../router.js?v=49";
-import { renderEmptyState } from "../../components/empty-state.js?v=21";
-import { renderEditorialBanner } from "../../components/editorial-banner.js?v=22";
-import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=21";
-import { toOverviewData } from "../../report-widgets/widget-overview.js?v=20";
-import { showToast } from "../../components/toast.js?v=39";
-import { isFlagOn } from "../../feature-flags.js?v=39";
+import { escapeText, escapeAttr } from "../../utils.js?v=41";
+import { getContexts } from "../../contexts-store.js?v=93";
+import { objectiveCardsFor, archieImpact, playbookReportFor } from "../../mocks.js?v=107";
+import { navigate } from "../../router.js?v=50";
+import { renderEmptyState } from "../../components/empty-state.js?v=22";
+import { renderEditorialBanner } from "../../components/editorial-banner.js?v=23";
+import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=22";
+import { toOverviewData } from "../../report-widgets/widget-overview.js?v=21";
+import { showToast } from "../../components/toast.js?v=40";
+import { isFlagOn } from "../../feature-flags.js?v=40";
 import {
   objectiveTier,
   playbookScore,
   TIER_LABELS,
   TIER_ORDER,
   TIER_STATUS_CLASS,
-} from "../../objective-scoring.js?v=20";
+} from "../../objective-scoring.js?v=21";
+import { alertState, mutedUntilLabel, reopen, subscribe as subscribeAlerts } from "../../objective-alerts-store.js?v=2";
 
 // Insights › Performance — the portfolio layer, above a single Playbook's detail.
 //
@@ -55,6 +56,11 @@ function allRows() {
       playbookId: context.id,
       playbookName: context.name,
       playbookColor: context.color || "orange",
+      // What the reader has already done about it, which the numbers cannot say.
+      // This is the whole reason the table is where an alert's state lives: the
+      // chat opening shows only what is still asking, so without a column here a
+      // muted objective would have no surface at all.
+      alert: alertState(context.id, o.objective),
     })),
   );
 }
@@ -351,13 +357,39 @@ function renderRow(r) {
           </span>
         </div>
       </td>
+      <td><div class="ap-table-cell-content">${renderAlertCell(r)}</div></td>
     </tr>`;
+}
+
+// The alert's own state, and the way back from it. Deliberately NOT a second status
+// pill: `.ap-status` means the VERDICT in this app, and a row would then carry two
+// pills saying different things. This is plain text plus one transparent button —
+// the state is a footnote to the verdict beside it, not a peer.
+//
+// "Muted until the next weekly read", never "done": the objective recovers when the
+// numbers do. Bringing it back is one click, because the reader is the only one who
+// knows they want to be asked again before then.
+function renderAlertCell(r) {
+  if (r.alert === "open") return `<span class="analytics-row__alert-none">—</span>`;
+  const label = r.alert === "muted" ? `Muted ${mutedUntilLabel(r.playbookId)}` : "Set aside";
+  return `
+    <span class="analytics-row__alert">
+      <span class="analytics-row__alert-state">${escapeText(label)}</span>
+      <button
+        type="button"
+        class="ap-button transparent blue"
+        data-alert-reopen="${escapeAttr(r.objective)}"
+        data-alert-playbook="${escapeAttr(r.playbookId)}"
+      >
+        <span>Bring back</span>
+      </button>
+    </span>`;
 }
 
 function renderTable(rows) {
   const body =
     rows.length === 0
-      ? `<tr><td colspan="6" class="ap-table-empty insights-view__table-empty">
+      ? `<tr><td colspan="7" class="ap-table-empty insights-view__table-empty">
           No objective matches these filters.
           <button type="button" class="ap-button transparent blue" data-analytics-clear-filters>
             <span>Clear filters</span>
@@ -375,6 +407,7 @@ function renderTable(rows) {
           <th>Status</th>
           <th>Trend</th>
           <th>vs industry median</th>
+          <th>Alert</th>
         </tr>
       </thead>
       <tbody>${body}</tbody>
@@ -444,6 +477,15 @@ export function bindPerformanceTab(root) {
       showToast("Report Studio isn't wired up in this prototype");
       return;
     }
+    // Ahead of the row and card handlers below: this button sits INSIDE a row, and
+    // the row's own click selects a Playbook.
+    const reopenBtn = event.target.closest("[data-alert-reopen]");
+    if (reopenBtn) {
+      reopen(reopenBtn.dataset.alertPlaybook, reopenBtn.dataset.alertReopen);
+      showToast("Back on the list — you'll see it when you open a chat on this Playbook");
+      repaint(root);
+      return;
+    }
     if (event.target.closest("[data-analytics-clear-filters]")) {
       pageState = { playbook: "all", status: "all" };
       repaint(root);
@@ -494,9 +536,13 @@ export function bindPerformanceTab(root) {
 
   root.addEventListener("click", onClick);
   root.addEventListener("keydown", onKeydown);
+  // An objective muted from a chat has to drop out of this column without a
+  // reload — the store notifies, this repaints.
+  const offAlerts = subscribeAlerts(() => repaint(root));
 
   return () => {
     root.removeEventListener("click", onClick);
     root.removeEventListener("keydown", onKeydown);
+    offAlerts();
   };
 }

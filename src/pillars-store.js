@@ -43,9 +43,9 @@
 //   unlinkBrief(briefId)              → clears the mark only
 //   subscribe(fn)                     → unsubscribe
 
-import { pillars as seed } from "./mocks.js?v=106";
-import { isNewUser } from "./user-mode.js?v=31";
-import { createNotifier } from "./store-utils.js?v=12";
+import { pillars as seed } from "./mocks.js?v=107";
+import { isNewUser } from "./user-mode.js?v=32";
+import { createNotifier } from "./store-utils.js?v=13";
 
 const notifier = createNotifier("pillars-store");
 export const subscribe = notifier.subscribe;

@@ -18,18 +18,18 @@
 // Modelled on screens/connectors.js — flag guard, teardown/paint/bind, delegated
 // listeners, store subscriptions, and teardown returned to the router.
 
-import { html, raw, escapeAttr } from "../utils.js?v=40";
-import { navigate } from "../router.js?v=49";
-import { parseHashParams, setHashQuery } from "../url-state.js?v=30";
-import { renderTopbar } from "../components/topbar.js?v=505";
-import { showToast } from "../components/toast.js?v=39";
-import { renderEmptyState } from "../components/empty-state.js?v=21";
-import { renderTopicCard } from "../components/topic-card.js?v=45";
-import { open as openTopicModal } from "../components/topic-modal.js?v=63";
-import { isFlagOn } from "../feature-flags.js?v=39";
-import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=92";
-import { TOPIC_SOURCES, findTopicSource, findCadence } from "../topics-catalog.js?v=13";
-import { openTopicInChat } from "../topic-flow.js?v=54";
+import { html, raw, escapeAttr } from "../utils.js?v=41";
+import { navigate } from "../router.js?v=50";
+import { parseHashParams, setHashQuery } from "../url-state.js?v=31";
+import { renderTopbar } from "../components/topbar.js?v=506";
+import { showToast } from "../components/toast.js?v=40";
+import { renderEmptyState } from "../components/empty-state.js?v=22";
+import { renderTopicCard } from "../components/topic-card.js?v=46";
+import { open as openTopicModal } from "../components/topic-modal.js?v=64";
+import { isFlagOn } from "../feature-flags.js?v=40";
+import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=93";
+import { TOPIC_SOURCES, findTopicSource, findCadence } from "../topics-catalog.js?v=14";
+import { openTopicInChat } from "../topic-flow.js?v=55";
 import {
   getTopics,
   getUnseenCount,
@@ -38,7 +38,7 @@ import {
   refreshTopics,
   hasMoreToScan,
   subscribe as subscribeTopics,
-} from "../topics-store.js?v=44";
+} from "../topics-store.js?v=45";
 
 // How long the mock scan appears to run. Long enough to read the scanning line,
 // short enough that nobody waits for it in a demo.

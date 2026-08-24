@@ -16,12 +16,12 @@
 //   init()
 //   open({ briefId, onPicked? })
 
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=30";
-import { escapeAttr } from "../utils.js?v=40";
-import { getPillarsForPlaybook, linkBrief } from "../pillars-store.js?v=25";
-import { getActivePlaybookId, getActivePlaybook } from "../active-playbook.js?v=100";
-import { navigate } from "../router.js?v=49";
-import { showToast } from "./toast.js?v=39";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=31";
+import { escapeAttr } from "../utils.js?v=41";
+import { getPillarsForPlaybook, linkBrief } from "../pillars-store.js?v=26";
+import { getActivePlaybookId, getActivePlaybook } from "../active-playbook.js?v=101";
+import { navigate } from "../router.js?v=50";
+import { showToast } from "./toast.js?v=40";
 
 const MODAL_ID = "pillar-picker";
 

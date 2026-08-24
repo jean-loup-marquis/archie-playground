@@ -11,9 +11,9 @@
 //       object = file the drafts into it. New folders are created here
 //       (addFolder via the dropdown's create item) before the callback fires.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=30";
-import { getFolders, addFolder } from "../folders-store.js?v=52";
-import { escapeHtml } from "../utils.js?v=40";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../modal-coordinator.js?v=31";
+import { getFolders, addFolder } from "../folders-store.js?v=53";
+import { escapeHtml } from "../utils.js?v=41";
 
 const MODAL_ID = "saveFolder";
 

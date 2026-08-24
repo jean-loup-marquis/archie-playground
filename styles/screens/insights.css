@@ -737,3 +737,28 @@
   border-color: var(--sys-border-color-active);
   box-shadow: inset 0 0 0 1px var(--sys-border-color-active);
 }
+
+/* The alert-state column. Plain text and one transparent button, never a second
+   `.ap-status` pill: in this app a filled pill means the VERDICT, and a row
+   carrying two pills that say different things is a row nobody reads correctly.
+   The state is a footnote to the verdict three columns left of it. See
+   renderAlertCell in src/screens/insights/performance.js. */
+.analytics-row__alert {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  white-space: nowrap;
+}
+
+.analytics-row__alert-state {
+  font-family: var(--sys-text-style-caption-font-family);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--sys-text-color-light);
+}
+
+/* An untouched objective gets an em dash rather than an empty cell: a blank cell in
+   a striped table reads as data that failed to load. */
+.analytics-row__alert-none {
+  color: var(--sys-text-color-light);
+}

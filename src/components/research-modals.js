@@ -18,10 +18,10 @@
 // Overlay arbitration goes through modal-coordinator so only one is ever up, and
 // so the source-feedback dialog can legitimately stack over the research form.
 
-import { html, raw, escapeAttr } from "../utils.js?v=40";
-import { navigate } from "../router.js?v=49";
-import { requestOpen, notifyClose } from "../modal-coordinator.js?v=30";
-import { findResearchSource, findReviewStatus } from "../research-catalog.js?v=35";
+import { html, raw, escapeAttr } from "../utils.js?v=41";
+import { navigate } from "../router.js?v=50";
+import { requestOpen, notifyClose } from "../modal-coordinator.js?v=31";
+import { findResearchSource, findReviewStatus } from "../research-catalog.js?v=36";
 import {
   ageMinutes,
   getBriefById,
@@ -32,18 +32,18 @@ import {
   unignoreBrief,
   setStatus,
   briefTitle,
-} from "../briefs-store.js?v=83";
+} from "../briefs-store.js?v=84";
 // The article dialog's footer is the feed's footer — same component, same three
 // verbs — so it comes from the same module rather than being re-written here.
-import { renderUseButtons } from "./brief-card.js?v=91";
-import { getLanes } from "../research-store.js?v=67";
+import { renderUseButtons } from "./brief-card.js?v=92";
+import { getLanes } from "../research-store.js?v=68";
 // The scope the whole app hangs off — this modal reads it instead of asking.
-import { getActivePlaybook, getActivePlaybookId } from "../active-playbook.js?v=100";
+import { getActivePlaybook, getActivePlaybookId } from "../active-playbook.js?v=101";
 // pillars-store, not contexts-store: this is the Content-strategy pillar a topic
 // gets FILED into, which is what decides whether it is ready to draft. The
 // getPillars imported below from contexts-store is the older per-Playbook pillar
 // list and a different object entirely.
-import { pillarForBrief } from "../pillars-store.js?v=25";
+import { pillarForBrief } from "../pillars-store.js?v=26";
 import {
   getContexts,
   getContextById,
@@ -54,15 +54,15 @@ import {
   addPillarFromTopic,
   addTopicToPillar,
   PILLAR_LIMIT,
-} from "../contexts-store.js?v=92";
+} from "../contexts-store.js?v=93";
 // No cycle: brief-flow reaches briefs-store / sources-stream / router, never back
 // into this file. The version dialog goes through it rather than calling
 // addReadySource directly so "use in chat" has one definition.
-import { openBriefInChat } from "../brief-flow.js?v=57";
-import { renderBriefCard } from "./brief-card.js?v=91";
-import { renderEmptyState } from "./empty-state.js?v=21";
-import { renderSocialPostCard } from "./social-post-card.js?v=54";
-import { showToast } from "./toast.js?v=39";
+import { openBriefInChat } from "../brief-flow.js?v=58";
+import { renderBriefCard } from "./brief-card.js?v=92";
+import { renderEmptyState } from "./empty-state.js?v=22";
+import { renderSocialPostCard } from "./social-post-card.js?v=55";
+import { showToast } from "./toast.js?v=40";
 
 const MODAL_ID = "research";
 

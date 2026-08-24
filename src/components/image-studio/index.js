@@ -18,22 +18,22 @@
 // REUSES the shared .gen-* image tiles / preview primitives from
 // styles/screens/modals.css.
 
-import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=30";
-import { showToast } from "../toast.js?v=39";
-import { getPosts, attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=84";
-import { getSessionById } from "../../sessions-store.js?v=55";
-import { getContextById } from "../../contexts-store.js?v=92";
-import { MODAL_ID, KEY, ctx, state } from "./context.js?v=85";
-import { compositeOverlays, loadImg, shadowMetrics, outlineMetrics } from "./canvas.js?v=11";
-import { renderStudio } from "./shell-view.js?v=116";
+import { requestOpen, notifyClose, bindOverlayDismissal } from "../../modal-coordinator.js?v=31";
+import { showToast } from "../toast.js?v=40";
+import { getPosts, attachImageToDraft, attachCarouselToDraft } from "../../posts-store.js?v=85";
+import { getSessionById } from "../../sessions-store.js?v=56";
+import { getContextById } from "../../contexts-store.js?v=93";
+import { MODAL_ID, KEY, ctx, state } from "./context.js?v=86";
+import { compositeOverlays, loadImg, shadowMetrics, outlineMetrics } from "./canvas.js?v=12";
+import { renderStudio } from "./shell-view.js?v=117";
 import {
   openFilePicker,
   openLogoPicker,
   startOverlayGesture,
   startCropGesture,
   applyCropSelection,
-} from "./interactions.js?v=87";
-import * as imageStudio from "../../image-studio.js?v=111";
+} from "./interactions.js?v=88";
+import * as imageStudio from "../../image-studio.js?v=112";
 
 let backdrop;
 let initialized = false;

@@ -22,9 +22,9 @@
 //
 // Source shape: { id, filename, kind, status, ideaCount, addedAt, ... }
 
-import { iconFor } from "../file-kinds.js?v=29";
-import { escapeHtml } from "../utils.js?v=40";
-import { installMoreMenu } from "./more-menu.js?v=10";
+import { iconFor } from "../file-kinds.js?v=30";
+import { escapeHtml } from "../utils.js?v=41";
+import { installMoreMenu } from "./more-menu.js?v=11";
 
 // ── Overflow menu — one open at a time (shared behaviour) ──────────────
 // Per-row Extract / Delete close the menu after firing; the actions run via
