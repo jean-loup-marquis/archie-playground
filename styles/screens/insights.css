@@ -91,7 +91,7 @@
 .insights-portfolio__label {
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
   letter-spacing: var(--app-label-tracking);
   text-transform: uppercase;
   color: var(--sys-text-color-light);
@@ -165,8 +165,10 @@
   color: var(--ref-color-red-150);
 }
 
+/* The arrow is an icon, so it takes the ICON scale — and xs (12) not sm (16),
+   because it sits beside a 12px number and a 16px glyph would tower over it. */
 .insights-trend i {
-  font-size: 14px;
+  font-size: var(--sys-icon-css-xs);
 }
 
 /* ── The verdict, as a word ─────────────────────────────────────────────────
@@ -174,7 +176,7 @@
    #C83E07 a hair from red-150 #D80505, so the two worst verdicts became one
    colour on a rail scanned at a glance. */
 .insights-verdict {
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
 }
 
 .insights-verdict--strong {
@@ -263,7 +265,7 @@
      here declared. This IS the caption-bold style: 12px uppercase. */
   font-size: var(--sys-text-style-caption-bold-size);
   line-height: var(--sys-text-style-caption-bold-line-height);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--sys-text-color-light);
@@ -306,7 +308,10 @@
   flex-direction: column;
   gap: var(--ref-spacing-xxxs);
   width: 100%;
-  padding: 10px var(--ref-spacing-xs);
+  /* 8/12, and 8 rather than 12 on the vertical because this card's documented job
+     is that all seven stay scannable without scrolling — 12 would spend 28px of
+     rail across the set to buy nothing the 16px name does not already give. */
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
   background: var(--app-surface);
   border: 1px solid var(--ref-color-grey-10);
   border-radius: var(--app-radius-card-lg);
@@ -343,7 +348,7 @@
   align-items: baseline;
   gap: var(--ref-spacing-xxs);
   font-size: var(--ref-font-size-sm);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
 }
 
 .insights-rail__spacer {
@@ -379,7 +384,7 @@
    15px summary), one size down for a rail that shows seven at once. */
 .insights-rail__name {
   font-size: var(--ref-font-size-md);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
   line-height: var(--app-line-height-tight);
   color: var(--app-convo-navy);
 }
@@ -470,7 +475,7 @@
 .insights-panel__name {
   margin: 0;
   font-size: var(--ref-font-size-lg);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
   color: var(--sys-text-color-default);
 }
 
@@ -526,7 +531,7 @@
 .insights-panel__block-title {
   margin: 0 0 var(--ref-spacing-xxs);
   font-size: var(--ref-font-size-xs);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--sys-text-color-light);
@@ -799,7 +804,7 @@
 .insights-bridge__cta {
   flex-shrink: 0;
   color: var(--app-archie-orange-deep);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
 }
 
 /* ── The cap ─────────────────────────────────────────────────────────────── */
@@ -915,7 +920,7 @@
   font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--ref-font-size-sm);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
   line-height: 1;
   color: var(--sys-text-color-default);
 }
@@ -950,7 +955,7 @@
   font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--ref-font-size-md);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
   color: var(--sys-text-color-default);
 }
 
@@ -980,7 +985,7 @@
   gap: var(--ref-spacing-xxs);
   margin: 0;
   font-size: var(--ref-font-size-xs);
-  font-weight: 700;
+  font-weight: var(--ref-font-weight-bold);
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--sys-text-color-light);
@@ -988,7 +993,7 @@
 
 .insights-value__scope {
   font-size: var(--ref-font-size-xs);
-  font-weight: 400;
+  font-weight: var(--ref-font-weight-regular);
   letter-spacing: 0;
   text-transform: none;
   color: var(--ref-color-grey-80);
