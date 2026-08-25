@@ -18,8 +18,7 @@ import {
 } from "./insights-model.js?v=3";
 import {
   renderRail,
-  renderStrip,
-  stripFigure,
+  renderPortfolio,
   renderRing,
   renderGoals,
   renderWhatWorked,
@@ -29,7 +28,7 @@ import {
   renderFirstRun,
   verdictWord,
   figure,
-} from "./parts.js?v=7";
+} from "./parts.js?v=9";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
@@ -70,7 +69,7 @@ export function renderPerformanceTab(period) {
   const single = rows.length === 1;
 
   return `
-    ${renderStripFor(period, rows.length)}
+    ${renderPortfolioFor(period, rows.length)}
     <div class="insights-split${single ? " insights-split--single" : ""}">
       ${single ? "" : renderRailFor(rows, activeId)}
       <div class="insights-split__panel">
@@ -80,27 +79,35 @@ export function renderPerformanceTab(period) {
     </div>`;
 }
 
-function renderStripFor(period, playbooks) {
+// The window is stated once, on the row's scope line. It was on every tile too,
+// which put it on screen five times counting the topbar's selector — and spent
+// 26px of tile height doing it. What stays per-tile is what is only true of that
+// tile: reach's coverage, and the goals' fixed monthly window.
+function renderPortfolioFor(period, playbooks) {
   const strip = performanceStrip(period);
-  return renderStrip({
-    playbooks,
-    period,
+  const window = periodLabel(period);
+  return renderPortfolio({
+    label: `All ${playbooks} ${playbooks === 1 ? "Playbook" : "Playbooks"} · ${window}`,
     note: strip.note,
-    figures: [
+    tiles: [
       {
-        // The reach figure names its own coverage when it is not every Playbook.
-        // It is a sum of the reach goals the Playbooks declare, and a Playbook
-        // without one contributes nothing — so the count is part of the figure,
-        // not a footnote someone has to go looking for.
-        html:
-          stripFigure(`${figure(strip.reach)} reached`, { variation: strip.reachVariation }) +
-          (strip.reachPlaybooks < strip.playbooks
-            ? `<span class="insights-strip__coverage">on ${strip.reachPlaybooks} that measure reach</span>`
-            : ""),
+        title: "Reach",
+        count: strip.reach,
+        variation: strip.reachVariation,
+        // The coverage caveat rides with the figure it qualifies. In the strip it
+        // sat between two figures and read as the start of the next one. It is the
+        // only per-tile qualifier left: the window is stated once, on the row.
+        narrative: strip.reachPlaybooks < strip.playbooks ? `on ${strip.reachPlaybooks} that measure reach` : "",
       },
-      { html: stripFigure(`${figure(strip.posts)} posts`) },
-      { html: stripFigure(`${strip.engagementRate}% engagement`) },
-      { html: stripFigure(`${strip.onPace} / ${strip.objectives} objectives on pace`) },
+      { title: "Posts published", count: strip.posts },
+      { title: "Engagement rate", count: strip.engagementRate, unit: "%" },
+      // Goals are monthly whatever the selector reads, so this one names its own
+      // window instead of inheriting the row's.
+      {
+        title: "Objectives on pace",
+        metric: `${strip.onPace} / ${strip.objectives}`,
+        narrative: "measured on 30 days",
+      },
     ],
   });
 }

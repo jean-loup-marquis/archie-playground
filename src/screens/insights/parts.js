@@ -1,5 +1,7 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { renderEmptyState } from "../../components/empty-state.js?v=26";
+import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
+import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
 import { TIER_LABELS } from "../../objective-scoring.js?v=25";
 import { formatGroupedNumber } from "../../report-widgets/number-formatting.js?v=25";
 import { periodLabel, isAtCap } from "./insights-model.js?v=3";
@@ -34,26 +36,39 @@ export function renderRing(score, tier) {
     </div>`;
 }
 
-// ── The portfolio strip ─────────────────────────────────────────────────────
-// The only line on the page that speaks for every Playbook at once. It states the
-// window once, for the figures on its own row — each block below states its own.
-export function renderStrip({ playbooks, period, figures, note }) {
-  const cells = figures.map((f) => `<span class="insights-strip__figure">${f.html}</span>`).join("");
+// ── The portfolio row ──────────────────────────────────────────────────────
+// Four real Report Studio tiles, the same component the reading panel puts its
+// three metrics in. That is the doc's own rule applied at the level where it was
+// being broken: one metric = one widget, wired to a Report Studio widget behind.
+//
+// ── It was a strip, 2026-08-25 ─────────────────────────────────────────────
+// One 14px grey band: "Across 7 Playbooks, last 30 days: 92,400 reached +2.9% on
+// 6 that measure reach 318 posts 4.2% engagement 9 / 13 objectives on pace". A
+// sentence pretending to be a dashboard row, and it failed as both:
+//
+//   · nothing separated the four figures, so where one ended was a guess;
+//   · each label lived INSIDE its value as one mono string, so finding the
+//     numbers meant reading the words — nothing was scannable;
+//   · the reach caveat was glued to figure one and read as the start of figure two;
+//   · it was the least prominent thing on the page while being the only answer at
+//     portfolio level;
+//   · the prefix spent ~215px restating the period the topbar already shows and
+//     the Playbook count the rail already shows.
+//
+// Tiles fix all five at once, and the scope line above them says once what the
+// prefix was saying inline. The tiles sit on the page's grey while the panel's sit
+// inside its white card, so the two rows read as two layers rather than as peers.
+export function renderPortfolio({ label, note, tiles }) {
+  const cards = tiles.map((t) => renderWidgetCard({ overviewData: toOverviewData(t) }, { size: "mini" })).join("");
 
   return `
-    <div class="insights-strip">
-      <span class="insights-strip__scope">
-        Across ${playbooks} ${playbooks === 1 ? "Playbook" : "Playbooks"}, ${escapeText(periodLabel(period))}:
-      </span>
-      ${cells}
-      <span class="insights-strip__note">${escapeText(note)}</span>
-    </div>`;
-}
-
-/** A figure in the strip, in the mono face every number on this page uses. */
-export function stripFigure(text, { variation = null } = {}) {
-  const trend = variation === null ? "" : ` ${renderTrend(variation)}`;
-  return `<span class="insights-figure">${escapeText(text)}</span>${trend}`;
+    <section class="insights-portfolio" aria-label="${escapeAttr(label)}">
+      <p class="insights-portfolio__scope">
+        <span class="insights-portfolio__label">${escapeText(label)}</span>
+        <span class="insights-portfolio__note">· ${escapeText(note)}</span>
+      </p>
+      <div class="insights-portfolio__tiles">${cards}</div>
+    </section>`;
 }
 
 // ── Trends ──────────────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@ import {
   periodLabel,
   scaleVolume,
 } from "./insights-model.js?v=3";
-import { renderRail, renderStrip, stripFigure, renderBridge, renderFirstRun, figure } from "./parts.js?v=7";
+import { renderRail, renderPortfolio, renderBridge, renderFirstRun, figure } from "./parts.js?v=9";
 
 // Insights › Usage — the doc's screen 5a.
 //
@@ -43,24 +43,29 @@ export function renderUsageTab(period) {
   const single = rows.length === 1;
 
   return `
-    ${renderStripFor(period, rows.length)}
+    ${renderPortfolioFor(period, rows.length)}
     <div class="insights-split${single ? " insights-split--single" : ""}">
       ${single ? "" : renderRailFor(rows, activeId, period)}
       <div class="insights-split__panel">${renderPanel(active, period)}</div>
     </div>`;
 }
 
-function renderStripFor(period, playbooks) {
+function renderPortfolioFor(period, playbooks) {
   const strip = usageStrip(period);
-  return renderStrip({
-    playbooks,
-    period,
+  const window = periodLabel(period);
+  return renderPortfolio({
+    label: `All ${playbooks} ${playbooks === 1 ? "Playbook" : "Playbooks"} · ${window}`,
     note: strip.note,
-    figures: [
-      { html: stripFigure(`${figure(strip.words)} words`) },
-      { html: stripFigure(`${figure(strip.drafts)} drafts`) },
-      { html: stripFigure(`${figure(strip.posts)} posts published`) },
-      { html: stripFigure(`${strip.keptRate}% kept without editing`) },
+    tiles: [
+      { title: "Words written", count: strip.words },
+      { title: "Drafts generated", count: strip.drafts },
+      { title: "Posts published", count: strip.posts },
+      {
+        title: "Kept without editing",
+        count: strip.keptRate,
+        unit: "%",
+        narrative: `of ${figure(strip.drafts)} drafts`,
+      },
     ],
   });
 }

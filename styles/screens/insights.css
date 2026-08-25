@@ -57,41 +57,65 @@
   text-align: center;
 }
 
-/* ── The portfolio strip ────────────────────────────────────────────────────
-   One line, flush against the topbar, stating the window once for its own
-   figures. It sits on white against the page's grey so it reads as a continuation
-   of the chrome rather than as the first card. */
-.insights-strip {
+/* ── The portfolio row ──────────────────────────────────────────────────────
+   Four Report Studio tiles on the page's grey, above the split. The panel's own
+   tiles sit inside its white card, so the two rows are two layers rather than two
+   peers — that separation is doing the work a divider would otherwise have to.
+
+   Aligned to --insights-content, not full-bleed: the row and the split below it
+   end on the same right edge, which is the whole reason the section stopped
+   reading as floating. */
+.insights-portfolio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) 0 var(--ref-spacing-sm);
+  max-width: var(--insights-content);
+  box-sizing: border-box;
+}
+
+/* What the row covers, said once. It replaces the old band's inline prefix, which
+   spent ~215px restating the period the topbar shows and the count the rail shows. */
+.insights-portfolio__scope {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  column-gap: var(--ref-spacing-sm);
-  /* A tight row-gap because wrapping is the EXPECTED state below the handoff's
-     1400px, not a failure: four figures plus the scope and the caveat do not fit
-     beside a 260px sidebar at 1280. Two tight lines cost less above the fold than
-     dropping the caveat would cost in honesty. */
-  row-gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
-  background: var(--app-surface);
-  border-bottom: 1px solid var(--app-border-soft);
-  font-size: var(--ref-font-size-sm);
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+}
+
+.insights-portfolio__label {
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
+  font-weight: 700;
+  letter-spacing: var(--app-label-tracking);
+  text-transform: uppercase;
   color: var(--sys-text-color-light);
 }
 
-.insights-strip__scope {
-  flex-shrink: 0;
-}
-
-.insights-strip__figure {
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--ref-spacing-xxxs);
-}
-
-.insights-strip__note {
-  margin-left: auto;
+/* The scope caveat, attached to the row it qualifies. In the band it was pushed to
+   the far right by `margin-left: auto` and floated against nothing. */
+.insights-portfolio__note {
   font-size: var(--ref-font-size-xs);
   color: var(--ref-color-grey-80);
+}
+
+/* Four, because there are four figures — not auto-fit. The count is the content's.
+   Stretched to equal height (the grid default, kept deliberately): Reach carries a
+   coverage caveat the other three have no equivalent for, and four tiles of three
+   different heights in one row reads as a bug. So the row is as tall as its most
+   qualified figure, and dropping the other three narratives bought clarity rather
+   than height. */
+.insights-portfolio__tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+}
+
+@media (max-width: 1100px) {
+  .insights-portfolio__tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* Every number on this page is monospaced. Not decoration: the rail, the strip and
@@ -1187,12 +1211,4 @@
     grid-template-columns: minmax(0, 1fr);
     gap: var(--ref-spacing-xxxs);
   }
-}
-
-/* The reach figure's coverage, when the sum does not cover every Playbook. Inline
-   with the figure rather than in the strip's trailing note: it qualifies that one
-   number, and the trailing note qualifies the whole row. */
-.insights-strip__coverage {
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
 }
