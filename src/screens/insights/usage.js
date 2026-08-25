@@ -2,8 +2,15 @@ import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { navigate } from "../../router.js?v=54";
 import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { renderOverviewCard, toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
-import { usageRows, usageStrip, usagePanelFor, resolveSelection, periodLabel } from "./insights-model.js?v=3";
-import { renderRail, renderStrip, stripFigure, renderBridge, renderFirstRun, figure } from "./parts.js?v=5";
+import {
+  usageRows,
+  usageStrip,
+  usagePanelFor,
+  resolveSelection,
+  periodLabel,
+  scaleVolume,
+} from "./insights-model.js?v=3";
+import { renderRail, renderStrip, stripFigure, renderBridge, renderFirstRun, figure } from "./parts.js?v=6";
 
 // Insights › Usage — the doc's screen 5a.
 //
@@ -62,13 +69,16 @@ function renderRailFor(rows, activeId, period) {
   return renderRail({
     header: `${rows.length} Playbooks · most active first`,
     selected: activeId,
+    // The keep rate takes the meta line here, where Performance puts its verdict:
+    // it is the nearest thing this half has to a judgement, and it is the reason
+    // one Playbook is worth opening before another.
     rows: rows.map((r) => ({
       id: r.id,
       name: r.name,
       figure: r.posts,
-      subtitle: `${r.posts} posts · <span class="insights-kept${r.keptRate >= 75 ? " is-high" : ""}">${r.keptRate}% kept</span>${
-        r.note ? `<span class="insights-rail__reason"> — ${escapeText(r.note)}</span>` : ""
-      }`,
+      figureLabel: "posts",
+      meta: `<span class="insights-kept${r.keptRate >= 75 ? " is-high" : ""}">${r.keptRate}% kept</span>`,
+      note: `${figure(scaleVolume(r.usage.drafts, period))} drafts${r.note ? ` · ${escapeText(r.note)}` : ""}`,
     })),
     footer: `<p class="insights-rail__note">Counts are drafts and posts made with me, ${escapeText(periodLabel(period))}.</p>`,
   });

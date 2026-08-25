@@ -17,6 +17,22 @@
 
 .insights-view {
   overflow-y: auto;
+
+  /* ── One content width for all three tabs ────────────────────────────────
+     Derived once here so the tabs cannot end on three different right edges.
+     They did: the split tabs ran to the rail plus the panel's cap, Value ran to
+     its own 1180, and switching tabs shifted the page's right edge — which is
+     most of what made the section read as floating rather than laid out.
+
+     The panel's cap is itself derived, not picked: three widget tiles at 300px,
+     their gaps, and the card's gutters. See .insights-panel. */
+  --insights-rail-w: 380px;
+  --insights-panel-max: calc(3 * 300px + 2 * var(--ref-spacing-xs) + 2 * var(--ref-spacing-lg) + 2px);
+  /* The split's visible right edge is the rail, the panel column's left gutter and
+     the panel's own cap — the column's trailing padding is never reached, because
+     the panel stops at its cap first. Value is border-box, so the same total puts
+     its card edge on the same pixel. */
+  --insights-content: calc(var(--insights-rail-w) + var(--ref-spacing-xxs) + var(--insights-panel-max));
 }
 
 /* No max-width and no page padding: the strip is full-bleed under the topbar, and
@@ -137,7 +153,9 @@
    what is left, which is one `grid-template-columns` and no arithmetic. */
 .insights-split {
   display: grid;
-  grid-template-columns: 330px minmax(0, 1fr);
+  /* 380 rather than 330. The rail carries cards now, and a card whose name wraps
+     to two lines at 330 reads as a cramped row rather than as a card. */
+  grid-template-columns: var(--insights-rail-w) minmax(0, 1fr);
   align-items: start;
   gap: 0;
 }
@@ -147,37 +165,45 @@
 }
 
 .insights-split__panel {
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xl);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-xl) var(--ref-spacing-xxs);
   min-width: 0;
 }
 
-/* ── The rail ───────────────────────────────────────────────────────────────
-   `.ap-list-panel` carries the item shape, the hover and the selected state. What
-   is added here is the column chrome the DS panel does not assume — a right border
-   against the reading panel, and a sticky top so the rail stays put while a long
-   panel scrolls past it.
+.insights-split--single > .insights-split__panel {
+  padding-left: var(--ref-spacing-md);
+}
 
-   `.ap-list-panel` ships `height: 100%`, which needs a parent with a height. The
-   grid row gives it one only because the panel beside it is taller; `align-self:
-   start` plus an explicit max-height is what keeps it from stretching to a
-   panel three screens long. */
+/* ── The rail ───────────────────────────────────────────────────────────────
+   Cards, borrowed from the Topic Feed's card family so the two list-plus-panel
+   surfaces read as one app: white on the page's grey, 1px grey-10, 14px radius,
+   and the same top-to-bottom anatomy (meta line, name, the one thing to know).
+
+   Geometry is the Topic Feed's own tokens where they apply and the rail's own
+   where they cannot be — --topics-card-pad is 22px, sized for a 620px measure,
+   and at 380px it eats a third of the card.
+
+   Sticky, so the rail stays put while a long panel scrolls past it. It was
+   `.ap-list-panel` before: that is the DS's SETTINGS sidebar, flush rows on
+   hairlines, and beside a reading panel it made this page look like it came from
+   a different product than the Topic Feed. */
 .insights-rail {
   position: sticky;
   top: 0;
   align-self: start;
   max-height: calc(100vh - var(--app-topbar-height) - 52px);
-  border-right: 1px solid var(--app-border-soft);
-  background: var(--app-surface);
-  padding: var(--ref-spacing-sm) var(--ref-spacing-xs);
   box-sizing: border-box;
-  overflow: hidden;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-sm) var(--ref-spacing-xs);
   display: flex;
   flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  /* No right border and no white fill. Both belonged to the settings-sidebar
+     reading: a bordered white column of hairline rows. Cards need the page's grey
+     behind them to read as cards at all. */
 }
 
 .insights-rail__header {
-  padding: 0 var(--ref-spacing-xxs) var(--ref-spacing-xxs);
-  border-bottom: 0;
+  margin: 0;
+  padding: 0 var(--ref-spacing-xxxs);
   font-size: var(--ref-font-size-xs);
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -188,101 +214,176 @@
 .insights-rail__items {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ref-spacing-xxs);
   overflow-y: auto;
   min-height: 0;
+  /* Room for the cards' focus ring and border against the scrollport edge. */
+  padding: 2px;
+  margin: -2px;
+  /* Seven cards do not fit under 900px of viewport, so this scrolls — and a card
+     sliced flat at the scrollport edge reads as a rendering fault rather than as
+     "there is more below". The last 18px fade instead. When the list does fit, the
+     fade lands on the last card's bottom padding and is invisible. */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent 100%);
 }
 
-/* The item is a real <button>: the rail is this page's primary navigation, and a
-   div with role="button" buys keyboard access only by hand. Resetting the button
-   chrome rather than overriding `.ap-list-panel-item` — the DS class keeps its own
-   padding, radius, hover and selected fill. */
-.insights-rail__item {
+/* One Playbook. Compact on purpose — the Topic Feed's card is 18px/700 over a
+   three-line summary because it is one of four things on screen; this rail holds
+   seven and all seven have to be scannable without scrolling, which is the whole
+   claim of "where to look first". So: the card family, one type step down. */
+.insights-rail__card {
   appearance: none;
-  border: 1px solid transparent;
-  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 10px var(--ref-spacing-xs);
+  background: var(--app-surface);
+  border: 1px solid var(--ref-color-grey-10);
+  border-radius: 14px;
   font: inherit;
   text-align: left;
   cursor: pointer;
-  width: 100%;
-  display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xxs);
+  flex: 0 0 auto;
 }
 
-.insights-rail__item.selected {
+/* Border colour ONLY, and this is the Topic Feed card's documented rule rather
+   than a preference: chat.css states the app's clickable-card convention outright
+   — a soft blue wash, never a hard outline — and .topics-card.is-reading firms its
+   border and nothing else. This card had a 1.5px border plus a drop shadow, which
+   is the ring and the extra paint that rule rules out, and it also made the
+   selected card 1px taller than its neighbours so the list nudged on every click. */
+.insights-rail__card.is-reading {
   border-color: var(--ref-color-electric-blue-100);
-  background: var(--app-surface);
-  box-shadow: 0 2px 8px rgba(10, 27, 51, 0.05);
+  transition: border-color var(--ref-animation-short) var(--app-ease-standard);
 }
 
-.insights-rail__text {
-  min-width: 0;
+.insights-rail__card:hover:not(.is-reading) {
+  border-color: var(--ref-color-grey-20);
+}
+
+.insights-rail__card:focus-visible {
+  outline: 2px solid var(--sys-border-color-active);
+  outline-offset: -2px;
+}
+
+/* The meta line — the Topic Feed's source row, one step down: 13px where that one
+   sets 14px, because it sits over a 15px name rather than an 18px headline. */
+.insights-rail__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.insights-rail__spacer {
   flex: 1;
 }
 
-.insights-rail__sub {
-  white-space: normal;
-}
-
-.insights-rail__reason,
-.insights-rail__note {
-  color: var(--ref-color-grey-80);
-}
-
 .insights-rail__figure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
   font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-  flex-shrink: 0;
-  padding-top: 2px;
-}
-
-.insights-rail__footer {
-  margin-top: auto;
-  padding: var(--ref-spacing-xs) var(--ref-spacing-xxs) 0;
-  border-top: 1px solid var(--app-border-soft);
-}
-
-.insights-rail__note {
-  margin: 0;
-  font-size: var(--ref-font-size-xs);
-  line-height: 1.5;
-}
-
-.insights-kept.is-high {
-  color: var(--ref-color-green-150);
+  font-size: 13px;
   font-weight: 600;
+  color: var(--ref-color-grey-40);
+  flex-shrink: 0;
+}
+
+/* The unit, so a bare 47 and a bare 89 are not two numbers the reader has to
+   infer the meaning of from which tab they are on. */
+.insights-rail__figure-unit {
+  font-family: var(--sys-text-style-body-font-family);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ref-color-grey-40);
+}
+
+.insights-rail__name {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--app-convo-navy);
+}
+
+.insights-rail__note-line {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ref-color-grey-80);
 }
 
 /* ── The handled journal ────────────────────────────────────────────────────
-   The quietest thing on the page, and deliberately so: these signals are finished
-   and this is a record, not a queue. */
+   A card too, so it belongs to the column above it — but grey rather than white,
+   because it is the one thing in this rail that is not a choice. These signals
+   are finished; the card says "record", not "row eight". */
+.insights-rail__footer {
+  margin-top: auto;
+  padding-top: var(--ref-spacing-xxs);
+  flex-shrink: 0;
+}
+
 .insights-handled {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-  line-height: 1.55;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: 14px;
+  background: var(--app-surface-subtle);
 }
 
 .insights-handled__label {
+  margin: 0;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
+  color: var(--ref-color-grey-40);
 }
 
 .insights-handled__list {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.insights-handled__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.insights-handled__what {
+  flex: 1;
+  color: var(--ref-color-grey-80);
+}
+
+.insights-handled__state {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--ref-color-grey-40);
 }
 
 .insights-handled__state--recovering {
   color: var(--ref-color-green-150);
-  font-weight: 600;
+}
+
+.insights-rail__note {
+  margin: 0;
+  padding: 0 var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-xs);
+  line-height: 1.5;
+  color: var(--ref-color-grey-80);
+}
+
+.insights-kept.is-high {
+  color: var(--ref-color-green-150);
 }
 
 /* ── E5, everything strong ──────────────────────────────────────────────────
@@ -309,10 +410,22 @@
    One `.ap-card` and a reading measure. Every block inside it is separated by a
    hairline rather than nested in a card of its own: the panel is one argument, and
    six cards would make it six. */
+/* The card ends where its content ends — .topics-card's own rule, and it is the
+   one that settles this. Uncapped, the panel grew to 1400px on a wide screen and
+   the goal bars grew with it: a 900px track for "10,400 of 20,000" is not more
+   readable than a 500px one, it is just longer. Capped at 1080px, the card kept
+   growing past the last thing inside it and ended in empty frame, which is the
+   failure .topics-card describes as making a column "look under-filled rather
+   than roomy".
+
+   So the cap is DERIVED from the widest child rather than picked: three widget
+   tiles at ~300px, their two gaps, and the card's own gutters. Everything
+   narrower than that — the prose, the goal rows — carries its own measure below. */
 .insights-panel {
   padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-lg);
   gap: 0;
-  max-width: 1080px;
+  border-radius: 14px;
+  max-width: var(--insights-panel-max);
 }
 
 .insights-panel__head {
@@ -415,11 +528,15 @@
   border-top: 1px solid var(--app-border-soft);
 }
 
+/* Its own measure, narrower than the panel. A goal row is a label, a bar and two
+   figures; past ~760px the bar is the only thing that grew and the two figures
+   drift so far right that the row stops reading as one statement. */
 .insights-goal {
   display: grid;
   grid-template-columns: 150px minmax(80px, 1fr) auto auto;
   align-items: center;
   gap: var(--ref-spacing-xs);
+  max-width: 760px;
 }
 
 .insights-goal__name {
@@ -846,7 +963,10 @@
    measure of its own. */
 .insights-value {
   padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xl);
-  max-width: 1180px;
+  /* The same right edge the split tabs end on — Value has no rail, so it takes
+     the rail's width as content instead of leaving it as margin. */
+  max-width: var(--insights-content);
+  box-sizing: border-box;
 }
 
 .insights-value__eyebrow {
@@ -1096,11 +1216,11 @@
   .insights-rail {
     position: static;
     max-height: none;
-    border-right: 0;
-    border-bottom: 1px solid var(--app-border-soft);
+    padding-bottom: 0;
   }
 
   .insights-split__panel,
+  .insights-split--single > .insights-split__panel,
   .insights-value {
     padding: var(--ref-spacing-sm);
   }

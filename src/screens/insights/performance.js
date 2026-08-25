@@ -29,7 +29,7 @@ import {
   renderFirstRun,
   verdictWord,
   figure,
-} from "./parts.js?v=5";
+} from "./parts.js?v=6";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
@@ -111,11 +111,17 @@ function renderRailFor(rows, activeId) {
   return renderRail({
     header: `${rows.length} Playbooks · where to look first`,
     selected: activeId,
+    // Verdict on the meta line, the Playbook as the headline, the reason as the
+    // body — the Topic Feed card's own three-part read. The verdict was buried in
+    // a subtitle before, which put the one word the rail exists to convey below
+    // the one thing the reader already knows they are looking at.
     rows: rows.map((r) => ({
       id: r.id,
       name: r.name,
       figure: r.score,
-      subtitle: `${verdictWord(r.tier)}<span class="insights-rail__reason"> · ${escapeText(r.reason)}</span>`,
+      figureLabel: "/100",
+      meta: verdictWord(r.tier),
+      note: escapeText(r.reason),
     })),
     footer: renderHandled(),
   });
@@ -130,13 +136,16 @@ function renderHandled() {
   const items = entries
     .map(
       (h) =>
-        `<span class="insights-handled__item">${escapeText(h.label)} — <span class="insights-handled__state insights-handled__state--${escapeAttr(h.state)}">${escapeText(h.state)}</span></span>`,
+        `<span class="insights-handled__item">
+          <span class="insights-handled__what">${escapeText(h.label)}</span>
+          <span class="insights-handled__state insights-handled__state--${escapeAttr(h.state)}">${escapeText(h.state)}</span>
+        </span>`,
     )
     .join("");
   return `
     <div class="insights-handled">
-      <span class="insights-handled__label">Handled</span>
-      <span class="insights-handled__list">${items}</span>
+      <p class="insights-handled__label">Handled</p>
+      <div class="insights-handled__list">${items}</div>
     </div>`;
 }
 

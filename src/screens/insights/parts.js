@@ -74,38 +74,53 @@ export function renderTrend(variation, { suffix = "" } = {}) {
 }
 
 // ── The rail ────────────────────────────────────────────────────────────────
-// `.ap-list-panel` — the DS's own selectable side list, the component the Topic
-// Feed's list and the settings sidebars use. Two-line items: name plus the one
-// thing to know, with the figure the rail is ranked on pushed to the right.
+// Cards, in the Topic Feed's own card family — same white-on-grey, same 1px
+// grey-10 border, same 14px radius, and the same anatomy read top to bottom:
+// a meta line, the name, then the one thing to know about it.
 //
-// The items are real <button>s. The rail is the page's primary navigation and a
-// div with role="button" gets keyboard support only by hand; the DS item class
-// paints a button as readily as a div.
+// It was `.ap-list-panel` before. That component is the DS's SETTINGS sidebar —
+// flush rows divided by hairlines — and beside a reading panel it made Insights
+// look like it came from a different app than the Topic Feed, which is the same
+// list-plus-panel shape one section over. The DS class is the right answer for a
+// list you configure things from and the wrong one for a feed you read.
+//
+// Not `.topics-card` itself: that class carries a 664px max-width sized to the
+// feed's own two-card column and an absolutely-positioned kebab corner, neither
+// of which a 380px rail wants. Same conventions, own class, and the conventions
+// are cited where they are borrowed.
+//
+// The items are real <button>s — the rail is this page's primary navigation, and
+// a div with role="button" buys keyboard access only by hand.
 export function renderRail({ header, rows, selected, footer = "" }) {
   const items = rows
-    .map(
-      (r) => `
+    .map((r) => {
+      const on = r.id === selected;
+      return `
       <button
         type="button"
-        class="ap-list-panel-item insights-rail__item${r.id === selected ? " selected" : ""}"
+        class="insights-rail__card${on ? " is-reading" : ""}"
         data-insights-row="${escapeAttr(r.id)}"
-        aria-pressed="${r.id === selected ? "true" : "false"}"
+        aria-pressed="${on ? "true" : "false"}"
       >
-        <span class="ap-list-panel-item-text insights-rail__text">
-          <span class="ap-list-panel-item-name">${escapeText(r.name)}</span>
-          <span class="ap-list-panel-item-subtitle insights-rail__sub">${r.subtitle}</span>
+        <span class="insights-rail__meta">
+          ${r.meta}
+          <span class="insights-rail__spacer"></span>
+          <span class="insights-rail__figure">
+            ${escapeText(String(r.figure))}${
+              r.figureLabel ? `<span class="insights-rail__figure-unit">${escapeText(r.figureLabel)}</span>` : ""
+            }
+          </span>
         </span>
-        <span class="insights-rail__figure">${escapeText(String(r.figure))}</span>
-      </button>`,
-    )
+        <span class="insights-rail__name">${escapeText(r.name)}</span>
+        ${r.note ? `<span class="insights-rail__note-line">${r.note}</span>` : ""}
+      </button>`;
+    })
     .join("");
 
   return `
-    <div class="ap-list-panel insights-rail">
-      <div class="ap-list-panel-header insights-rail__header">
-        <span>${escapeText(header)}</span>
-      </div>
-      <div class="ap-list-panel-items insights-rail__items">${items}</div>
+    <div class="insights-rail">
+      <p class="insights-rail__header">${escapeText(header)}</p>
+      <div class="insights-rail__items">${items}</div>
       ${footer ? `<div class="insights-rail__footer">${footer}</div>` : ""}
     </div>`;
 }
