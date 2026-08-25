@@ -32,7 +32,9 @@
      the whole padded text area is clickable instead of a dead gutter. */
   background: var(--ref-color-white);
   border: 1px solid var(--ref-color-grey-10);
-  border-radius: 14px;
+  /* The token, not the literal — --app-radius-card-lg IS this 14px, and Insights'
+     rail borrows this whole card family. Same pixels, one source. */
+  border-radius: var(--app-radius-card-lg);
   /* The kebab is absolutely positioned into the top-right corner and is a
      SIBLING of the body button — it cannot be inside it (button-in-button). This
      is the containing block for it. */
@@ -102,7 +104,7 @@
 .topics-card--picker .topics-card__body:focus-visible {
   outline: 2px solid var(--ref-color-electric-blue-100);
   outline-offset: -2px;
-  border-radius: 14px;
+  border-radius: var(--app-radius-card-lg);
 }
 
 /* One button covering the card's text, opening Full research. Mirrors

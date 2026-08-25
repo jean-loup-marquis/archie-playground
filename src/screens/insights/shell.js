@@ -3,9 +3,9 @@ import { renderTopbar, setTopbarActions, clearTopbarActions } from "../../compon
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
 import { navigate, getPath } from "../../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=46";
-import { renderUsageTab, bindUsageTab } from "./usage.js?v=53";
-import { renderValueTab, bindValueTab } from "./value.js?v=5";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=47";
+import { renderUsageTab, bindUsageTab } from "./usage.js?v=54";
+import { renderValueTab, bindValueTab } from "./value.js?v=6";
 import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=26";
 import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=3";
 
@@ -122,19 +122,27 @@ function renderSegments(active) {
 
 // 7 / 30 / 60, and 60 is the last one on purpose: it is where Archie's memory ends,
 // not a choice about granularity. The panel says so inline when you get there.
+//
+// A real `.ap-segmented-control`, which is what the DS's own intent lookup answers
+// for a toggle group. It was a hand-built `.insights-period` of `.ap-button`s with
+// their border, radius and background stripped off — so this topbar carried two
+// toggle groups painted two different ways, the tab switch marking its selection
+// the DS way (border + text colour) and this one with a tinted fill the DS
+// component explicitly does not use.
 function renderPeriodSelector(active) {
-  const items = PERIODS.map(
-    (p) => `
+  const items = PERIODS.map((p) => {
+    const on = p.id === active;
+    return `
     <button
       type="button"
-      class="ap-button insights-period__item${p.id === active ? " is-active" : ""}"
+      class="ap-segmented-control__segment ${on ? "ap-segmented-control__segment--selected" : ""}"
       data-insights-period="${escapeAttr(p.id)}"
-      aria-pressed="${p.id === active ? "true" : "false"}"
+      aria-pressed="${on ? "true" : "false"}"
     >
-      <span>${p.label}</span>
-    </button>`,
-  ).join("");
-  return `<div class="insights-period" role="group" aria-label="Window these figures cover">${items}</div>`;
+      <span class="ap-segmented-control__label">${p.label}</span>
+    </button>`;
+  }).join("");
+  return `<div class="ap-segmented-control" role="group" aria-label="Window these figures cover">${items}</div>`;
 }
 
 // `#topbar` lives OUTSIDE `#app`, so a screen's delegated handler never reaches it:

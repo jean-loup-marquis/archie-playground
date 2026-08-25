@@ -29,7 +29,7 @@ import {
   renderFirstRun,
   verdictWord,
   figure,
-} from "./parts.js?v=6";
+} from "./parts.js?v=7";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
@@ -267,7 +267,7 @@ function renderProof(copy, period) {
   return `
     <div class="insights-panel__block insights-proof">
       <div class="insights-proof__head">
-        <h4 class="insights-panel__block-title insights-proof__title">What Archie brought here</h4>
+        <h3 class="insights-panel__block-title insights-proof__title">What Archie brought here</h3>
         <span class="insights-proof__scope">compared only inside my own window — no extra connections</span>
       </div>
       <div class="insights-proof__grid">

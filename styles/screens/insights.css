@@ -108,7 +108,7 @@
 .insights-trend {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--ref-spacing-xxxs);
   font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--ref-font-size-xs);
@@ -211,13 +211,18 @@
   color: var(--sys-text-color-light);
 }
 
+/* A real <ul> now, so the list reset lives here rather than being inherited from
+   nowhere. The items are <li>s wrapping the card buttons — a button alone tells a
+   screen reader nothing about how many Playbooks there are or where in them it is. */
 .insights-rail__items {
   display: flex;
   flex-direction: column;
   gap: var(--ref-spacing-xxs);
+  list-style: none;
   overflow-y: auto;
   min-height: 0;
-  /* Room for the cards' focus ring and border against the scrollport edge. */
+  /* Room for the cards' focus ring and border against the scrollport edge — this
+     is also the <ul>'s margin reset, so there is no second `margin: 0` above it. */
   padding: 2px;
   margin: -2px;
   /* Seven cards do not fit under 900px of viewport, so this scrolls — and a card
@@ -225,6 +230,12 @@
      "there is more below". The last 18px fade instead. When the list does fit, the
      fade lands on the last card's bottom padding and is invisible. */
   mask-image: linear-gradient(to bottom, #000 calc(100% - 18px), transparent 100%);
+}
+
+/* Structure only — the card is the box. */
+.insights-rail__item {
+  display: flex;
+  flex: 0 0 auto;
 }
 
 /* One Playbook. Compact on purpose — the Topic Feed's card is 18px/700 over a
@@ -235,12 +246,12 @@
   appearance: none;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ref-spacing-xxxs);
   width: 100%;
   padding: 10px var(--ref-spacing-xs);
   background: var(--app-surface);
   border: 1px solid var(--ref-color-grey-10);
-  border-radius: 14px;
+  border-radius: var(--app-radius-card-lg);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -281,15 +292,16 @@
   flex: 1;
 }
 
+/* No gap: "47" and "/100" are one figure, and a gap between them made it read as
+   two. grey-80, not grey-40 — see the contrast note at the top of this file. */
 .insights-rail__figure {
   display: inline-flex;
   align-items: baseline;
-  gap: 1px;
   font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
   font-weight: 600;
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
   flex-shrink: 0;
 }
 
@@ -299,7 +311,7 @@
   font-family: var(--sys-text-style-body-font-family);
   font-size: 10.5px;
   font-weight: 600;
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 .insights-rail__name {
@@ -332,7 +344,7 @@
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
   border: 1px solid var(--app-border-soft);
-  border-radius: 14px;
+  border-radius: var(--app-radius-card-lg);
   background: var(--app-surface-subtle);
 }
 
@@ -340,9 +352,9 @@
   margin: 0;
   font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: var(--app-label-tracking);
   text-transform: uppercase;
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 .insights-handled__list {
@@ -367,7 +379,7 @@
 .insights-handled__state {
   flex-shrink: 0;
   font-weight: 600;
-  color: var(--ref-color-grey-40);
+  color: var(--ref-color-grey-80);
 }
 
 .insights-handled__state--recovering {
@@ -424,7 +436,7 @@
 .insights-panel {
   padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-lg);
   gap: 0;
-  border-radius: 14px;
+  border-radius: var(--app-radius-card-lg);
   max-width: var(--insights-panel-max);
 }
 
@@ -437,7 +449,7 @@
 .insights-panel__id {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--ref-spacing-xxxs);
   min-width: 0;
 }
 
@@ -757,9 +769,10 @@
   color: var(--sys-text-color-light);
 }
 
+/* 4px, not the handoff's 3 — indistinguishable at this size and on the scale. */
 .insights-bridge__highlight {
-  padding: 0 3px;
-  border-radius: 3px;
+  padding: 0 var(--ref-spacing-xxxs);
+  border-radius: var(--app-radius-sm);
   background: var(--app-butter);
   font-weight: 600;
   color: var(--sys-text-color);
@@ -926,36 +939,12 @@
   color: var(--sys-text-color);
 }
 
-/* ── The period selector ───────────────────────────────────────────────────
-   A joined group of `.ap-button`s in the topbar's actions slot. Segments rather
-   than a select: three options, always the same three, and the reader compares
-   them against each other rather than picking from a list. */
-.insights-period {
-  display: inline-flex;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-lg);
-  overflow: hidden;
-  background: var(--app-surface);
-}
-
-.insights-period__item {
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-  white-space: nowrap;
-}
-
-.insights-period__item + .insights-period__item {
-  border-left: 1px solid var(--app-border-soft);
-}
-
-.insights-period__item.is-active {
-  background: var(--ref-color-electric-blue-05);
-  color: var(--ref-color-electric-blue-100);
-  font-weight: 600;
-}
+/* The period selector has no rules here. It is a real `.ap-segmented-control`
+   (ds-patches.css ports the DS component's SCSS), the same control the tab switch
+   in the topbar's lead slot uses. It used to be `.insights-period` — a hand-built
+   group of `.ap-button`s with their border, radius and background stripped off —
+   which put two toggle groups in one topbar painted two different ways: the DS
+   marks selected with border + text colour, that one used a tinted fill. */
 
 /* ── The Value tab ─────────────────────────────────────────────────────────
    No rail: the renewal question is asked about the account, not per brand. So it

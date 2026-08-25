@@ -91,16 +91,24 @@ export function renderTrend(variation, { suffix = "" } = {}) {
 //
 // The items are real <button>s — the rail is this page's primary navigation, and
 // a div with role="button" buys keyboard access only by hand.
+//
+// `aria-current`, NOT `aria-pressed`. They carried aria-pressed, which announces a
+// toggle button that happens to be on — seven independent switches. This is a
+// single-select list whose choice drives the panel beside it, and "current item in
+// a set" is exactly what aria-current says. The list wrapper carries the set: a
+// button on its own tells a screen reader nothing about how many there are or
+// where in them it sits.
 export function renderRail({ header, rows, selected, footer = "" }) {
   const items = rows
     .map((r) => {
       const on = r.id === selected;
       return `
+      <li class="insights-rail__item" role="listitem">
       <button
         type="button"
         class="insights-rail__card${on ? " is-reading" : ""}"
         data-insights-row="${escapeAttr(r.id)}"
-        aria-pressed="${on ? "true" : "false"}"
+        ${on ? 'aria-current="true"' : ""}
       >
         <span class="insights-rail__meta">
           ${r.meta}
@@ -113,16 +121,17 @@ export function renderRail({ header, rows, selected, footer = "" }) {
         </span>
         <span class="insights-rail__name">${escapeText(r.name)}</span>
         ${r.note ? `<span class="insights-rail__note-line">${r.note}</span>` : ""}
-      </button>`;
+      </button>
+      </li>`;
     })
     .join("");
 
   return `
-    <div class="insights-rail">
-      <p class="insights-rail__header">${escapeText(header)}</p>
-      <div class="insights-rail__items">${items}</div>
+    <nav class="insights-rail" aria-label="${escapeAttr(header)}">
+      <p class="insights-rail__header" id="insights-rail-header">${escapeText(header)}</p>
+      <ul class="insights-rail__items" aria-labelledby="insights-rail-header">${items}</ul>
       ${footer ? `<div class="insights-rail__footer">${footer}</div>` : ""}
-    </div>`;
+    </nav>`;
 }
 
 // ── The panel's goal rows ───────────────────────────────────────────────────
@@ -158,7 +167,7 @@ export function renderWhatWorked(worked, { title = "What worked here" } = {}) {
   if (!worked) return "";
   return `
     <div class="insights-panel__block">
-      <h4 class="insights-panel__block-title">${escapeText(title)}</h4>
+      <h3 class="insights-panel__block-title">${escapeText(title)}</h3>
       <div class="insights-post">
         <span class="insights-post__origin">${escapeText(worked.network)} · ${escapeText(worked.date)}</span>
         <span class="insights-post__excerpt">${escapeText(worked.excerpt)}</span>

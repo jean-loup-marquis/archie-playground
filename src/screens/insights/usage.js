@@ -10,7 +10,7 @@ import {
   periodLabel,
   scaleVolume,
 } from "./insights-model.js?v=3";
-import { renderRail, renderStrip, stripFigure, renderBridge, renderFirstRun, figure } from "./parts.js?v=6";
+import { renderRail, renderStrip, stripFigure, renderBridge, renderFirstRun, figure } from "./parts.js?v=7";
 
 // Insights › Usage — the doc's screen 5a.
 //
@@ -206,7 +206,7 @@ function renderNetworks(networks, period) {
 
   return `
     <div class="insights-panel__block">
-      <h4 class="insights-panel__block-title">Where it publishes</h4>
+      <h3 class="insights-panel__block-title">Where it publishes</h3>
       <div class="insights-bars">${bars}</div>
       <p class="insights-panel__footnote">Share of this Playbook's posts, ${escapeText(periodLabel(period))}.</p>
     </div>`;
@@ -215,7 +215,7 @@ function renderNetworks(networks, period) {
 function renderVoice(voice) {
   return `
     <div class="insights-panel__block">
-      <h4 class="insights-panel__block-title">The voice I learned here</h4>
+      <h3 class="insights-panel__block-title">The voice I learned here</h3>
       <p class="insights-panel__body insights-voice__body">${escapeText(voice.body)}</p>
       <p class="insights-panel__footnote">learned from your edits and keeps · updated weekly</p>
     </div>`;

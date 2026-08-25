@@ -1130,7 +1130,7 @@
      grey-20 gives the pane an edge you can actually see, so the two tops read as
      the peers they already were. */
   border: 1px solid var(--app-border);
-  border-radius: 14px;
+  border-radius: var(--app-radius-card-lg);
 }
 
 /* Sticky header inside the pane's own scroll, so the topic being read stays

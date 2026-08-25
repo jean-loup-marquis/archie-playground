@@ -115,6 +115,11 @@
   --topics-card-max: calc(var(--topics-measure) + 2 * var(--topics-card-pad) + 2px);
 
   --app-radius-card: 12px; /* handoff source/idea/post/context cards */
+  /* The list-plus-panel card family — the Topic Feed's cards and the Insights rail
+     + reading panel. 14px, and it was a literal in three files before this token:
+     the DS radius scale stops at 8px, the handoff scale has 12 and 16, and this
+     family sits between them. One token so the family cannot drift a pixel. */
+  --app-radius-card-lg: 14px;
   --app-radius-xl: 12px; /* alias kept for back-compat with existing screens */
   --app-radius-modal: 16px; /* handoff composer + modals */
   --app-radius-pill: 999px;

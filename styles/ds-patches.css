@@ -648,8 +648,10 @@ button.ap-link {
    the class lands in the DS, this block is a delete and the markup is already
    right.
 
-   Two things are deliberately NOT ported: `--full-width` (nothing here needs
-   equal-width segments) and the icon slot (no segment in this app has one).
+   One thing is deliberately NOT ported: `--full-width` (nothing here needs
+   equal-width segments). The Angular component's `symbolId` input is not ported
+   either, but the icon it would render is: segments carry a plain `<i class="ap-icon-*">`
+   and the segment's own `gap` spaces it — Insights' tab switch uses that.
    The `--selected` double dash is the component's own; it is what the DS wrote. */
 .ap-segmented-control {
   display: inline-flex;

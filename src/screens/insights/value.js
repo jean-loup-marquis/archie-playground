@@ -2,7 +2,7 @@ import { escapeText } from "../../utils.js?v=45";
 import { showToast } from "../../components/toast.js?v=44";
 import { navigate } from "../../router.js?v=54";
 import { valueLedger, winningPosts, periodLabel } from "./insights-model.js?v=3";
-import { renderTrend, renderFirstRun, figure } from "./parts.js?v=6";
+import { renderTrend, renderFirstRun, figure } from "./parts.js?v=7";
 
 // Insights › Value — the doc's screen 6b, and a tab this app did not have.
 //
@@ -49,12 +49,12 @@ function renderHeader(ledger, period) {
   const hours = Math.round(ledger.hoursSaved);
   return `
     <header class="insights-value__head">
-      <p class="insights-value__eyebrow">
+      <h2 class="insights-value__eyebrow">
         What I brought you
         <span class="insights-value__scope">
           ${escapeText(periodLabel(period))} · every Playbook · numbers you can check
         </span>
-      </p>
+      </h2>
       <p class="insights-value__lead">
         Renewal is a fair question. The answer over the ${escapeText(periodLabel(period))}:
         <strong>${figure(ledger.reach)} people reached</strong>, roughly ${hours} hours of drafting you didn't do,
@@ -113,7 +113,7 @@ function renderGoals(ledger, period) {
   if (ledger.improved.length === 0) {
     return `
       <section class="insights-value__section">
-        <p class="insights-value__eyebrow">Goals, this window vs last</p>
+        <h2 class="insights-value__eyebrow">Goals, this window vs last</h2>
         <p class="insights-value__empty">
           No goal improved over the ${escapeText(periodLabel(period))}. Nothing to claim here —
           where each one stands reads on Performance.
@@ -147,12 +147,12 @@ function renderGoals(ledger, period) {
 
   return `
     <section class="insights-value__section">
-      <p class="insights-value__eyebrow">
+      <h2 class="insights-value__eyebrow">
         Goals, this window vs last
         <span class="insights-value__scope">
           ${escapeText(periodLabel(period))} vs the window before — both inside my own 60-day window
         </span>
-      </p>
+      </h2>
       <div class="ap-card insights-value__goals">
         ${rows}
         <p class="insights-value__caveat">
@@ -171,10 +171,10 @@ function renderPosts(posts, period) {
   if (posts.length === 0) return "";
   return `
     <section class="insights-value__section">
-      <p class="insights-value__eyebrow">
+      <h2 class="insights-value__eyebrow">
         The posts that made the case
         <span class="insights-value__scope">drafted with me · views and medians on the ${escapeText(periodLabel(period))}</span>
-      </p>
+      </h2>
       <div class="insights-value__posts">
         ${posts
           .map(
@@ -203,7 +203,7 @@ function renderPosts(posts, period) {
 function renderBoundary() {
   return `
     <section class="insights-boundary">
-      <h3 class="insights-boundary__title">Where I stop</h3>
+      <h2 class="insights-boundary__title">Where I stop</h2>
       <p class="insights-boundary__body">
         Everything on this tab counts posts I published, over at most 60 days — that's why it holds up in front of a
         boss. The month-end document that includes native posts, every profile and network, and years of history is
