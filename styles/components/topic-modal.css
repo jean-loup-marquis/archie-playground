@@ -124,7 +124,7 @@
   margin: 0;
   font-family: var(--sys-text-style-body-font-family);
   font-size: var(--ref-font-size-md);
-  line-height: 1.65;
+  line-height: var(--app-line-height-relaxed);
   color: var(--sys-text-color-default);
 }
 

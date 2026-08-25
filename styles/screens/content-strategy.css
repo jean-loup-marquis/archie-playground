@@ -107,7 +107,7 @@
 .pillar-card__about {
   margin: var(--ref-spacing-xxs) 0 0;
   font-size: var(--sys-text-style-caption-size);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--sys-text-color-light);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -272,7 +272,7 @@
   margin: 0;
   color: var(--sys-text-color-light);
   font-size: var(--sys-text-style-body-size);
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
 }
 
 .strategy-empty__body--quiet {
@@ -512,7 +512,7 @@
 .pillar-sec__prose {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
-  line-height: 1.65;
+  line-height: var(--app-line-height-relaxed);
   color: var(--sys-text-color-default);
   max-width: 74ch;
 }
@@ -802,7 +802,7 @@
   padding-left: var(--ref-spacing-xs);
   border-left: 2px solid var(--sys-border-color-default);
   font-size: var(--sys-text-style-caption-size);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--sys-text-color-light);
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -815,7 +815,7 @@
   min-width: 0;
   font-size: var(--sys-text-style-caption-bold-size);
   font-weight: 700;
-  line-height: 1.4;
+  line-height: var(--app-line-height-body);
   color: var(--app-convo-navy);
   text-align: left;
 }
@@ -859,7 +859,7 @@
   padding-left: var(--ref-spacing-xs);
   border-left: 2px solid var(--sys-border-color-default);
   font-size: var(--sys-text-style-caption-size);
-  line-height: 1.55;
+  line-height: var(--app-line-height-relaxed);
   color: var(--sys-text-color-light);
   font-style: italic;
   max-width: 78ch;
@@ -892,7 +892,7 @@
   margin: var(--ref-spacing-sm) 0 0;
   color: var(--sys-text-color-light);
   font-size: var(--sys-text-style-body-size);
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
   max-width: 70ch;
 }
 
@@ -1063,7 +1063,7 @@
   margin: 0;
   color: var(--sys-text-color-light);
   font-size: var(--sys-text-style-body-size);
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
   max-width: 44ch;
 }
 

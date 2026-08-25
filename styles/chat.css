@@ -843,7 +843,7 @@ span.chat-bubble-choice-chip {
   justify-content: center;
   min-height: 28px;
   padding: 2px 8px;
-  border-radius: var(--ref-border-radius-xs);
+  border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-100);
   color: var(--ref-color-white);
 }

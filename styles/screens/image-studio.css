@@ -147,7 +147,7 @@
 
 .image-studio__viewseg-btn[aria-pressed="true"] {
   background: var(--ref-color-white);
-  color: var(--app-text);
+  color: var(--sys-text-color-default);
   box-shadow: var(--app-shadow-subtle);
 }
 

@@ -30,7 +30,7 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 50% at 100% 0%, var(--ref-color-orange-05) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 100% 0%, var(--ref-color-orange-10) 0%, transparent 70%),
     radial-gradient(ellipse 50% 50% at 0% 100%, var(--ref-color-electric-blue-05) 0%, transparent 70%);
   z-index: 0;
 }
@@ -2018,8 +2018,8 @@
 .recap__cmp-intro {
   margin: 0 0 14px;
   font-size: 14px;
-  font-weight: 500;
-  line-height: 1.55;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-relaxed);
   color: var(--ref-color-grey-80);
 }
 
@@ -2105,8 +2105,8 @@
   line-clamp: 2;
   overflow: hidden;
   font-size: 13px;
-  font-weight: 500;
-  line-height: 1.5;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);
 }
 
@@ -2270,7 +2270,7 @@
 .recap__pilmodal-prose {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
   color: var(--sys-text-color-default);
   white-space: pre-wrap;
 }
@@ -2289,7 +2289,7 @@
   display: block;
   font-size: var(--sys-text-style-body-size);
   font-weight: var(--sys-text-style-body-bold-weight);
-  line-height: 1.45;
+  line-height: var(--app-line-height-body);
   color: var(--app-convo-navy);
 }
 

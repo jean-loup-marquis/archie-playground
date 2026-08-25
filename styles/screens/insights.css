@@ -141,8 +141,8 @@
 .insights-figure {
   font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--sys-text-color-default);
 }
 
 /* ── Trends ──────────────────────────────────────────────────────────────── */
@@ -358,7 +358,7 @@
   font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-grey-80);
   flex-shrink: 0;
 }
@@ -368,21 +368,21 @@
 .insights-rail__figure-unit {
   font-family: var(--sys-text-style-body-font-family);
   font-size: 10.5px;
-  font-weight: 600;
+  font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-grey-80);
 }
 
 .insights-rail__name {
   font-size: 15px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: var(--app-line-height-tight);
   color: var(--app-convo-navy);
 }
 
 .insights-rail__note-line {
   font-size: 13px;
-  font-weight: 500;
-  line-height: 1.45;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);
 }
 
@@ -399,7 +399,7 @@
   margin: 0;
   padding: 0 var(--ref-spacing-xxxs);
   font-size: var(--ref-font-size-xs);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);
 }
 
@@ -416,15 +416,15 @@
 .insights-allclear__title {
   margin: 0;
   font-size: var(--ref-font-size-md);
-  font-weight: 600;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--sys-text-color-default);
 }
 
 .insights-allclear__body {
   margin: var(--ref-spacing-xxxs) 0 0;
   font-size: var(--ref-font-size-sm);
   color: var(--sys-text-color-light);
-  line-height: 1.55;
+  line-height: var(--app-line-height-relaxed);
 }
 
 /* ── The reading panel ──────────────────────────────────────────────────────
@@ -466,7 +466,7 @@
   margin: 0;
   font-size: var(--ref-font-size-lg);
   font-weight: 700;
-  color: var(--sys-text-color);
+  color: var(--sys-text-color-default);
 }
 
 .insights-panel__verdict {
@@ -488,16 +488,16 @@
 .insights-panel__headline {
   margin: var(--ref-spacing-sm) 0 0;
   font-size: 21px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-tight);
+  color: var(--sys-text-color-default);
   max-width: 62ch;
 }
 
 .insights-panel__body {
   margin: var(--ref-spacing-xxs) 0 0;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
   color: var(--sys-text-color-light);
   max-width: 72ch;
 }
@@ -562,8 +562,8 @@
 
 .insights-goal__name {
   font-size: var(--ref-font-size-sm);
-  font-weight: 600;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--sys-text-color-default);
 }
 
 .insights-goal__track {
@@ -591,8 +591,8 @@
 
 .insights-goal__value {
   font-size: var(--ref-font-size-xs);
-  font-weight: 500;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--sys-text-color-default);
   white-space: nowrap;
 }
 
@@ -648,8 +648,8 @@
 }
 
 .insights-post__origin {
-  font-weight: 600;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--sys-text-color-default);
   white-space: nowrap;
 }
 
@@ -714,7 +714,7 @@
 
 .insights-proof__label {
   font-size: var(--ref-font-size-xs);
-  font-weight: 600;
+  font-weight: var(--app-font-weight-semibold);
   color: var(--sys-text-color-light);
 }
 
@@ -752,7 +752,7 @@
 .insights-proof__note {
   font-size: var(--ref-font-size-xs);
   color: var(--ref-color-grey-80);
-  line-height: 1.45;
+  line-height: var(--app-line-height-body);
 }
 
 /* ── The Report Studio bridge ──────────────────────────────────────────────
@@ -775,7 +775,7 @@
   margin: 0;
   flex: 1;
   font-size: var(--ref-font-size-sm);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--sys-text-color-light);
 }
 
@@ -784,8 +784,8 @@
   padding: 0 var(--ref-spacing-xxxs);
   border-radius: var(--app-radius-sm);
   background: var(--app-butter);
-  font-weight: 600;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--sys-text-color-default);
 }
 
 /* Orange because this is the one AI/spotlight action in the block, and the brand
@@ -804,7 +804,7 @@
   border-left: 2px solid var(--ref-color-electric-blue-20);
   font-size: var(--ref-font-size-xs);
   color: var(--ref-color-grey-80);
-  line-height: 1.55;
+  line-height: var(--app-line-height-relaxed);
 }
 
 .insights-cap__link {
@@ -912,7 +912,7 @@
   font-size: var(--ref-font-size-sm);
   font-weight: 700;
   line-height: 1;
-  color: var(--sys-text-color);
+  color: var(--sys-text-color-default);
 }
 
 .insights-gauge__dial {
@@ -946,7 +946,7 @@
   font-variant-numeric: tabular-nums;
   font-size: var(--ref-font-size-md);
   font-weight: 700;
-  color: var(--sys-text-color);
+  color: var(--sys-text-color-default);
 }
 
 /* The period selector has no rules here. It is a real `.ap-segmented-control`
@@ -992,9 +992,9 @@
 .insights-value__lead {
   margin: var(--ref-spacing-xxs) 0 0;
   font-size: 23px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-body);
+  color: var(--sys-text-color-default);
   max-width: 60ch;
 }
 
@@ -1004,7 +1004,7 @@
   margin: var(--ref-spacing-xxs) 0 0;
   max-width: 72ch;
   font-size: var(--ref-font-size-xs);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);
 }
 
@@ -1035,8 +1035,8 @@
 .insights-value__goal-name {
   display: block;
   font-size: var(--ref-font-size-sm);
-  font-weight: 600;
-  color: var(--sys-text-color);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--sys-text-color-default);
 }
 
 .insights-value__goal-playbook {
@@ -1089,7 +1089,7 @@
   padding-top: var(--ref-spacing-xs);
   border-top: 1px solid var(--app-border-soft);
   font-size: var(--ref-font-size-sm);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);
 }
 
@@ -1124,7 +1124,7 @@
 .insights-value__post-excerpt {
   margin: 0;
   font-size: var(--ref-font-size-sm);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--sys-text-color-light);
 }
 
@@ -1147,7 +1147,7 @@
 .insights-boundary__title {
   margin: 0;
   font-size: var(--ref-font-size-lg);
-  font-weight: 600;
+  font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-white);
 }
 
@@ -1155,7 +1155,7 @@
   margin: var(--ref-spacing-xxxs) 0 0;
   max-width: 78ch;
   font-size: 14.5px;
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
   color: var(--app-convo-navy-20);
 }
 

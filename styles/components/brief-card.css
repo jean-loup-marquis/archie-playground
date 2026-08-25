@@ -158,7 +158,7 @@
 
 .topics-card__when {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-grey-40);
 }
 
@@ -358,7 +358,7 @@
   margin: 0 0 8px;
   font-size: 18px;
   font-weight: 700;
-  line-height: 1.45;
+  line-height: var(--app-line-height-body);
   color: var(--app-convo-navy);
 }
 
@@ -380,8 +380,8 @@
   max-width: var(--topics-measure);
   margin: 0;
   font-size: 15px;
-  font-weight: 500;
-  line-height: 1.55;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-relaxed);
   color: var(--ref-color-grey-80);
 }
 
@@ -416,8 +416,8 @@
   border-left: 3px solid var(--app-archie-orange);
   border-radius: 0 8px 8px 0;
   font-size: var(--sys-text-style-body-size);
-  font-weight: 500;
-  line-height: 1.55;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-relaxed);
   color: var(--ref-color-grey-80);
 }
 
@@ -440,8 +440,8 @@
   border-left: 3px solid var(--ref-color-menthol-100);
   border-radius: 0 8px 8px 0;
   font-size: var(--sys-text-style-body-size);
-  font-weight: 500;
-  line-height: 1.55;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-relaxed);
   color: var(--ref-color-grey-80);
 }
 
@@ -476,8 +476,8 @@
   max-width: var(--topics-measure);
   margin: 10px 0 0;
   font-size: 14px;
-  font-weight: 500;
-  line-height: 1.5;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-60);
 }
 
@@ -643,8 +643,8 @@
 .topics-use__item-desc {
   max-width: 34ch;
   font-size: 12px;
-  font-weight: 500;
-  line-height: 1.45;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-body);
   color: var(--sys-text-color-light);
   white-space: normal;
 }

@@ -74,7 +74,7 @@
   color: var(--sys-text-color-light);
   font-size: 11px;
   line-height: 1;
-  font-weight: 600;
+  font-weight: var(--app-font-weight-semibold);
   font-variant-numeric: tabular-nums;
 }
 

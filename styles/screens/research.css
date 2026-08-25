@@ -328,7 +328,7 @@
   gap: var(--ref-spacing-xxxs);
   margin: 6px 0 0;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-grey-80);
 }
 
@@ -487,8 +487,8 @@
   margin: 0;
   max-width: 460px;
   font-size: 16px;
-  font-weight: 600;
-  line-height: 1.55;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-relaxed);
   color: var(--ref-color-grey-60);
 }
 
@@ -612,7 +612,7 @@
 .research-form__setting-desc {
   margin: var(--ref-spacing-xxxs) 0 0;
   font-size: var(--sys-text-style-caption-size);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--sys-text-color-light);
 }
 
@@ -739,7 +739,7 @@
 .research-source__how-body {
   margin: 0;
   font-size: var(--sys-text-style-body-size);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);
 }
 
@@ -1547,8 +1547,8 @@
   display: block;
   margin-top: 2px;
   font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
+  font-weight: var(--app-font-weight-semibold);
+  line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-60);
 }
 
@@ -1585,7 +1585,7 @@
 .research-attention__group-note {
   margin: var(--ref-spacing-xxxs) 0 var(--ref-spacing-sm);
   font-size: var(--sys-text-style-body-size);
-  font-weight: 500;
+  font-weight: var(--app-font-weight-semibold);
   color: var(--sys-text-color-light);
 }
 
@@ -1628,7 +1628,7 @@
   margin: 0;
   color: var(--sys-text-color-light);
   font-size: var(--sys-text-style-body-size);
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
 }
 
 .research-feed__nofeed-mark {
@@ -1698,5 +1698,5 @@
 
 .research-feed__empty--rich > p {
   margin: 0;
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
 }

@@ -134,7 +134,7 @@
   padding-left: var(--ref-spacing-xs);
   border-left: 2px solid var(--sys-border-color-default);
   font-size: var(--sys-text-style-caption-size);
-  line-height: 1.5;
+  line-height: var(--app-line-height-body);
   font-style: italic;
   color: var(--sys-text-color-light);
 }
@@ -154,7 +154,7 @@
 .pillar-history__diff {
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
-  line-height: 1.6;
+  line-height: var(--app-line-height-relaxed);
   color: var(--sys-text-color-default);
 }
 
@@ -196,7 +196,7 @@
 
 .pillar-history__note {
   font-size: var(--sys-text-style-caption-size);
-  line-height: 1.4;
+  line-height: var(--app-line-height-body);
   color: var(--sys-text-color-light);
   max-width: 30ch;
   display: block;

@@ -1038,7 +1038,7 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: var(--ref-border-radius-xs);
+  border-radius: var(--app-radius-sm);
   background: var(--ref-color-grey-05);
   color: var(--ref-color-grey-80);
   font-size: var(--sys-icon-css-sm);
@@ -2177,7 +2177,7 @@ body.hide-playbook-colors .context-brief__hero-color {
 
 .context-brief__iv-color-hex {
   color: var(--ref-color-grey-80);
-  font-family: "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--app-font-mono);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
   font-weight: var(--sys-text-style-caption-weight);
