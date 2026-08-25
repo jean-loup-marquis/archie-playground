@@ -1119,7 +1119,7 @@
 }
 
 .starter-topic__pb > i {
-  font-size: 13px;
+  font-size: var(--sys-icon-css-xs);
   flex-shrink: 0;
 }
 
@@ -1157,7 +1157,7 @@
 }
 
 .starter-topic__pillar > i {
-  font-size: 13px;
+  font-size: var(--sys-icon-css-xs);
   flex-shrink: 0;
 }
 

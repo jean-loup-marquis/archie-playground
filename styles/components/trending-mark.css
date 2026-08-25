@@ -24,7 +24,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
   /* line-height 1 so the mark centres on its own text box rather than inheriting
      the row's leading — it sits beside a 20px/800 title on the lane card and a
@@ -51,7 +51,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
   line-height: 1;
   color: var(--ref-color-menthol-150);

@@ -1006,7 +1006,7 @@
 }
 
 .recap__refcolor-x > i {
-  font-size: 8px;
+  font-size: var(--sys-icon-css-xxs);
 }
 
 .recap__refcolor-add {
@@ -2084,7 +2084,7 @@
 }
 
 .recap__pillar-title {
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
   color: var(--app-convo-navy);
 }
@@ -2104,7 +2104,7 @@
   -webkit-line-clamp: 2;
   line-clamp: 2;
   overflow: hidden;
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   font-weight: var(--app-font-weight-semibold);
   line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);
@@ -2139,7 +2139,7 @@
   background: var(--ref-color-purple-10);
   border-radius: var(--app-radius-circle);
   color: var(--ref-color-purple-100);
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
 }
 

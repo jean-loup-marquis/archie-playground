@@ -1008,7 +1008,7 @@ body.has-modal {
 }
 
 .gen-derive-btn i {
-  font-size: 13px;
+  font-size: var(--sys-icon-css-xs);
   width: 13px;
   height: 13px;
 }
@@ -1085,7 +1085,7 @@ body.has-modal {
   border-radius: var(--app-radius-circle);
   background: var(--ref-color-electric-blue-100);
   color: var(--ref-color-white);
-  font-size: 11px;
+  font-size: var(--ref-font-size-xs);
 }
 
 .gen-style-name {
@@ -1320,7 +1320,7 @@ body.has-modal {
 }
 
 .gen-empty > i {
-  font-size: 36px;
+  font-size: var(--sys-icon-css-lg);
   color: var(--ref-color-grey-40);
 }
 

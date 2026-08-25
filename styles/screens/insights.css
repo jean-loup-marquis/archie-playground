@@ -342,7 +342,7 @@
   display: flex;
   align-items: baseline;
   gap: var(--ref-spacing-xxs);
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 700;
 }
 
@@ -357,7 +357,7 @@
   align-items: baseline;
   font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-grey-80);
   flex-shrink: 0;
@@ -367,20 +367,25 @@
    infer the meaning of from which tab they are on. */
 .insights-rail__figure-unit {
   font-family: var(--sys-text-style-body-font-family);
-  font-size: 10.5px;
+  font-size: var(--ref-font-size-xs);
   font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-grey-80);
 }
 
+/* One step ABOVE the meta and the note, not level with them. Collapsing the card's
+   13/15/13 onto the DS scale made all three 14px, and the name stopped being the
+   headline — it held on by weight and colour alone. 16 is the next real step, and
+   it keeps the same relationship the Topic Feed card has (18px headline over a
+   15px summary), one size down for a rail that shows seven at once. */
 .insights-rail__name {
-  font-size: 15px;
+  font-size: var(--ref-font-size-md);
   font-weight: 700;
   line-height: var(--app-line-height-tight);
   color: var(--app-convo-navy);
 }
 
 .insights-rail__note-line {
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   font-weight: var(--app-font-weight-semibold);
   line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);
@@ -487,7 +492,7 @@
    this month, not the panel's title — the Playbook's name is that. */
 .insights-panel__headline {
   margin: var(--ref-spacing-sm) 0 0;
-  font-size: 21px;
+  font-size: var(--ref-font-size-xl);
   font-weight: var(--app-font-weight-semibold);
   line-height: var(--app-line-height-tight);
   color: var(--sys-text-color-default);
@@ -496,7 +501,7 @@
 
 .insights-panel__body {
   margin: var(--ref-spacing-xxs) 0 0;
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   line-height: var(--app-line-height-relaxed);
   color: var(--sys-text-color-light);
   max-width: 72ch;
@@ -746,7 +751,7 @@
 }
 
 .insights-proof__big {
-  font-size: 22px;
+  font-size: var(--ref-font-size-xl);
 }
 
 .insights-proof__note {
@@ -991,7 +996,7 @@
 
 .insights-value__lead {
   margin: var(--ref-spacing-xxs) 0 0;
-  font-size: 23px;
+  font-size: var(--ref-font-size-xxl);
   font-weight: var(--app-font-weight-semibold);
   line-height: var(--app-line-height-body);
   color: var(--sys-text-color-default);
@@ -1154,7 +1159,7 @@
 .insights-boundary__body {
   margin: var(--ref-spacing-xxxs) 0 0;
   max-width: 78ch;
-  font-size: 14.5px;
+  font-size: var(--ref-font-size-sm);
   line-height: var(--app-line-height-relaxed);
   color: var(--app-convo-navy-20);
 }

@@ -338,7 +338,7 @@
 }
 
 .posts__card-carousel-badge > i {
-  font-size: 13px;
+  font-size: var(--sys-icon-css-xs);
 }
 
 .posts__card-carousel-dots {
@@ -508,7 +508,7 @@
 }
 
 .posts__card-clip-edit i {
-  font-size: 13px;
+  font-size: var(--sys-icon-css-xs);
 }
 
 /* Bottom scrubber — fake-progress so the surface reads as a paused

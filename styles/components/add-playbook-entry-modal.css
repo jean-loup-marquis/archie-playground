@@ -37,7 +37,7 @@
 .apbe__title {
   flex: 1;
   margin: 0;
-  font-size: 22px;
+  font-size: var(--ref-font-size-xl);
   font-weight: 800;
   color: var(--app-convo-navy);
 }
@@ -155,7 +155,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   color: var(--ref-color-grey-60);
 }
 
@@ -218,7 +218,7 @@
 .apbe__sug-name {
   display: block;
   margin-bottom: 6px;
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
   color: var(--app-convo-navy);
 }

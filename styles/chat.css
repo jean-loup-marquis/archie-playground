@@ -400,7 +400,7 @@
   display: block;
   width: 22px;
   height: 22px;
-  font-size: 22px;
+  font-size: var(--sys-icon-css-md);
 }
 
 .connect-card__heading {

@@ -92,7 +92,7 @@
 
 .research-modal__title {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--ref-font-size-xl);
   font-weight: 800;
   line-height: var(--app-line-height-tight);
   color: var(--app-convo-navy);
@@ -198,7 +198,7 @@
   padding: 14px;
   background: var(--ref-color-grey-05);
   border-radius: var(--app-radius-starter);
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 700;
   line-height: var(--app-line-height-body);
   color: var(--app-convo-navy);
@@ -228,7 +228,7 @@
   gap: 12px;
   padding: 24px 0;
   text-align: center;
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 700;
   color: var(--app-convo-navy);
 }
@@ -242,7 +242,7 @@
   background: var(--ref-color-green-10);
   border-radius: var(--app-radius-circle);
   color: var(--ref-color-green-150);
-  font-size: 22px;
+  font-size: var(--ref-font-size-xl);
 }
 
 .research-modal__posts {
@@ -273,7 +273,7 @@
 
 .research-article__title {
   margin: 0 0 10px;
-  font-size: 22px;
+  font-size: var(--ref-font-size-xl);
   font-weight: 800;
   line-height: var(--app-line-height-tight);
   color: var(--app-convo-navy);
@@ -290,7 +290,7 @@
    four paragraphs. */
 .research-article > p {
   margin: 0 0 12px;
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: var(--app-font-weight-semibold);
   line-height: var(--app-line-height-relaxed);
   color: var(--ref-color-grey-80);
@@ -450,7 +450,7 @@
   background: var(--app-convo-navy);
   border-radius: var(--app-radius-sm);
   color: var(--ref-color-white);
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
 }
 
@@ -485,7 +485,7 @@
 }
 
 .pbklist__name {
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
   color: var(--app-convo-navy);
 }
@@ -501,7 +501,7 @@
    markup stays one <li> per entry. */
 .pbklist__desc {
   grid-column: 1 / -1;
-  font-size: 13px;
+  font-size: var(--ref-font-size-sm);
   font-weight: var(--app-font-weight-semibold);
   line-height: var(--app-line-height-body);
   color: var(--ref-color-grey-80);

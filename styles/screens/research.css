@@ -327,7 +327,7 @@
   align-items: center;
   gap: var(--ref-spacing-xxxs);
   margin: 6px 0 0;
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-grey-80);
 }
@@ -374,7 +374,7 @@
   border: 0;
   border-top: 1px solid var(--ref-color-grey-10);
   background: none;
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
   color: var(--ref-color-electric-blue-150);
   cursor: pointer;
@@ -427,7 +427,7 @@
 }
 
 .research-create-card__label {
-  font-size: 15px;
+  font-size: var(--ref-font-size-sm);
   font-weight: 800;
   color: var(--app-convo-navy);
 }
@@ -477,7 +477,7 @@
 
 .research-empty__title {
   margin: 0;
-  font-size: 26px;
+  font-size: var(--ref-font-size-xxl);
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--app-convo-navy);
@@ -1538,7 +1538,7 @@
 
 .research-trending__title {
   display: block;
-  font-size: 22px;
+  font-size: var(--ref-font-size-xl);
   font-weight: 800;
   color: var(--app-convo-navy);
 }

@@ -545,7 +545,7 @@
   align-items: center;
   justify-content: center;
   color: var(--ref-color-grey-60);
-  font-size: 22px;
+  font-size: var(--sys-icon-css-md);
   background: linear-gradient(155deg, var(--ref-color-grey-10), var(--ref-color-grey-05));
 }
 
