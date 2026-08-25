@@ -27,7 +27,7 @@ import {
   renderFirstRun,
   verdictWord,
   figure,
-} from "./parts.js?v=11";
+} from "./parts.js?v=12";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
@@ -206,17 +206,21 @@ function renderPanel(row, period) {
 // same overviewData contract the report uses — layout is ours, the data shape is
 // theirs.
 //
-// Through renderPortfolioTiles, which is what strips the variation and the period
-// line: these three are the same kind of object as the row above the split, so they
-// are built by the same function rather than by a second path that could drift.
-// The window they cover is stated twice already, on the verdict line and the meta
-// line above them.
+// Through renderPortfolioTiles, so these three are built by the same function as
+// the row above the split rather than by a second path that could drift — but WITH
+// their trends, which is that function's one opt-in. They are the panel's
+// per-metric evidence, not a row to scan: the headline names one figure's
+// direction and the goals rows measure different metrics, so a flat Audience tile
+// on an At risk Playbook hid the only number moving the right way.
+//
+// The window is not restated on them: the verdict line and the meta line above
+// already say it twice.
 function renderPanelWidgets(context, period) {
   const byId = new Map(playbookReportFor(context).map((w) => [w.id, w]));
   const tiles = PANEL_WIDGET_IDS.map((id) => byId.get(id))
     .filter(Boolean)
     .map((w) => ({ ...w, count: scaleVolume(w.count, period) }));
-  return renderPortfolioTiles(tiles);
+  return renderPortfolioTiles(tiles, { trends: true });
 }
 
 // What the reader already did about an objective, which the numbers cannot say.

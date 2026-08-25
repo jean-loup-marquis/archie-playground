@@ -3,7 +3,7 @@ import { renderTopbar, setTopbarActions, clearTopbarActions } from "../../compon
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
 import { navigate, getPath } from "../../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=51";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=52";
 import { renderUsageTab, bindUsageTab } from "./usage.js?v=59";
 import { renderValueTab, bindValueTab } from "./value.js?v=7";
 import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=26";

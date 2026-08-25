@@ -2,7 +2,7 @@ import { escapeText } from "../../utils.js?v=45";
 import { showToast } from "../../components/toast.js?v=44";
 import { navigate } from "../../router.js?v=54";
 import { valueLedger, winningPosts, periodLabel } from "./insights-model.js?v=3";
-import { renderPortfolioTiles, renderTrend, renderFirstRun, figure } from "./parts.js?v=11";
+import { renderPortfolioTiles, renderTrend, renderFirstRun, figure } from "./parts.js?v=12";
 
 // Insights › Value — the doc's screen 6b, and a tab this app did not have.
 //

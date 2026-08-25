@@ -72,22 +72,30 @@ export function renderPortfolio({ label, note, tiles }) {
 // The bare grid, for a surface that states its own scope in prose above it — Value
 // opens on a sentence and does not need a second scope line under it.
 //
-// ── No variation, no narrative, 2026-08-25 ──────────────────────────────────
+// ── No narrative, and no variation by default, 2026-08-25 ──────────────────
 // Stripped HERE rather than left to each call site, so a tile cannot grow a second
-// or third line back by being handed one. The row is a set of figures to compare at
-// a glance, and a trend chip on one tile but not the next, or an italic caveat
-// under one value, is what made the eye stop instead of scan. What those lines said
-// now lives in the prose that owns it: the scope line above the row, the panel's
-// meta line, the goals block's own trends.
+// or third line back by being handed one. A portfolio row is a set of figures to
+// compare at a glance, and a trend chip on one tile but not the next, or an italic
+// caveat under one value, is what made the eye stop instead of scan. What those
+// lines said lives in the prose that owns it: the scope line above the row, the
+// panel's meta line, the goals block's own trends.
+//
+// `trends` is the one opt-in, and the reading panel is the one caller that takes
+// it. Its three tiles are not a row to scan — they are the per-metric evidence for
+// the diagnosis above them, and that diagnosis only partly restates them: the
+// headline gives one figure's direction and the goals rows measure different
+// metrics entirely, so on an At risk Playbook a flat Audience tile hid the only
+// number moving the right way.
 // `bodyHtml` is the one escape hatch, and it is the DS card's own: a tile whose
 // value is a SHAPE rather than a figure (the keep-rate dial) substitutes the middle
 // and keeps the card. Without it Usage had to draw its own grid around a hand-made
 // gauge plus a nested call to this one — a grid inside a grid.
-export function renderPortfolioTiles(tiles, { className = "" } = {}) {
+export function renderPortfolioTiles(tiles, { className = "", trends = false } = {}) {
   const cards = tiles
     .map((t) => {
       const { variation, narrative, bodyHtml, ...figure } = t;
-      return renderWidgetCard({ overviewData: toOverviewData(figure), bodyHtml }, { size: "mini" });
+      const data = trends && variation !== undefined ? { ...figure, variation } : figure;
+      return renderWidgetCard({ overviewData: toOverviewData(data), bodyHtml }, { size: "mini" });
     })
     .join("");
   return `<div class="insights-portfolio__tiles${className ? ` ${escapeAttr(className)}` : ""}">${cards}</div>`;
