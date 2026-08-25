@@ -1,100 +1,163 @@
-import { escapeText } from "../../utils.js?v=45";
-import { archieUsage, toneDistribution } from "../../mocks.js?v=111";
-import { getContexts } from "../../contexts-store.js?v=97";
-import { renderEditorialBanner } from "../../components/editorial-banner.js?v=27";
+import { escapeText, escapeAttr } from "../../utils.js?v=45";
+import { navigate } from "../../router.js?v=54";
 import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { renderOverviewCard, toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
-import { buildCategoryBarChartSeries } from "../../report-widgets/chart-builders.js?v=26";
+import { usageRows, usageStrip, usagePanelFor, resolveSelection, periodLabel } from "./insights-model.js?v=3";
+import { renderRail, renderStrip, stripFigure, renderBridge, renderFirstRun, figure } from "./parts.js?v=5";
 
-// Insights › Usage — what Archie produced, how you work with it, and your voice.
+// Insights › Usage — the doc's screen 5a.
 //
-// The counterpoint to Performance: nothing here compares a number to a goal. Ranges
-// differ per card on purpose, and a second range is not the problem a page like this
-// has — an unstated one is.
+// The master-detail holds here too, and that is the point: same rail, same panel,
+// other question. Performance asks "where do I stand", Usage asks "what did Archie
+// make" — so the rail is ranked by activity rather than by verdict, and there are
+// no health scores anywhere on it. Volume and keep rate are the usage vocabulary.
 //
-// Which is where this tab currently stands: the lead opens the first section and
-// states "this month" for its own word count, the calendar states its own 90 days,
-// and the four produced figures state nothing. See the spec's decision 5.
+// ── What this replaced, 2026-08-25 ──────────────────────────────────────────
+// A portfolio-only page: one lead, one gauge, three counters, two bar charts and
+// four voice tiles, none of them attributable to a Playbook. It read as an account
+// summary, which meant the one question it is actually for — is Archie worth its
+// price, on THIS brand — had no surface. Every figure is per Playbook now, and the
+// strip above the rail is the sum of the rail's own rows rather than a figure of
+// its own.
+//
+// The voice moved with it. "The voice Archie learned here" is a per-Playbook fact;
+// as a single account-wide "Your voice" it was flattery about the reader, not
+// evidence about the product.
 
-// ── This half has a job now, 2026-08-24 ─────────────────────────────────────
-// It landed first for a while, on the argument that "the hub welcomes before it
-// triages". That argument went with the triage, and leaving the tab as the "fun"
-// one left it with a vibe instead of a purpose.
-//
-// Its purpose is the RENEWAL ARGUMENT: this is the half you show when someone asks
-// whether Archie is worth its price, and it is the only place that question is
-// served (J3 in the main doc). Which is also the rule for what belongs in it —
-// something that PROVES, not something that flatters.
-//
-// Cut on that rule: the current-streak ladder, the longest-streak record, the
-// 90-day activity grid and the sentence read off it. A streak is the reader's own
-// behaviour rendered as a game, and Agorapulse has refused gamification before;
-// none of the four says anything about what Archie is worth. What survives is what
-// a buyer can check: how much of the output survived untouched, how much of it
-// there was, and where it went.
-export function renderUsageTab() {
-  const { lead, produced, work, voice } = archieUsage();
+let selected = null;
+
+export function renderUsageTab(period) {
+  const rows = usageRows(period);
+  // E1 — it used to return "", which drew a blank page rather than an answer.
+  if (rows.length === 0) return renderFirstRun("usage");
+
+  const activeId = resolveSelection(rows, selected) || rows[0].id;
+  const active = rows.find((r) => r.id === activeId) || rows[0];
+  const single = rows.length === 1;
 
   return `
-    <section class="insights-view__section">
-      <h2 class="insights-view__section-title">What Archie produced</h2>
-      ${renderEditorialBanner({ lead })}
-      <div class="insights-usage__produced">
-        ${renderGauge(produced.keptRate)}
-        ${produced.widgets.map((w) => renderWidgetCard({ overviewData: toOverviewData(w) })).join("")}
-      </div>
-    </section>
-    <section class="insights-view__section">
-      <h2 class="insights-view__section-title">Where it went</h2>
-      <div class="insights-usage__work">
-        ${renderBars(
-          "Where you publish",
-          work.networks.map((n) => ({ label: n.label, value: n.share, valueLabel: `${n.share}%` })),
-          { colorByCategory: true },
+    ${renderStripFor(period, rows.length)}
+    <div class="insights-split${single ? " insights-split--single" : ""}">
+      ${single ? "" : renderRailFor(rows, activeId, period)}
+      <div class="insights-split__panel">${renderPanel(active, period)}</div>
+    </div>`;
+}
+
+function renderStripFor(period, playbooks) {
+  const strip = usageStrip(period);
+  return renderStrip({
+    playbooks,
+    period,
+    note: strip.note,
+    figures: [
+      { html: stripFigure(`${figure(strip.words)} words`) },
+      { html: stripFigure(`${figure(strip.drafts)} drafts`) },
+      { html: stripFigure(`${figure(strip.posts)} posts published`) },
+      { html: stripFigure(`${strip.keptRate}% kept without editing`) },
+    ],
+  });
+}
+
+function renderRailFor(rows, activeId, period) {
+  return renderRail({
+    header: `${rows.length} Playbooks · most active first`,
+    selected: activeId,
+    rows: rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      figure: r.posts,
+      subtitle: `${r.posts} posts · <span class="insights-kept${r.keptRate >= 75 ? " is-high" : ""}">${r.keptRate}% kept</span>${
+        r.note ? `<span class="insights-rail__reason"> — ${escapeText(r.note)}</span>` : ""
+      }`,
+    })),
+    footer: `<p class="insights-rail__note">Counts are drafts and posts made with me, ${escapeText(periodLabel(period))}.</p>`,
+  });
+}
+
+function renderPanel(row, period) {
+  const usage = usagePanelFor(row.context, period);
+  if (!usage) return "";
+
+  return `
+    <article class="ap-card insights-panel" data-insights-panel="${escapeAttr(row.id)}">
+      <header class="insights-panel__head">
+        <div class="insights-panel__id">
+          <h2 class="insights-panel__name">${escapeText(row.name)}</h2>
+          <p class="insights-panel__verdict">
+            <span class="insights-panel__score">${escapeText(rankNote(row, period))}</span>
+          </p>
+        </div>
+        <a class="ap-link standalone small insights-panel__open" href="#/playbook/${escapeAttr(row.id)}">
+          Open the Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i>
+        </a>
+      </header>
+      <p class="insights-panel__headline">${escapeText(usage.headline)}</p>
+      <p class="insights-panel__body">${escapeText(usage.body)}</p>
+      <p class="insights-panel__meta">
+        on ${figure(usage.drafts)} drafts · ${escapeText(periodLabel(period))} · keep rate against this portfolio's average
+      </p>
+      <div class="insights-panel__widgets insights-panel__widgets--four">
+        ${renderKeptGauge(usage.keptRate, usageStrip(period).keptRate)}
+        ${renderWidgetCard(
+          {
+            overviewData: toOverviewData({
+              title: "Drafts generated",
+              count: usage.drafts,
+              narrative: `${usage.perDay} a day · ${periodLabel(period)}`,
+            }),
+          },
+          { size: "mini" },
         )}
-        ${renderBars("The tone that recurs", toneBars())}
+        ${renderWidgetCard(
+          {
+            overviewData: toOverviewData({
+              title: "Posts published",
+              count: usage.posts,
+              narrative: `${usage.publishedShare}% of drafts · ${periodLabel(period)}`,
+            }),
+          },
+          { size: "mini" },
+        )}
+        ${renderWidgetCard(
+          {
+            overviewData: toOverviewData({
+              title: "Sources digested",
+              count: usage.sources,
+              narrative: `${usage.sourcesReused} reused more than once`,
+            }),
+          },
+          { size: "mini" },
+        )}
       </div>
-    </section>
-    ${renderVoiceBlock(voice)}`;
+      <div class="insights-panel__pair">
+        ${renderNetworks(usage.networks, period)}
+        ${renderVoice(usage.voice)}
+      </div>
+      ${renderBridge({
+        before: "Usage counts my own work — nothing here needs comparing outside. Whether it",
+        highlight: "performed",
+        after: "is the other tab.",
+        cta: "Go to Performance",
+      })}
+    </article>`;
 }
 
-// Four equal things, written as a list and rendered through one path — which is what
-// stops a fifth one being pasted in with a different shape. None of them carries a
-// trend, so none gets a `variation`.
-//
-// They are KPI tiles whose value happens to be words rather than a figure, which the
-// overview card already has a branch for (`metric`) — so none of them needs a card of
-// its own. Only at mini: that branch clamps to two lines, and the centred sizes set
-// the metric to 64px, which no sentence survives. The opening keeps its quote marks
-// in the string rather than a quote block, so all four read as one row.
-function renderVoiceBlock(voice) {
-  const cards = [
-    { title: "Favourite tone", metric: voice.favouriteTone, narrative: `${voice.toneRunnerUp} runs a close second.` },
-    {
-      title: "Favourite opening",
-      metric: `“${voice.favouriteHook.text}”`,
-      narrative: `Used ${voice.favouriteHook.uses} times.`,
-    },
-    { title: "Signature word", metric: `“${voice.signatureWord}”` },
-    { title: "Always avoided", metric: voice.alwaysAvoid },
-  ];
-  return `
-    <section class="insights-view__section">
-      <h2 class="insights-view__section-title">Your voice</h2>
-      <div class="insights-voice">
-        ${cards.map((c) => renderWidgetCard({ overviewData: toOverviewData(c) })).join("")}
-      </div>
-    </section>`;
+function rankNote(row, period) {
+  const rows = usageRows(period);
+  const rank = rows.findIndex((r) => r.id === row.id);
+  if (rank === 0) return `most active Playbook · ${periodLabel(period)}`;
+  if (rank === rows.length - 1) return `least active Playbook · ${periodLabel(period)}`;
+  return `#${rank + 1} by activity · ${periodLabel(period)}`;
 }
 
-// A gauge expresses a part of a whole, so it is reserved for the one rate on this tab
-// — putting one on a volume like "2,431 drafts" would be a visual lie.
+// A gauge expresses a part of a whole, so it is reserved for the one rate on this
+// panel — putting one on a volume like "640 drafts" would be a visual lie.
 //
 // The dial stays hand-drawn rather than becoming the report's half-donut: it is the
-// same annulus as the Playbook health ring, and converting one of the pair without the
+// same annulus as the Performance ring, and converting one of the pair without the
 // other would break the thing that makes them read as one system. So it borrows the
-// card and the title from the real tile and substitutes only the middle.
-function renderGauge(rate) {
+// real tile's card and title and substitutes only the middle.
+function renderKeptGauge(rate, portfolioRate) {
   const dial = `
     <div
       class="insights-gauge__dial"
@@ -108,38 +171,67 @@ function renderGauge(rate) {
   return `
     <div class="widget-card insights-gauge">
       ${renderOverviewCard(
-        { title: "Kept without editing", narrative: "Of 2,431 drafts generated." },
+        { title: "Kept without editing", narrative: `portfolio: ${portfolioRate}%` },
         { bodyHtml: dial },
       )}
     </div>`;
 }
 
-// A tone shown as a single value says nothing; three tones spread over four Playbooks
-// says something about the brand.
-function toneBars() {
-  const total = getContexts().length || 1;
-  return toneDistribution().map((t) => ({
-    label: t.label,
-    value: (t.count / total) * 100,
-    valueLabel: `${t.count} ${t.count === 1 ? "Playbook" : "Playbooks"}`,
-  }));
+// Where this Playbook's posts went. Bars rather than a chart: three shares of one
+// hundred read faster as three lengths than as a plotted series, and the panel
+// already carries four cards above them.
+function renderNetworks(networks, period) {
+  const bars = networks
+    .map(
+      (n, i) => `
+      <div class="insights-bar">
+        <span class="insights-bar__label">${escapeText(n.label)}</span>
+        <span class="insights-bar__track">
+          <span class="insights-bar__fill insights-bar__fill--${i + 1}" style="width: ${n.share}%"></span>
+        </span>
+        <span class="insights-figure insights-bar__value">${n.share}%</span>
+      </div>`,
+    )
+    .join("");
+
+  return `
+    <div class="insights-panel__block">
+      <h4 class="insights-panel__block-title">Where it publishes</h4>
+      <div class="insights-bars">${bars}</div>
+      <p class="insights-panel__footnote">Share of this Playbook's posts, ${escapeText(periodLabel(period))}.</p>
+    </div>`;
 }
 
-// One card per group, so a reader compares bars inside a frame and not across one.
-// The report's BAR chart, which is what a distribution is over there: the category
-// names go on the axis, each bar takes its own palette position, and the share sits at
-// the bar's end. `rows` arrives in reading order — the axis is reversed for it.
-function renderBars(title, rows, { colorByCategory = false } = {}) {
-  return renderWidgetCard({
-    title,
-    chart: { type: "bar", series: buildCategoryBarChartSeries(title, rows, { colorByCategory }) },
-    className: "insights-usage__wide",
-  });
+function renderVoice(voice) {
+  return `
+    <div class="insights-panel__block">
+      <h4 class="insights-panel__block-title">The voice I learned here</h4>
+      <p class="insights-panel__body insights-voice__body">${escapeText(voice.body)}</p>
+      <p class="insights-panel__footnote">learned from your edits and keeps · updated weekly</p>
+    </div>`;
 }
 
-// Removed 2026-08-24 with the ambience they served: INTENSITY_LABELS,
-// calendarSummary, renderIntensityLegend, dayCount, STREAK_MILESTONES,
-// renderStreak, renderLongestStreak, renderCalendar and renderWorkNote. They
-// existed for the 90-day activity grid and the two streak cards, and the whole
-// point of the trim was that a streak proves nothing about what Archie is worth.
-// Their CSS goes with them; see styles/screens/insights.css.
+function repaint(root, period) {
+  const panel = root.querySelector(".insights-view__panel");
+  if (panel) panel.innerHTML = renderUsageTab(period);
+}
+
+export function bindUsageTab(root, period) {
+  const onClick = (event) => {
+    if (event.target.closest("[data-insights-start-chat]")) {
+      navigate("/");
+      return;
+    }
+    if (event.target.closest("[data-insights-bridge]")) {
+      navigate("/insights/performance");
+      return;
+    }
+    const row = event.target.closest("[data-insights-row]");
+    if (row) {
+      selected = row.dataset.insightsRow;
+      repaint(root, period);
+    }
+  };
+  root.addEventListener("click", onClick);
+  return () => root.removeEventListener("click", onClick);
+}

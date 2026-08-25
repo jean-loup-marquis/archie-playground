@@ -1,7 +1,7 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=45";
 import { navigate } from "../router.js?v=54";
 import { renderTopbar } from "../components/topbar.js?v=510";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=111";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=114";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -131,7 +131,7 @@ import { showToast } from "../components/toast.js?v=44";
 // gives the picked topic's source its icon, matching the card it came from.
 import { openIdeaArticle, openIdeaPicker, openPillarPicker } from "../components/research-modals.js?v=197";
 import { findResearchSource } from "../research-catalog.js?v=40";
-import { objectiveCardsFor } from "../mocks.js?v=111";
+import { objectiveCardsFor } from "../mocks.js?v=114";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../objective-scoring.js?v=25";
 import {
   isOpen as isObjectiveAlertOpen,

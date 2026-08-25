@@ -8867,6 +8867,27 @@ const PLAYBOOK_REPORT_BY_CONTEXT = {
     published: { count: 41, variation: 12 },
     "audience-growth": { total: 760 },
   },
+  // Added with the Insights master-detail: its reading panel shows THREE of these
+  // six for whichever Playbook is selected, so the two Playbooks that had no row
+  // here would have shown the base figures — the same numbers as each other.
+  // Alliance's are the design doc's own (screen 6a); Agorapulse's are authored to
+  // the same internal arithmetic (engagements ÷ impressions IS the rate).
+  "ctx-alliance-bjj": {
+    impressions: { count: 24600, variation: 14 },
+    engagements: { count: 1310, variation: 9 },
+    "eng-rate": { count: 5.3, variation: 0.4 },
+    audience: { count: 5220, variation: 6 },
+    published: { count: 16, variation: 23 },
+    "audience-growth": { total: 296 },
+  },
+  "ctx-agorapulse": {
+    impressions: { count: 71800, variation: 7.5 },
+    engagements: { count: 3160, variation: 10 },
+    "eng-rate": { count: 4.4, variation: 0.9 },
+    audience: { count: 27400, variation: 4.8 },
+    published: { count: 62, variation: 6 },
+    "audience-growth": { total: 1250 },
+  },
 };
 
 /** The six metrics for one Playbook — the base row, with that Playbook's numbers. */
@@ -8915,3 +8936,358 @@ export const PLAYBOOK_REPORT_LOCKED = [
     row: 10,
   },
 ];
+
+// ---- Insights (the master-detail: rail + reading panel) --------------------
+//
+// Ported from the design doc "Insights Flow" — one page, three tabs, one panel
+// that changes job. What lives here is the COPY the doc authors and nothing that
+// can be derived: a Playbook's score, its verdict and the rail's order all come
+// out of objective-scoring.js over OBJECTIVE_METRICS, which is where the doc's own
+// rail order (47 · 59 · 72 · 74 · 79 · 84 · 88) came from in the first place.
+//
+// ── Three portfolio figures had to be reconciled, 2026-08-25 ────────────────
+// The doc's three tabs each stated their own portfolio totals and no two agreed:
+// Performance said "18 posts" over 30 days, Usage's rail summed to 318, and Value
+// claimed 412,000 reached against Performance's 42,300. Same account, same month.
+// A page whose whole argument is "these numbers hold up in front of a boss" cannot
+// print two answers to "how many posts did we publish".
+//
+// Resolved on the figure each tab can actually defend:
+//   · posts published = 318, because the Usage rail's seven rows sum to it and
+//     Acme's panel alone claims 89;
+//   · reach = 412,000, the order of magnitude 318 posts implies (42,300 was
+//     authored back when the account had four Playbooks);
+//   · drafting time saved = posts × 9 min, DERIVED — the doc's own Alliance panel
+//     does that arithmetic (16 posts → ~2.5 h) and its portfolio "~14 h" did not.
+//     318 posts is ~48 h;
+//   · reach is not authored here AT ALL. Both candidate totals (42,300 and 412,000)
+//     traced to nothing the reader could click — no panel below them summed to
+//     either. It is the sum of the reach objectives the Playbooks actually declare,
+//     computed in insights-model.js, so every summand is one click away in the rail.
+//     Smaller than the doc's figure and checkable, which is the trade this page is
+//     built to make.
+// Everything else the strips show is derived: "9 / 13 objectives on pace" is a
+// count of objectives whose tier is not At risk, and it already matched the doc.
+const INSIGHTS_PORTFOLIO = {
+  performance: {
+    engagementRate: 4.2,
+    note: "Archie-published posts only",
+  },
+  usage: {
+    keptRate: 71,
+    note: "what Archie produced",
+  },
+  // Signals surfaced → drafted or decided. The one Value figure with no derivation
+  // behind it: nothing in this prototype records whether a surfaced signal was
+  // acted on, so it stays authored. See the doc's data contract.
+  value: { signalsActed: 19, signalsSurfaced: 27 },
+};
+
+// Minutes of drafting one accepted post is assumed to save. Load-bearing: it is the
+// only input to every "time saved" figure on the page, so the panel and the ledger
+// cannot disagree.
+const MINUTES_PER_ACCEPTED_POST = 9;
+
+// Words in an average draft, which is how the word count is arrived at rather than
+// authored. It was authored — 148,200 — and it therefore stayed 148,200 after a
+// Playbook was deleted, while the drafts figure beside it fell. A total that does
+// not move when its summands do is the kind of number that gets a page distrusted.
+// 2,431 drafts at 61 words IS the 148,200 the handoff states.
+const WORDS_PER_DRAFT = 61;
+
+// One entry per Playbook, in the doc's own voice.
+//
+// `reason` is the rail's second line — the single most pressing thing about this
+// Playbook, written as words. It is NOT derived: the objective it comes from is,
+// but "flat at 88% of target" versus "awareness −8% in 30 days" is an editorial
+// call about which of two objectives the reader needs to hear about first.
+//
+// `headline` / `body` / `meta` are the reading panel's diagnosis. `whatWorked` is
+// the one post that carries it, and it is also where the Value tab's "posts that
+// made the case" come from — one source of truth, so a post cannot be 3.0× median
+// on one tab and 3.4× on another.
+//
+// `proof` exists only on Strong Playbooks. That asymmetry is the design: the panel
+// keeps the same anatomy in every state and a winning Playbook gains exactly one
+// block, so `proof` being absent is what makes the At risk panel shorter.
+const INSIGHTS_PANELS = {
+  "ctx-customer": {
+    reason: "reach −9% in 30 days",
+    headline: "Customer stories reached 10,400 people — down 9%, and the goal is slipping away.",
+    body: "The drop is not a rhythm problem — 11 posts went out, right on cadence. What lands has changed: story posts without a customer number in the first line are doing half the reach of those with one. Two of the last three winners led with a number.",
+    meta: "on 11 posts · against this Playbook's median",
+    whatWorked: {
+      network: "X",
+      date: "Jun 3",
+      excerpt: "“300 of you showed up to our first live session. Here's everything we learned.”",
+      views: "31K views",
+      multiple: "3.0×",
+    },
+  },
+  "ctx-noba": {
+    reason: "sales at 41% of target",
+    headline: "Noba is being seen — 31,200 people reached — but revenue is at 41% of target.",
+    body: "Reach is not the problem: it grew 9% and sits well above this Playbook's median. Conversion is. The posts that carry a product and a price are 4 of 41, and they are the only ones a sale can be traced back to.",
+    meta: "on 41 posts · against this Playbook's median",
+    whatWorked: {
+      network: "Instagram",
+      date: "Jun 22",
+      excerpt: "“The jacket we almost didn't make — and the 40 people who talked us into it.”",
+      views: "18K views",
+      multiple: "2.4×",
+    },
+  },
+  "ctx-acme": {
+    reason: "awareness −8% in 30 days",
+    headline: "Acme published on cadence, and awareness still fell 8%.",
+    body: "Lead generation is holding at 84% of target, so the funnel is not the issue — the top of it is. Reach is concentrated in three posts out of 32, and the other 29 landed under this Playbook's median. The pattern in the three: a named customer in the first line.",
+    meta: "on 32 posts · against this Playbook's median",
+    whatWorked: {
+      network: "LinkedIn",
+      date: "Jun 20",
+      excerpt: "“Trust compounds quietly in the background until one moment makes it visible.”",
+      views: "77K views",
+      multiple: "3.6×",
+    },
+  },
+  "ctx-founder-voice": {
+    reason: "+3%, still under median",
+    headline: "The audience is compounding — 1,240 new followers — while reach stays under the median.",
+    body: "Followers grew 6% and reach only 3%, which is the signature of posts that land well with the people already there. The eight posts that reached beyond them were all replies to something else, not standalone.",
+    meta: "on 18 posts · against the industry median",
+    whatWorked: {
+      network: "LinkedIn",
+      date: "Jun 11",
+      excerpt: "“I was wrong about hiring senior first. Here's what two years cost us.”",
+      views: "42K views",
+      multiple: "2.8×",
+    },
+  },
+  "ctx-dwelling": {
+    reason: "flat at 88% of target",
+    headline: "The Dwelling Company is 12% short of its reach goal, and flat two months running.",
+    body: "Volume is not the lever left: 64 posts went out, the most of any Playbook here. Reach per post has been falling since April at the same rate the count rose, which is what a saturated audience looks like rather than a content problem.",
+    meta: "on 64 posts · against this Playbook's median",
+    whatWorked: {
+      network: "Instagram",
+      date: "Jun 8",
+      excerpt: "“Six weeks in one flat, filmed from the same corner every morning.”",
+      views: "26K views",
+      multiple: "2.2×",
+    },
+  },
+  "ctx-agorapulse": {
+    reason: "leads ahead of schedule",
+    headline: "Agorapulse is running ahead of its lead goal with three weeks to go.",
+    body: "126 of 150 leads, up 8% on the month, on 62 posts. The lift is not spread evenly: posts that open on a number from the product did 1.9× the median, and Archie has been opening that way more often since it read the June release notes.",
+    meta: "on 62 posts · against this Playbook's median",
+    whatWorked: {
+      network: "LinkedIn",
+      date: "Jun 17",
+      excerpt: "“We deleted 40% of our settings page. Support tickets fell by a third.”",
+      views: "54K views",
+      multiple: "3.1×",
+    },
+    proof: {
+      reachBefore: 25100,
+      reachAfter: 27400,
+      reachVariation: 9,
+      postsThrough: 62,
+      postsTotal: 62,
+      posts: 62,
+    },
+  },
+  "ctx-alliance-bjj": {
+    reason: "+12% in 30 days",
+    headline: "Best 30 days since Archie started here — and the pattern is Archie's.",
+    body: "Reach ran 30% over the industry median and +12% on the month. Since March the correlation holds: the weeks Archie published, reach followed; the two weeks it paused, it flattened. Nothing here needs your hand — it needs to keep running.",
+    meta: "on 16 posts · against the industry median",
+    whatWorked: {
+      network: "Instagram",
+      date: "Jun 14",
+      excerpt: "“What a first competition actually feels like — from our newest white belt.”",
+      views: "12.2K views",
+      multiple: "3.4×",
+    },
+    proof: {
+      reachBefore: 16400,
+      reachAfter: 18400,
+      reachVariation: 12,
+      postsThrough: 16,
+      postsTotal: 16,
+      posts: 16,
+    },
+  },
+};
+
+// The Usage half, per Playbook. `posts` sums to the portfolio's 318 and `drafts` to
+// its 2,431 — the strip is a sum of these rows, never a figure of its own, so the
+// rail and the strip cannot drift.
+//
+// `voice` is per Playbook and not per account: the doc's panel says "the voice
+// Archie learned HERE", and a single account-wide voice was the thing that made the
+// old tab read as flattery rather than evidence.
+const INSIGHTS_USAGE = {
+  "ctx-acme": {
+    posts: 89,
+    drafts: 640,
+    keptRate: 78,
+    sources: 22,
+    sourcesReused: 7,
+    railNote: "",
+    headline: "Acme is where Archie works hardest — and where its drafts land closest to your voice.",
+    body: "640 drafts this month became 89 published posts. 78% shipped without an edit — the best keep rate of your portfolio, and it has climbed every month since March. When you do edit, it's the openings: half of your rewrites touch the first line only.",
+    networks: [
+      { label: "LinkedIn", share: 71 },
+      { label: "X", share: 21 },
+      { label: "Instagram", share: 8 },
+    ],
+    voice: {
+      body: "Direct, evidence-led. Opens on the reader's problem or a customer number — “Unpopular opinion:” did 18 of its 34 monthly uses on this Playbook. Never: emoji in B2B posts.",
+    },
+  },
+  "ctx-agorapulse": {
+    posts: 62,
+    drafts: 470,
+    keptRate: 74,
+    sources: 12,
+    sourcesReused: 3,
+    railNote: "",
+    headline: "Archie drafts Agorapulse straight off the product — release notes in, posts out.",
+    body: "470 drafts became 62 posts, 74% of them kept as written. Twelve sources fed the month and three of them were release notes, reused four times each. The edits cluster on claims: you soften a number more often than you rewrite a sentence.",
+    networks: [
+      { label: "LinkedIn", share: 64 },
+      { label: "X", share: 30 },
+      { label: "Instagram", share: 6 },
+    ],
+    voice: {
+      body: "Plain and specific. Leads with what changed, never with why it matters — “We deleted” and “Support tickets fell” open a third of the month. Never: superlatives without a figure behind them.",
+    },
+  },
+  "ctx-customer": {
+    posts: 54,
+    drafts: 410,
+    keptRate: 69,
+    sources: 11,
+    sourcesReused: 2,
+    railNote: "",
+    headline: "Customer stories is the Playbook Archie rewrites most for you.",
+    body: "410 drafts, 54 published, 69% kept — four points under the portfolio. The edits are structural rather than cosmetic: you move the customer's number into the first line, which is the same thing the Performance tab says the reach depends on.",
+    networks: [
+      { label: "LinkedIn", share: 58 },
+      { label: "X", share: 34 },
+      { label: "Instagram", share: 8 },
+    ],
+    voice: {
+      body: "Narrative, one customer at a time. Opens on a person or a figure they gave you. Never: “we're excited to announce”.",
+    },
+  },
+  "ctx-founder-voice": {
+    posts: 41,
+    drafts: 330,
+    keptRate: 58,
+    sources: 8,
+    sourcesReused: 2,
+    railNote: "most edited",
+    headline: "Founder voice is the hardest voice to draft — and Archie is still learning it.",
+    body: "58% kept, the lowest here, on 330 drafts. That is not a failure so much as a description: the posts you publish under your own name are the ones you rewrite, and your rewrites have been getting shorter each month. Archie now opens on an admission rather than a claim, which is what you kept editing it into.",
+    networks: [
+      { label: "LinkedIn", share: 82 },
+      { label: "X", share: 18 },
+    ],
+    voice: {
+      body: "First person, admits the cost. Opens on something that went wrong — “I was wrong about” ran four times this month. Never: advice framed as a list.",
+    },
+  },
+  "ctx-dwelling": {
+    posts: 32,
+    drafts: 260,
+    keptRate: 72,
+    sources: 6,
+    sourcesReused: 1,
+    railNote: "",
+    headline: "The Dwelling Company publishes on rhythm, and Archie keeps the rhythm.",
+    body: "260 drafts became 32 posts at 72% kept. The month has no gap longer than three days, which is what the Playbook asks for. Every source was a photo set — the one Playbook here where Archie writes to an image rather than from a document.",
+    networks: [
+      { label: "Instagram", share: 68 },
+      { label: "LinkedIn", share: 24 },
+      { label: "X", share: 8 },
+    ],
+    voice: {
+      body: "Quiet and observational. Describes the room before the offer. Never: exclamation marks.",
+    },
+  },
+  "ctx-noba": {
+    posts: 24,
+    drafts: 200,
+    keptRate: 66,
+    sources: 5,
+    sourcesReused: 1,
+    railNote: "",
+    headline: "Noba's drafts land, its product posts do not — and that is where the edits go.",
+    body: "200 drafts, 24 published, 66% kept. Split by intent the rate splits too: brand posts ship at 74%, the four posts carrying a price ship at 25%. Every rewrite there added a reason to buy that Archie had not been given.",
+    networks: [
+      { label: "Instagram", share: 74 },
+      { label: "X", share: 26 },
+    ],
+    voice: {
+      body: "Warm, garment-first. Names the material and who made it. Never: discount language.",
+    },
+  },
+  "ctx-alliance-bjj": {
+    posts: 16,
+    drafts: 121,
+    keptRate: 75,
+    sources: 3,
+    sourcesReused: 1,
+    railNote: "",
+    headline: "Sixteen posts, three sources, 75% kept — the leanest Playbook here.",
+    body: "121 drafts on three sources: a member interview, a competition schedule and a coach's notes. Archie reused all three across the month rather than asking for more, and you kept three of every four drafts as written.",
+    networks: [
+      { label: "Instagram", share: 81 },
+      { label: "LinkedIn", share: 19 },
+    ],
+    voice: {
+      body: "Member-first, present tense. Opens on what a beginner feels, not on the gym. Never: martial-arts jargon without a gloss.",
+    },
+  },
+};
+
+// The quiet journal at the foot of the Performance rail. These signals left the
+// surfaces that solicited them — the feed and the chat opening — and re-read here
+// once, as a record. Nothing on this page asks for anything.
+const INSIGHTS_HANDLED = [
+  { label: "Reach sliding at Acme", state: "recovering" },
+  { label: "Noba pricing saves", state: "closed" },
+];
+
+/** Portfolio figures for one tab's strip. */
+export function insightsPortfolio(tab) {
+  return INSIGHTS_PORTFOLIO[tab] || null;
+}
+
+/** The reading panel's copy for one Playbook, or null if it has none authored. */
+export function insightsPanelFor(context) {
+  return (context && INSIGHTS_PANELS[context.id]) || null;
+}
+
+/** The Usage half's numbers and copy for one Playbook. */
+export function insightsUsageFor(context) {
+  return (context && INSIGHTS_USAGE[context.id]) || null;
+}
+
+export function insightsHandled() {
+  return INSIGHTS_HANDLED.map((h) => ({ ...h }));
+}
+
+/** Hours of drafting saved by N accepted posts — the page's one arithmetic. */
+export function draftingHoursSaved(posts) {
+  return (posts * MINUTES_PER_ACCEPTED_POST) / 60;
+}
+
+/** Words behind N drafts, rounded to the hundred a derived total deserves. */
+export function wordsDrafted(drafts) {
+  return Math.round((drafts * WORDS_PER_DRAFT) / 100) * 100;
+}
+
+export const MINUTES_SAVED_PER_POST = MINUTES_PER_ACCEPTED_POST;

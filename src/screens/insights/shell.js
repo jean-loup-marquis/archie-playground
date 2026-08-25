@@ -1,38 +1,36 @@
-import { html, raw } from "../../utils.js?v=45";
+import { html, raw, escapeAttr } from "../../utils.js?v=45";
 import { renderTopbar, setTopbarActions, clearTopbarActions } from "../../components/topbar.js?v=510";
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
-import { navigate } from "../../router.js?v=54";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=40";
-import { renderUsageTab } from "./usage.js?v=48";
+import { navigate, getPath } from "../../router.js?v=54";
+import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=45";
+import { renderUsageTab, bindUsageTab } from "./usage.js?v=52";
+import { renderValueTab, bindValueTab } from "./value.js?v=5";
 import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=26";
+import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=3";
 
-// Insights — the portfolio layer above a single Playbook's detail, in two halves.
+// Insights — one page, three tabs, one panel that changes job.
 //
-// This module knows their names, never their content: each entry owns what it
-// renders and how it frames it.
+// The three answer three different questions and that is the whole reason there
+// are three: Performance is "where do I stand", Usage is "what did Archie make",
+// Value is "is this worth its price". They were two, and the third question was
+// being answered by whichever of the two looked best that month.
 //
-// ── The page wears Archie's chrome, 2026-08-24 ──────────────────────────────
-// It used to carry its own H1 ("Insights"), its own subtitle ("7 Playbooks") and
-// its own `.ap-tabs` bar, while the topbar above it said "Archie". Two title bars
-// on one screen, and the page looked like it came from another app.
+// ── The page wears Archie's chrome ──────────────────────────────────────────
+// The topbar names the section and carries the switch in its LEAD slot as an
+// `.ap-segmented-control` — the Topic Feed's own idiom, the same component in the
+// same place. The page draws no header of its own.
 //
-// Now the topbar names the section (see currentTitle in topbar.js) and the switch
-// rides in its LEAD slot as an `.ap-segmented-control` — the Topic Feed's own
-// idiom, the same component in the same place. That is the whole change: nothing
-// about the two halves' content moved, and the page gained back the ~96px its
-// header cost above the fold.
+// ── The period lives here, not in the tabs ──────────────────────────────────
+// It is in the topbar's ACTIONS slot, which the previous pass deliberately left
+// empty on the argument that "the period belongs to each half, which states its
+// own". That held while the two halves measured different things over different
+// windows. It stopped holding the moment all three tabs became the same
+// master-detail over the same 7 / 30 / 60 window: three copies of one control, and
+// switching tabs silently changed the window you were reading.
 //
-// The header also used to carry a global "Review N objectives that need attention"
-// button. That went earlier, and for its own reason: what has not been dealt with
-// is counted where it arrives — the feed and the chat opening. The same number in
-// two places ends up believed in neither.
-//
-// ── Performance leads, 2026-08-24 ──────────────────────────────────────────
-// Usage was the landing half, on the argument that "the hub welcomes before it
-// triages". That argument died the day triage moved to the feed and the chat
-// opening: nobody arrives here to be triaged any more, they arrive to take stock.
-// So the half that answers "how is it going" comes first, and the half that
-// answers "what did Archie make me" follows it.
+// A Playbook picker still has no business up there — this page compares every
+// Playbook, and the rail is how you choose one.
 const TABS = [
   {
     id: "performance",
@@ -41,7 +39,8 @@ const TABS = [
     render: renderPerformanceTab,
     bind: bindPerformanceTab,
   },
-  { id: "usage", label: "Usage", icon: "ap-icon-sparkles", render: renderUsageTab },
+  { id: "usage", label: "Usage", icon: "ap-icon-sparkles", render: renderUsageTab, bind: bindUsageTab },
+  { id: "value", label: "Value", icon: "ap-icon-wallet", render: renderValueTab, bind: bindValueTab },
 ];
 
 const DEFAULT_TAB = "performance";
@@ -59,26 +58,32 @@ export function renderInsights(params, target) {
     return () => {};
   }
 
+  // The window rides in the URL rather than in a module variable, so a period is
+  // part of what a shared link says — the page's own rule is that no figure appears
+  // without its period, and a link that drops it breaks that on arrival.
+  const period = periodFor(parseHashParams().get("period") || DEFAULT_PERIOD).id;
+
   teardown();
-  // Lead slot only. Nothing goes in the actions slot on the right, and that is a
-  // decision: this page compares every Playbook, so a Playbook picker there would
-  // contradict what the page is for — and the period belongs to each half, which
-  // states its own.
-  setTopbarActions("", renderSegments(active));
+  setTopbarActions(renderPeriodSelector(period), renderSegments(active));
+
   const paint = () => {
-    target.innerHTML = html`<section class="screen insights-view">${raw(renderPage(active))}</section>`;
+    target.innerHTML = html`<section class="screen insights-view">
+      <div class="insights-view__page">
+        <div class="insights-view__panel">${raw(TABS.find((t) => t.id === active).render(period))}</div>
+      </div>
+    </section>`;
     mountWidgetCharts(target);
   };
   paint();
-  bind(target, active);
+  bind(target, active, period);
   unsubscribe = subscribeContexts(paint);
 
   return teardown;
 }
 
-// `target` is the router's #app node, reused across every navigation rather
-// than recreated — so a listener bound here outlives this mount unless
-// something removes it before the next tab binds its own.
+// `target` is the router's #app node, reused across every navigation rather than
+// recreated — so a listener bound here outlives this mount unless something removes
+// it before the next tab binds its own.
 function teardown() {
   if (unsubscribe) {
     unsubscribe();
@@ -86,31 +91,16 @@ function teardown() {
   }
   if (unbindTab) unbindTab();
   unbindTab = null;
-  // The screen owns what it put in the topbar, and the listener it bound on a node
-  // outside its own root.
   clearTopbarActions();
   if (boundTopbar && onTopbarClick) boundTopbar.removeEventListener("click", onTopbarClick);
   boundTopbar = null;
   onTopbarClick = null;
 }
 
-function renderPage(active) {
-  const tab = TABS.find((t) => t.id === active);
-  return `<div class="insights-view__page">
-      <div class="insights-view__panel">${tab.render()}</div>
-    </div>`;
-}
-
-// The switch, in the topbar's lead slot — the Topic Feed's own control in the same
-// place, so the two sections of Archie read as one app. Segments rather than the
-// `.ap-tabs` bar this page used to draw: tabs belong to a panel inside a page, and
-// this is a page-level switch that happens to change the whole body.
-//
-// They are BUTTONS and not links, unlike the tab bar they replace. That is the
-// price of the segmented control: the DS draws segments as buttons, so the route
-// change goes through a handler on #topbar instead of the router answering an
-// href. Deep links still work — each half is its own URL — and the back button
-// still walks them; only the mechanism moved.
+// Segments rather than a tab bar: tabs belong to a panel inside a page, and this is
+// a page-level switch that happens to change the whole body. They are BUTTONS, not
+// links, because the DS draws segments as buttons — deep links still work, each tab
+// is its own URL, and the back button still walks them; only the mechanism moved.
 function renderSegments(active) {
   const seg = (t) => {
     const on = t.id === active;
@@ -118,33 +108,58 @@ function renderSegments(active) {
     <button
       type="button"
       class="ap-segmented-control__segment ${on ? "ap-segmented-control__segment--selected" : ""}"
-      data-insights-segment="${t.id}"
+      data-insights-segment="${escapeAttr(t.id)}"
       aria-pressed="${on ? "true" : "false"}"
     >
       <i class="${t.icon}" aria-hidden="true"></i>
       <span class="ap-segmented-control__label">${t.label}</span>
     </button>`;
   };
-  return `<div class="ap-segmented-control insights-segments" role="group" aria-label="Which half of Insights to read">
+  return `<div class="ap-segmented-control insights-segments" role="group" aria-label="Which question Insights answers">
       ${TABS.map(seg).join("")}
     </div>`;
 }
 
-// `#topbar` lives OUTSIDE `#app`, so a screen's delegated handler never reaches
-// it: the segments need their own listener on that node, and the screen owns the
-// teardown. Same contract the Topic Feed's segmented control runs under.
-function bind(root, active) {
-  unbindTab = TABS.find((t) => t.id === active)?.bind?.(root) || null;
+// 7 / 30 / 60, and 60 is the last one on purpose: it is where Archie's memory ends,
+// not a choice about granularity. The panel says so inline when you get there.
+function renderPeriodSelector(active) {
+  const items = PERIODS.map(
+    (p) => `
+    <button
+      type="button"
+      class="ap-button insights-period__item${p.id === active ? " is-active" : ""}"
+      data-insights-period="${escapeAttr(p.id)}"
+      aria-pressed="${p.id === active ? "true" : "false"}"
+    >
+      <span>${p.label}</span>
+    </button>`,
+  ).join("");
+  return `<div class="insights-period" role="group" aria-label="Window these figures cover">${items}</div>`;
+}
+
+// `#topbar` lives OUTSIDE `#app`, so a screen's delegated handler never reaches it:
+// the segments and the period need their own listener on that node, and the screen
+// owns the teardown. Same contract the Topic Feed's segmented control runs under.
+function bind(root, active, period) {
+  unbindTab = TABS.find((t) => t.id === active)?.bind?.(root, period) || null;
 
   const topbar = document.getElementById("topbar");
-  if (topbar) {
-    onTopbarClick = (event) => {
-      const seg = event.target.closest("[data-insights-segment]");
-      if (!seg) return;
+  if (!topbar) return;
+  onTopbarClick = (event) => {
+    const seg = event.target.closest("[data-insights-segment]");
+    if (seg) {
       const id = seg.dataset.insightsSegment;
-      if (id !== active) navigate(`/insights/${id}`);
-    };
-    topbar.addEventListener("click", onTopbarClick);
-    boundTopbar = topbar;
-  }
+      // The window survives the tab change: it is the reader's question about time,
+      // and re-asking it on every tab is what made three copies of this control.
+      if (id !== active) setHashQuery(`/insights/${id}`, period === DEFAULT_PERIOD ? {} : { period });
+      return;
+    }
+    const p = event.target.closest("[data-insights-period]");
+    if (p) {
+      const id = p.dataset.insightsPeriod;
+      if (id !== period) setHashQuery(getPath(), id === DEFAULT_PERIOD ? {} : { period: id });
+    }
+  };
+  topbar.addEventListener("click", onTopbarClick);
+  boundTopbar = topbar;
 }

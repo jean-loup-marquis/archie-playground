@@ -156,6 +156,19 @@
      scrim fade. Matches the `--ease-standard` in handoff colors_and_type.css. */
   --app-ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
+  /* ── The figure face ──────────────────────────────────────────────────
+     The DS ships one family, Averta, and no monospace. Insights needs one: its
+     rail, its portfolio strip and its reading panel all print figures the reader
+     is invited to check against each other, and proportional digits make two
+     columns of them impossible to line up.
+
+     The Insights handoff specifies JetBrains Mono. Not shipped here on purpose —
+     the DS self-hosts its faces and this project loads no font from a CDN, so
+     adding one would mean committing the files and a @font-face block for a face
+     used on one screen. The system stack is what every OS already has, and
+     `font-variant-numeric: tabular-nums` on top of it does the actual work. */
+  --app-font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
   /* ── App chrome sizing ────────────────────────────────────────────── */
   --app-topbar-height: 56px;
 

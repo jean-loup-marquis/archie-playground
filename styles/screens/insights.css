@@ -1,266 +1,759 @@
-/* Insights hub — the portfolio layer (/insights/:tab), shell + one tab panel.
-   Verdict colours are never written here: they come from `.ap-status`
-   modifiers picked in objective-scoring.js, so this file and the Playbook
-   detail can't drift apart. */
+/* Insights (/insights/:tab) — the master-detail: portfolio strip, ranked rail,
+   reading panel. Three tabs share every rule in here, which is the point: the
+   panel changes job between them and must not change shape.
+
+   Verdict colours are never named twice — the tier modifier picks the same token
+   the `.ap-status` pill would, so this file and the Playbook detail cannot drift.
+
+   ── What left with the redesign, 2026-08-25 ──────────────────────────────────
+   The health-card grid (.analytics-card and its chips), the objectives table
+   (.analytics-row, .analytics-trend's table variants), the tier legend
+   (.analytics-legend), the filter selects and the widget grid the old level-two
+   section drew. The rail's second line does what the legend and the status column
+   did between them, and it does it without a key. What survived: the two annuli
+   (.analytics-card__ring, .insights-gauge__dial) — they are the one shape the
+   Performance and Usage halves have in common, and converting one without the
+   other is what would break that. */
 
 .insights-view {
   overflow-y: auto;
 }
 
-/* The page header is GONE, 2026-08-24 — the topbar names the section and carries
-   the segmented control, the way every other section of Archie does. What was
-   removed with it: __head, __head-text, __title, __sub, and the two slots the old
-   global triage CTA sat in (__cta, __all-clear). The `.insights-segments` control
-   needs no rules of its own: `.ap-segmented-control` carries it, exactly as the
-   Topic Feed's does. */
-
+/* No max-width and no page padding: the strip is full-bleed under the topbar, and
+   the split below it needs every pixel of width the rail plus a reading measure
+   asks for. The old 1280px cap was sized for a single centred column. */
 .insights-view__page {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xl);
-  padding: var(--ref-spacing-xl);
-  max-width: 1280px;
-  margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* --sys-text-color-light, not grey-60: grey-60 measures 3.10:1 against the
-   #F9F9FA page background, under the 4.5:1 AA needs at 14px. This token is
-   5.18:1 and is what the rest of the app uses for secondary text. */
-.insights-view__section {
+.insights-view__panel {
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-sm);
-}
-
-.insights-view__section-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--ref-spacing-md);
-  flex-wrap: wrap;
-}
-
-.insights-view__section-text {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
   min-width: 0;
 }
 
-.insights-view__section-note {
-  margin: 0;
-  max-width: 68ch;
+.insights-view__empty {
+  margin: var(--ref-spacing-xxxl) auto;
+  max-width: 46ch;
+  text-align: center;
+}
+
+/* ── The portfolio strip ────────────────────────────────────────────────────
+   One line, flush against the topbar, stating the window once for its own
+   figures. It sits on white against the page's grey so it reads as a continuation
+   of the chrome rather than as the first card. */
+.insights-strip {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: var(--ref-spacing-sm);
+  /* A tight row-gap because wrapping is the EXPECTED state below the handoff's
+     1400px, not a failure: four figures plus the scope and the caveat do not fit
+     beside a 260px sidebar at 1280. Two tight lines cost less above the fold than
+     dropping the caveat would cost in honesty. */
+  row-gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-md);
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border-soft);
   font-size: var(--ref-font-size-sm);
   color: var(--sys-text-color-light);
 }
 
-/* Key for the card tints. Without it the amber/red split on the chips is
-   decoration — the chips show objective names, so colour is the only carrier. */
-.analytics-legend {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-sm);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.insights-strip__scope {
   flex-shrink: 0;
 }
 
-.analytics-legend__item {
+.insights-strip__figure {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.insights-strip__note {
+  margin-left: auto;
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+/* Every number on this page is monospaced. Not decoration: the rail, the strip and
+   the panel all print figures the reader is invited to check against each other,
+   and proportional digits make two columns of them impossible to compare. */
+.insights-figure {
+  font-family: var(--app-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--sys-text-color);
+}
+
+/* ── Trends ──────────────────────────────────────────────────────────────── */
+.insights-trend {
   display: inline-flex;
   align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  font-size: var(--ref-font-size-sm);
+  gap: 2px;
+  font-family: var(--app-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--ref-font-size-xs);
   color: var(--sys-text-color-light);
-}
-
-.analytics-legend__swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--app-radius-circle);
-}
-
-.analytics-legend__swatch--strong {
-  background: var(--ref-color-green-150);
-}
-.analytics-legend__swatch--watch {
-  background: var(--ref-color-yellow-150);
-}
-.analytics-legend__swatch--at-risk {
-  background: var(--ref-color-red-150);
-}
-
-/* h3's 16px on an h2 element, on purpose. h2's 18px was tried and reverted: the
-   sections here are dividers inside one page, not chapters, and at 18px they pulled
-   attention off the figures. The token tier does not have to match the tag. */
-.insights-view__section-title {
-  font-family: var(--sys-text-style-h3-font-family);
-  font-size: var(--sys-text-style-h3-size);
-  font-weight: var(--sys-text-style-h3-weight);
-  line-height: var(--sys-text-style-h3-line-height);
-  color: var(--ref-color-grey-100);
-  margin: 0;
-}
-
-/* ---- Playbook health cards ---------------------------------------------- */
-
-.insights-view__cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-
-/* Surface, border, radius and padding come from `.ap-card` on the element —
-   only what makes this card a clickable health tile lives here. */
-.analytics-card {
-  position: relative;
-  align-items: flex-start;
-  gap: var(--ref-spacing-xs);
-  cursor: pointer;
-  transition:
-    border-color var(--ref-animation-short) var(--app-ease-out),
-    transform var(--ref-animation-short) var(--app-ease-out);
-}
-
-/* Gauge left, identity right — the score is the thing you scan across cards,
-   so it holds the same spot in every one of them. */
-.analytics-card__top {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  width: 100%;
-  min-width: 0;
-}
-
-.analytics-card__id {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  min-width: 0;
-}
-
-.analytics-card:hover {
-  border-color: var(--ref-color-grey-40);
-  transform: translateY(-1px);
-}
-
-.analytics-card:focus-visible {
-  outline: none;
-  border-color: var(--ref-color-electric-blue-100);
-  box-shadow:
-    0 0 0 1px var(--ref-color-white),
-    0 0 0 3px var(--ref-color-electric-blue-100);
-}
-
-.analytics-card--empty {
-  cursor: default;
-  justify-content: center;
-}
-
-.analytics-card--empty:hover {
-  border-color: var(--ref-color-grey-10);
-  transform: none;
-}
-
-.analytics-card__verdict {
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  line-height: 1;
-}
-
-/* Watch is amber (yellow-150), NOT orange-150 — orange-150 resolves to a brick
-   #C83E07 that sits a hair from red-150 #D80505, so the two worst tiers became
-   indistinguishable at a glance, which defeats having three of them. The pale
-   chip tints keep using the DS `.ap-status orange`, which is unambiguous. */
-.analytics-card__verdict--strong {
-  color: var(--ref-color-green-150);
-}
-.analytics-card__verdict--watch {
-  color: var(--ref-color-yellow-150);
-}
-.analytics-card__verdict--at-risk {
-  color: var(--ref-color-red-150);
-}
-
-.analytics-card__name {
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.analytics-card__none {
+.insights-trend.is-up {
+  color: var(--ref-color-green-150);
+}
+
+.insights-trend.is-down {
+  color: var(--ref-color-red-150);
+}
+
+.insights-trend i {
+  font-size: 14px;
+}
+
+/* ── The verdict, as a word ─────────────────────────────────────────────────
+   Watch is amber (yellow-150) and NOT orange-150: orange-150 resolves to a brick
+   #C83E07 a hair from red-150 #D80505, so the two worst verdicts became one
+   colour on a rail scanned at a glance. */
+.insights-verdict {
+  font-weight: 700;
+}
+
+.insights-verdict--strong {
+  color: var(--ref-color-green-150);
+}
+
+.insights-verdict--watch {
+  color: var(--ref-color-yellow-150);
+}
+
+.insights-verdict--at-risk {
+  color: var(--ref-color-red-150);
+}
+
+/* ── The split ──────────────────────────────────────────────────────────────
+   Grid, not flex percentages: the rail is a fixed measure and the panel takes
+   what is left, which is one `grid-template-columns` and no arithmetic. */
+.insights-split {
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  align-items: start;
+  gap: 0;
+}
+
+.insights-split--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.insights-split__panel {
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xl);
+  min-width: 0;
+}
+
+/* ── The rail ───────────────────────────────────────────────────────────────
+   `.ap-list-panel` carries the item shape, the hover and the selected state. What
+   is added here is the column chrome the DS panel does not assume — a right border
+   against the reading panel, and a sticky top so the rail stays put while a long
+   panel scrolls past it.
+
+   `.ap-list-panel` ships `height: 100%`, which needs a parent with a height. The
+   grid row gives it one only because the panel beside it is taller; `align-self:
+   start` plus an explicit max-height is what keeps it from stretching to a
+   panel three screens long. */
+.insights-rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: calc(100vh - var(--app-topbar-height) - 52px);
+  border-right: 1px solid var(--app-border-soft);
+  background: var(--app-surface);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-xs);
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.insights-rail__header {
+  padding: 0 var(--ref-spacing-xxs) var(--ref-spacing-xxs);
+  border-bottom: 0;
+  font-size: var(--ref-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sys-text-color-light);
+}
+
+.insights-rail__items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+/* The item is a real <button>: the rail is this page's primary navigation, and a
+   div with role="button" buys keyboard access only by hand. Resetting the button
+   chrome rather than overriding `.ap-list-panel-item` — the DS class keeps its own
+   padding, radius, hover and selected fill. */
+.insights-rail__item {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-xxs);
+}
+
+.insights-rail__item.selected {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--app-surface);
+  box-shadow: 0 2px 8px rgba(10, 27, 51, 0.05);
+}
+
+.insights-rail__text {
+  min-width: 0;
+  flex: 1;
+}
+
+.insights-rail__sub {
+  white-space: normal;
+}
+
+.insights-rail__reason,
+.insights-rail__note {
+  color: var(--ref-color-grey-80);
+}
+
+.insights-rail__figure {
+  font-family: var(--app-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.insights-rail__footer {
+  margin-top: auto;
+  padding: var(--ref-spacing-xs) var(--ref-spacing-xxs) 0;
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.insights-rail__note {
+  margin: 0;
+  font-size: var(--ref-font-size-xs);
+  line-height: 1.5;
+}
+
+.insights-kept.is-high {
+  color: var(--ref-color-green-150);
+  font-weight: 600;
+}
+
+/* ── The handled journal ────────────────────────────────────────────────────
+   The quietest thing on the page, and deliberately so: these signals are finished
+   and this is a record, not a queue. */
+.insights-handled {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+  line-height: 1.55;
+}
+
+.insights-handled__label {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.insights-handled__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.insights-handled__state--recovering {
+  color: var(--ref-color-green-150);
+  font-weight: 600;
+}
+
+/* ── E5, everything strong ──────────────────────────────────────────────────
+   Said once, above the panel. A good month should read as one. */
+.insights-allclear {
+  margin-bottom: var(--ref-spacing-sm);
+}
+
+.insights-allclear__title {
+  margin: 0;
+  font-size: var(--ref-font-size-md);
+  font-weight: 600;
+  color: var(--sys-text-color);
+}
+
+.insights-allclear__body {
+  margin: var(--ref-spacing-xxxs) 0 0;
   font-size: var(--ref-font-size-sm);
   color: var(--sys-text-color-light);
+  line-height: 1.55;
+}
+
+/* ── The reading panel ──────────────────────────────────────────────────────
+   One `.ap-card` and a reading measure. Every block inside it is separated by a
+   hairline rather than nested in a card of its own: the panel is one argument, and
+   six cards would make it six. */
+.insights-panel {
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-lg);
+  gap: 0;
+  max-width: 1080px;
+}
+
+.insights-panel__head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+.insights-panel__id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.insights-panel__name {
   margin: 0;
+  font-size: var(--ref-font-size-lg);
+  font-weight: 700;
+  color: var(--sys-text-color);
 }
 
-/* Playbook identity dot — same six colours as the /contexts card swatch. */
-.analytics-card__dot {
-  width: 8px;
+.insights-panel__verdict {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+}
+
+.insights-panel__score {
+  color: var(--ref-color-grey-80);
+}
+
+.insights-panel__open {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* The diagnosis. 21px semibold rather than a heading tag: it is a sentence about
+   this month, not the panel's title — the Playbook's name is that. */
+.insights-panel__headline {
+  margin: var(--ref-spacing-sm) 0 0;
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--sys-text-color);
+  max-width: 62ch;
+}
+
+.insights-panel__body {
+  margin: var(--ref-spacing-xxs) 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sys-text-color-light);
+  max-width: 72ch;
+}
+
+/* Where the figure came from, under the sentence that used it. Every panel has one
+   and none of them is optional: it is the page's own rule about periods, applied
+   to prose rather than to a number. */
+.insights-panel__meta,
+.insights-panel__footnote {
+  margin: var(--ref-spacing-xs) 0 0;
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.insights-panel__block {
+  margin-top: var(--ref-spacing-sm);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.insights-panel__block-title {
+  margin: 0 0 var(--ref-spacing-xxs);
+  font-size: var(--ref-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sys-text-color-light);
+}
+
+.insights-panel__pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--ref-spacing-md);
+}
+
+.insights-panel__pair > .insights-panel__block {
+  margin-top: var(--ref-spacing-sm);
+}
+
+/* ── Goal rows ─────────────────────────────────────────────────────────────
+   Label, bar, figure, trend — the same four columns for every goal, so two
+   Playbooks' goals stack readably when the reader switches between them. */
+.insights-panel__goals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-sm);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.insights-goal {
+  display: grid;
+  grid-template-columns: 150px minmax(80px, 1fr) auto auto;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.insights-goal__name {
+  font-size: var(--ref-font-size-sm);
+  font-weight: 600;
+  color: var(--sys-text-color);
+}
+
+.insights-goal__track {
+  height: 7px;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-10);
+  overflow: hidden;
+}
+
+.insights-goal__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--app-radius-pill);
+}
+
+.insights-goal__fill--strong {
+  background: var(--ref-color-green-150);
+}
+.insights-goal__fill--watch {
+  background: var(--ref-color-yellow-150);
+}
+.insights-goal__fill--at-risk {
+  background: var(--ref-color-red-150);
+}
+
+.insights-goal__value {
+  font-size: var(--ref-font-size-xs);
+  font-weight: 500;
+  color: var(--sys-text-color);
+  white-space: nowrap;
+}
+
+/* ── Muted objectives ─────────────────────────────────────────────────────── */
+.insights-muted {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xs);
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.insights-muted__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+}
+
+/* ── The panel's widgets ────────────────────────────────────────────────────
+   Real Report Studio tiles. Three on Performance, four on Usage; both counts are
+   the content's, not a grid preference, so the grid takes a column count rather
+   than auto-fitting to whatever arrives. */
+.insights-panel__widgets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-sm);
+  padding-top: var(--ref-spacing-sm);
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.insights-panel__widgets--four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1200px) {
+  .insights-panel__widgets,
+  .insights-panel__widgets--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── One post, as evidence ────────────────────────────────────────────────── */
+.insights-post {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+}
+
+.insights-post__origin {
+  font-weight: 600;
+  color: var(--sys-text-color);
+  white-space: nowrap;
+}
+
+.insights-post__excerpt {
+  flex: 1;
+  min-width: 0;
+}
+
+.insights-post__figure {
+  font-size: var(--ref-font-size-xs);
+  white-space: nowrap;
+}
+
+.insights-post__multiple {
+  color: var(--ref-color-green-150);
+}
+
+/* ── The proof block ───────────────────────────────────────────────────────
+   The one block a Strong Playbook gains. Peach, because that is what this app
+   already means by "Archie did this" — the same tint the trending surfaces use —
+   and the tint is the whole signal that this block makes a different kind of
+   claim than the diagnosis above it. */
+.insights-proof__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+}
+
+.insights-proof__title {
+  color: var(--app-archie-orange-deep);
+  margin-bottom: 0;
+}
+
+.insights-proof__scope {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.insights-proof__grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: var(--ref-spacing-xs);
+  margin-top: var(--ref-spacing-xs);
+}
+
+@media (max-width: 1200px) {
+  .insights-proof__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.insights-proof__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--app-peach-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-peach);
+}
+
+.insights-proof__label {
+  font-size: var(--ref-font-size-xs);
+  font-weight: 600;
+  color: var(--sys-text-color-light);
+}
+
+.insights-proof__bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+  margin: var(--ref-spacing-xxxs) 0;
+}
+
+.insights-proof__bar {
   height: 8px;
-  min-width: 8px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-grey-40);
+  border-radius: var(--app-radius-pill);
 }
 
-.analytics-card__dot--orange {
-  background: var(--ref-color-orange-100);
-}
-.analytics-card__dot--blue {
-  background: var(--ref-color-electric-blue-100);
-}
-.analytics-card__dot--green {
-  background: var(--ref-color-green-100);
-}
-.analytics-card__dot--purple {
-  background: var(--ref-color-purple-100);
-}
-.analytics-card__dot--red {
-  background: var(--ref-color-red-100);
-}
-.analytics-card__dot--yellow {
-  background: var(--ref-color-yellow-100);
+.insights-proof__bar--before {
+  background: var(--ref-color-grey-20);
 }
 
-/* Annular gauge. `--ring-progress` is the 0–100 score, set inline per card;
-   the conic sweep paints that share and the inner disc punches the hole so it
-   reads as one score, not as a pie of parts. */
+.insights-proof__bar--after {
+  background: var(--app-archie-orange);
+}
+
+.insights-proof__value {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-sm);
+}
+
+.insights-proof__big {
+  font-size: 22px;
+}
+
+.insights-proof__note {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+  line-height: 1.45;
+}
+
+/* ── The Report Studio bridge ──────────────────────────────────────────────
+   Butter, one sentence, one link. Not an `.ap-infobox`: an infobox is a notice
+   about the page's state, and this is a sentence about what the page cannot do —
+   which belongs in the reading flow at the end of the argument, in the tint this
+   app already uses for "Archie is telling you something". */
+.insights-bridge {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-md);
+  margin-top: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-butter-deep);
+}
+
+.insights-bridge__text {
+  margin: 0;
+  flex: 1;
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.5;
+  color: var(--sys-text-color-light);
+}
+
+.insights-bridge__highlight {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: var(--app-butter);
+  font-weight: 600;
+  color: var(--sys-text-color);
+}
+
+/* Orange because this is the one AI/spotlight action in the block, and the brand
+   convention reserves orange for exactly that. Transparent, so a sentence keeps
+   its weight over the thing it points at. */
+.insights-bridge__cta {
+  flex-shrink: 0;
+  color: var(--app-archie-orange-deep);
+  font-weight: 700;
+}
+
+/* ── The cap ─────────────────────────────────────────────────────────────── */
+.insights-cap {
+  margin: var(--ref-spacing-xs) 0 0;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border-left: 2px solid var(--ref-color-electric-blue-20);
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+  line-height: 1.55;
+}
+
+.insights-cap__link {
+  vertical-align: baseline;
+}
+
+/* ── Network bars (Usage) ──────────────────────────────────────────────────
+   Three shares of one hundred, as three lengths. The ramp is the brand orange
+   fading out, so the order reads as rank rather than as three categories. */
+.insights-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  margin-top: var(--ref-spacing-xxs);
+}
+
+.insights-bar {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+}
+
+.insights-bar__label {
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+  text-align: right;
+}
+
+.insights-bar__track {
+  height: 8px;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-10);
+  overflow: hidden;
+}
+
+.insights-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--app-radius-pill);
+  background: var(--app-archie-orange);
+}
+
+.insights-bar__fill--2 {
+  background: #ff9170;
+}
+.insights-bar__fill--3 {
+  background: #ffbba4;
+}
+
+.insights-bar__value {
+  font-size: var(--ref-font-size-xs);
+}
+
+.insights-voice__body {
+  max-width: none;
+}
+
+/* ── The two annuli ────────────────────────────────────────────────────────
+   The score ring (Performance) and the keep-rate dial (Usage) are the same shape
+   at two sizes, and that is what makes the two halves read as one page. Both are
+   conic gradients with a punched centre: no SVG, no library, and the progress is
+   one custom property. */
 .analytics-card__ring {
-  --ring-size: 52px;
-  --ring-thickness: 5px;
   --ring-progress: 0;
-  --ring-color: var(--ref-color-grey-40);
+  --ring-color: var(--ref-color-green-150);
   position: relative;
   flex-shrink: 0;
-  width: var(--ring-size);
-  height: var(--ring-size);
+  width: 52px;
+  height: 52px;
   border-radius: var(--app-radius-circle);
   background: conic-gradient(
     var(--ring-color) calc(var(--ring-progress) * 1%),
     var(--ref-color-grey-10) calc(var(--ring-progress) * 1%)
   );
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.analytics-card__ring::before {
+.analytics-card__ring::after {
   content: "";
   position: absolute;
-  inset: var(--ring-thickness);
+  inset: 4px;
   border-radius: var(--app-radius-circle);
-  background: var(--ref-color-white);
+  background: var(--app-surface);
 }
 
-/* The deeper 150 shades, not 100: at this stroke width the brighter tints read
-   as decoration rather than as a verdict. Watch is amber for the same reason as
-   the verdict text above. */
 .analytics-card__ring--strong {
   --ring-color: var(--ref-color-green-150);
 }
@@ -271,349 +764,357 @@
   --ring-color: var(--ref-color-red-150);
 }
 
-.analytics-card__ring-scale {
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 0 2px;
-  background: var(--ref-color-white);
-  font-size: 10px;
-  line-height: 1;
-  color: var(--sys-text-color-light);
-}
-
 .analytics-card__ring-value {
   position: relative;
+  z-index: 1;
+  font-family: var(--app-font-mono);
+  font-variant-numeric: tabular-nums;
   font-size: var(--ref-font-size-sm);
-  font-weight: var(--sys-text-style-body-bold-weight);
+  font-weight: 700;
   line-height: 1;
-  color: var(--ref-color-grey-100);
+  color: var(--sys-text-color);
 }
 
-.analytics-card__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxxs);
-  width: 100%;
-}
-
-.analytics-card__chip {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ---- Filters ------------------------------------------------------------ */
-
-.insights-view__controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ref-spacing-sm);
-  flex-wrap: wrap;
-}
-
-.insights-view__filters {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
-  flex-wrap: wrap;
-}
-
-/* `.ap-select` is width:100% by design (it normally fills a form field), so a
-   filter has to be sized here. */
-.insights-view__select {
-  width: auto;
-  min-width: 180px;
-}
-
-.insights-view__count {
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-}
-
-/* ---- Objective table --------------------------------------------------- */
-
-.insights-view__table {
-  width: 100%;
-}
-
-.analytics-row {
-  cursor: pointer;
-}
-
-/* Deliberate extension of the DS table: a 3px accent inset on the leading cell
-   so scanning the left edge finds what needs work without reading a column. */
-.analytics-row.is-flagged td:first-child {
-  box-shadow: inset 3px 0 0 0 var(--row-accent);
-}
-
-/* Same amber-vs-red split as the cards, so one scan of the page teaches one
-   colour language. */
-.analytics-row.is-flagged--watch {
-  --row-accent: var(--ref-color-yellow-150);
-}
-
-.analytics-row.is-flagged--at-risk {
-  --row-accent: var(--ref-color-red-150);
-}
-
-.analytics-row__playbook {
-  gap: var(--ref-spacing-xxs);
-}
-
-.analytics-row__progress {
-  gap: var(--ref-spacing-xxs);
-}
-
-.analytics-row__pct {
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.analytics-row__goal {
-  color: var(--sys-text-color-light);
-}
-
-.analytics-trend {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  color: var(--sys-text-color-light);
-  white-space: nowrap;
-}
-
-.analytics-trend.is-up {
-  color: var(--ref-color-green-150);
-}
-
-/* red-150, not red-100: the DS table stripes every other row, and red-100 clears
-   4.5:1 only against white — 4.40:1 on the stripe. -150 is also the step is-up and
-   the At-risk verdict already take, so the three tier colours stay one ramp. */
-.analytics-trend.is-down {
-  color: var(--ref-color-red-150);
-}
-
-/* ---- Editorial lead + its widgets --------------------------------------- */
-
-/* .insights-view__editorial is gone: once the block gained a heading it was the same
-   shape as every other section — heading, then content — so it uses
-   .insights-view__section and inherits its 16px rhythm instead of its own 24px. */
-
-/* Four across, fixed rather than auto-fit: auto-fit drops to three and leaves a
-   lone fourth card on its own row, which reads as a mistake. Below the width four
-   cards can hold, it halves to a 2×2 instead. */
-.insights-view__mini-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-
-@media (max-width: 900px) {
-  .insights-view__mini-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.insights-view__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xxl) var(--ref-spacing-md);
-  text-align: center;
-}
-
-/* The playbook name is a real <button> so the row is reachable by keyboard, but
-   it has to read as the plain cell text it replaced. */
-.analytics-row__open {
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.analytics-row__open:hover {
-  text-decoration: underline;
-}
-
-.analytics-row__open:focus-visible {
-  outline: 2px solid var(--ref-color-electric-blue-100);
-  outline-offset: 2px;
-  border-radius: var(--ref-border-radius-sm);
-}
-
-/* No margin-bottom here. .insights-view__page is a flex column with a 40px gap, so a
-   24px margin on top of it put 64px between the tab nav and the first thing under it
-   — the gap alone is the separation. */
-
-.insights-view__panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xl);
-}
-
-/* .insights-tab__period is gone with its last caller. Neither tab states a range in a
-   bare line above its content any more: Usage runs from the account's first day and
-   says so nowhere, Performance says "in the last 30 days" inside its lead sentence. */
-
-.insights-usage__produced {
-  display: grid;
-  grid-template-columns: 0.85fr repeat(3, minmax(0, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-
-@media (max-width: 900px) {
-  .insights-usage__produced {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Same annulus technique as .analytics-card__ring: a conic sweep with an inner disc
-   punching the hole, so it reads as one rate rather than a pie of parts. */
 .insights-gauge__dial {
   --gauge-progress: 0;
   position: relative;
-  align-self: center;
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
+  margin: var(--ref-spacing-xxs) auto 0;
   border-radius: var(--app-radius-circle);
   background: conic-gradient(
     var(--ref-color-green-150) calc(var(--gauge-progress) * 1%),
     var(--ref-color-grey-10) calc(var(--gauge-progress) * 1%)
   );
-  display: grid;
-  place-items: center;
-}
-
-.insights-gauge__dial::before {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  border-radius: var(--app-radius-circle);
-  background: var(--ref-color-white);
-}
-
-/* Matches .recap__overview-metric: this is the block's headline rate, so it
-   cannot render smaller than the volumes sitting beside it. */
-.insights-gauge__value {
-  position: relative;
-  font-size: var(--ref-font-size-xl);
-  font-weight: var(--ref-font-weight-bold);
-  color: var(--ref-color-grey-100);
-}
-
-/* One grid of four, not two columns of stacked cards.
-
-   Nesting a column inside a column let each side grow to its own length: the left
-   ran 514px, the right 652px, and the 138px difference read as a hole under the last
-   bars card. Four columns put every card on one module instead, so a row ends where
-   its neighbours end:
-
-     [ Where you publish  ][ Current ][ Longest ]   ← 148 / 150 / 150, near enough
-     [ The tone that recurs ][ Creation activity ]
-                             [ the conclusion    ]
-
-   The two-column cards land at the same 462px the old layout gave them, so the
-   calendar keeps the 18-cell width 443e7414 widened it to. */
-.insights-usage__work {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-
-.insights-usage__wide {
-  grid-column: span 2;
-}
-
-/* The streak ladder and the 90-day activity grid were removed on 2026-08-24 with
-   the cards they drew (see renderUsageTab): this half proves what Archie is worth,
-   and a streak is the reader's own behaviour rendered as a game. Their rules went
-   with them rather than lingering as dead selectors. */
-
-@media (max-width: 900px) {
-  .insights-usage__work {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .insights-usage__wide {
-    grid-column: auto;
-  }
-}
-
-/* The four .insights-bars__* rules that sat here are gone too, and they were dead
-   before this pass: renderBars draws a real widget card with a Highcharts bar
-   chart, so nothing in the JS ever carried those classes. */
-
-/* Four superlatives, equal weight — none of them is the headline, and none of
-   them is a trend, so they get no gauge and no chart. */
-.insights-voice {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--ref-spacing-sm);
-}
-
-@media (max-width: 900px) {
-  .insights-voice {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Own class rather than overriding .ap-table-empty: the DS cell is a centred block
-   and this one has to sit the Clear-filters button on the same line as the message. */
-.insights-view__table-empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--ref-spacing-xxs);
 }
 
-/* The playbook level — the six metric cards, at the width the report gives them.
-   Three across rather than the report's nine-column canvas: this block answers a
-   card above it, so it is a row of figures, not a report page. See
-   src/screens/insights/performance.js. */
-.insights-view__widgets {
+.insights-gauge__dial::after {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: var(--app-radius-circle);
+  background: var(--app-surface);
+}
+
+.insights-gauge__value {
+  position: relative;
+  z-index: 1;
+  font-family: var(--app-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--ref-font-size-md);
+  font-weight: 700;
+  color: var(--sys-text-color);
+}
+
+/* ── The period selector ───────────────────────────────────────────────────
+   A joined group of `.ap-button`s in the topbar's actions slot. Segments rather
+   than a select: three options, always the same three, and the reader compares
+   them against each other rather than picking from a list. */
+.insights-period {
+  display: inline-flex;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  overflow: hidden;
+  background: var(--app-surface);
+}
+
+.insights-period__item {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--ref-font-size-sm);
+  color: var(--sys-text-color-light);
+  white-space: nowrap;
+}
+
+.insights-period__item + .insights-period__item {
+  border-left: 1px solid var(--app-border-soft);
+}
+
+.insights-period__item.is-active {
+  background: var(--ref-color-electric-blue-05);
+  color: var(--ref-color-electric-blue-100);
+  font-weight: 600;
+}
+
+/* ── The Value tab ─────────────────────────────────────────────────────────
+   No rail: the renewal question is asked about the account, not per brand. So it
+   is the one tab that is a page rather than a split, and it gets a reading
+   measure of its own. */
+.insights-value {
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xl);
+  max-width: 1180px;
+}
+
+.insights-value__eyebrow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-xxs);
+  margin: 0;
+  font-size: var(--ref-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--sys-text-color-light);
+}
+
+.insights-value__scope {
+  font-size: var(--ref-font-size-xs);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ref-color-grey-80);
+}
+
+.insights-value__lead {
+  margin: var(--ref-spacing-xxs) 0 0;
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--sys-text-color);
+  max-width: 60ch;
+}
+
+.insights-value__ledger {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  /* Rows sized by content, not by the panel: .widget-card is `height: 100%`, so a
-     stretched grid row hands one KPI tile the whole viewport. */
-  grid-auto-rows: min-content;
-  align-content: start;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--ref-spacing-sm);
   margin-top: var(--ref-spacing-sm);
 }
 
-/* The selected card. A ring rather than a fill: the ring already carries the
-   score's colour, and tinting the whole card would put a second verdict on it. */
-.analytics-card.is-selected {
-  border-color: var(--sys-border-color-active);
-  box-shadow: inset 0 0 0 1px var(--sys-border-color-active);
+@media (max-width: 1100px) {
+  .insights-value__ledger {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-/* The alert-state column. Plain text and one transparent button, never a second
-   `.ap-status` pill: in this app a filled pill means the VERDICT, and a row
-   carrying two pills that say different things is a row nobody reads correctly.
-   The state is a footnote to the verdict three columns left of it. See
-   renderAlertCell in src/screens/insights/performance.js. */
-.analytics-row__alert {
+.insights-value__card {
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  gap: var(--ref-spacing-xxxs);
+}
+
+.insights-value__label {
+  font-size: var(--ref-font-size-sm);
+  font-weight: 600;
+  color: var(--sys-text-color-light);
+}
+
+.insights-value__value {
+  font-size: 26px;
+}
+
+.insights-value__foot,
+.insights-value__foot-text {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.insights-value__foot {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  flex-wrap: wrap;
+}
+
+.insights-value__section {
+  margin-top: var(--ref-spacing-lg);
+}
+
+.insights-value__goals {
+  margin-top: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-md);
+  gap: var(--ref-spacing-sm);
+}
+
+.insights-value__goal {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 320px;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+}
+
+@media (max-width: 1100px) {
+  .insights-value__goal {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ref-spacing-xxs);
+  }
+}
+
+.insights-value__goal-name {
+  display: block;
+  font-size: var(--ref-font-size-sm);
+  font-weight: 600;
+  color: var(--sys-text-color);
+}
+
+.insights-value__goal-playbook {
+  display: block;
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+/* Before over after, both bars Archie's own posts in two consecutive windows. The
+   grey bar is what it was; the orange one is what it is. */
+.insights-value__goal-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxxs);
+}
+
+.insights-value__goal-bar {
+  height: 8px;
+  border-radius: var(--app-radius-pill);
+}
+
+.insights-value__goal-bar--before {
+  background: var(--ref-color-grey-20);
+}
+
+.insights-value__goal-bar--after {
+  background: var(--app-archie-orange);
+}
+
+.insights-value__goal-figures {
+  text-align: right;
+}
+
+.insights-value__goal-figures .insights-figure {
   display: inline-flex;
   align-items: center;
+  gap: var(--ref-spacing-xxxs);
+  font-size: var(--ref-font-size-sm);
+}
+
+.insights-value__goal-note {
+  display: block;
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.insights-value__caveat,
+.insights-value__empty {
+  margin: 0;
+  padding-top: var(--ref-spacing-xs);
+  border-top: 1px solid var(--app-border-soft);
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.5;
+  color: var(--ref-color-grey-80);
+}
+
+.insights-value__empty {
+  border-top: 0;
+  padding-top: var(--ref-spacing-xxs);
+}
+
+.insights-value__posts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-xs);
+}
+
+@media (max-width: 1100px) {
+  .insights-value__posts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.insights-value__post {
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
   gap: var(--ref-spacing-xxs);
-  white-space: nowrap;
 }
 
-.analytics-row__alert-state {
-  font-family: var(--sys-text-style-caption-font-family);
-  font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
+.insights-value__post-origin {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
+}
+
+.insights-value__post-excerpt {
+  margin: 0;
+  font-size: var(--ref-font-size-sm);
+  line-height: 1.5;
   color: var(--sys-text-color-light);
 }
 
-/* An untouched objective gets an em dash rather than an empty cell: a blank cell in
-   a striped table reads as data that failed to load. */
-.analytics-row__alert-none {
-  color: var(--sys-text-color-light);
+.insights-value__post-figure {
+  font-size: var(--ref-font-size-xs);
+}
+
+/* ── Where Archie stops ────────────────────────────────────────────────────
+   The tab closes on the navy the conversation already uses for Archie's own
+   voice, because this is Archie saying where it stops. The CTA is orange: it is
+   the one spotlight action on the page, and the sentence above it is what keeps
+   the orange from reading as a paywall. */
+.insights-boundary {
+  margin-top: var(--ref-spacing-lg);
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
+  border-radius: var(--app-radius-card);
+  background: var(--app-convo-navy);
+}
+
+.insights-boundary__title {
+  margin: 0;
+  font-size: var(--ref-font-size-lg);
+  font-weight: 600;
+  color: var(--ref-color-white);
+}
+
+.insights-boundary__body {
+  margin: var(--ref-spacing-xxxs) 0 0;
+  max-width: 78ch;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--app-convo-navy-20);
+}
+
+.insights-boundary__foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-sm);
+}
+
+.insights-boundary__note {
+  font-size: var(--ref-font-size-sm);
+  color: var(--app-convo-navy-20);
+}
+
+/* ── Stacked ────────────────────────────────────────────────────────────────
+   Under 980px the rail stops being a column and becomes the list above the panel.
+   Sticky has nothing to stick to once the split is one column, and a 330px rail
+   beside a 300px panel is two unreadable columns rather than one of each. */
+@media (max-width: 980px) {
+  .insights-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .insights-rail {
+    position: static;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid var(--app-border-soft);
+  }
+
+  .insights-split__panel,
+  .insights-value {
+    padding: var(--ref-spacing-sm);
+  }
+
+  .insights-goal {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ref-spacing-xxxs);
+  }
+}
+
+/* The reach figure's coverage, when the sum does not cover every Playbook. Inline
+   with the figure rather than in the strip's trailing note: it qualifies that one
+   number, and the trailing note qualifies the whole row. */
+.insights-strip__coverage {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-80);
 }

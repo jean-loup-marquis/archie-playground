@@ -1,7 +1,7 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=45";
 import { getThread, subscribe as subscribeThread } from "../assistant.js?v=119";
 import { isFlagOn } from "../feature-flags.js?v=44";
-import { ideas as MOCK_IDEAS } from "../mocks.js?v=111";
+import { ideas as MOCK_IDEAS } from "../mocks.js?v=114";
 import { isNewUser } from "../user-mode.js?v=36";
 import { getPath } from "../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=35";
