@@ -100,16 +100,29 @@
   color: var(--ref-color-grey-80);
 }
 
+/* The tiles wear this page's radius, not the platform's 8px. Scoped here rather
+   than changed in report-widgets.css on purpose: that file's whole stated job is to
+   transcribe Report Studio's real components "so the prototype draws the same card
+   as the product rather than a lookalike", and editing its radius would make that
+   sentence false. Insights dresses the card for its own page instead; the port stays
+   faithful for whoever renders a report next. */
+.insights-view .widget-card {
+  border-radius: var(--app-radius-card-lg);
+}
+
 /* Four, because there are four figures — not auto-fit. The count is the content's.
-   Stretched to equal height (the grid default, kept deliberately): Reach carries a
-   coverage caveat the other three have no equivalent for, and four tiles of three
-   different heights in one row reads as a bug. So the row is as tall as its most
-   qualified figure, and dropping the other three narratives bought clarity rather
-   than height. */
+   Every tile is title + value now, so they are the same height by content rather
+   than by the grid stretching them — which is what dropping the variations and the
+   narratives bought: the row went from 194px to one line of figures. */
 .insights-portfolio__tiles {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--ref-spacing-xs);
+}
+
+/* Value renders the bare grid under its own lead, with no scope line to space it. */
+.insights-value > .insights-portfolio__tiles {
+  margin-top: var(--ref-spacing-sm);
 }
 
 @media (max-width: 1100px) {
@@ -600,22 +613,23 @@
    Real Report Studio tiles. Three on Performance, four on Usage; both counts are
    the content's, not a grid preference, so the grid takes a column count rather
    than auto-fitting to whatever arrives. */
-.insights-panel__widgets {
-  display: grid;
+/* Inside the panel the tile grid is a BLOCK like the others, so it takes the same
+   hairline above it. Three columns by default because the panel shows three
+   metrics; Usage's four carry the modifier. */
+.insights-panel > .insights-portfolio__tiles {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--ref-spacing-xs);
   margin-top: var(--ref-spacing-sm);
   padding-top: var(--ref-spacing-sm);
   border-top: 1px solid var(--app-border-soft);
 }
 
-.insights-panel__widgets--four {
+.insights-panel > .insights-portfolio__tiles.insights-panel__widgets--four {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 @media (max-width: 1200px) {
-  .insights-panel__widgets,
-  .insights-panel__widgets--four {
+  .insights-panel > .insights-portfolio__tiles,
+  .insights-panel > .insights-portfolio__tiles.insights-panel__widgets--four {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -980,45 +994,14 @@
   max-width: 60ch;
 }
 
-.insights-value__ledger {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--ref-spacing-sm);
-  margin-top: var(--ref-spacing-sm);
-}
-
-@media (max-width: 1100px) {
-  .insights-value__ledger {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.insights-value__card {
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  gap: var(--ref-spacing-xxxs);
-}
-
-.insights-value__label {
-  font-size: var(--ref-font-size-sm);
-  font-weight: 600;
-  color: var(--sys-text-color-light);
-}
-
-.insights-value__value {
-  font-size: 26px;
-}
-
-.insights-value__foot,
-.insights-value__foot-text {
+/* The two assumptions the tiles' footnotes used to carry, in one line under the
+   claim they qualify. */
+.insights-value__assumptions {
+  margin: var(--ref-spacing-xxs) 0 0;
+  max-width: 72ch;
   font-size: var(--ref-font-size-xs);
+  line-height: 1.5;
   color: var(--ref-color-grey-80);
-}
-
-.insights-value__foot {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  flex-wrap: wrap;
 }
 
 .insights-value__section {

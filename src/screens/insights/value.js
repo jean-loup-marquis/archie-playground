@@ -2,7 +2,7 @@ import { escapeText } from "../../utils.js?v=45";
 import { showToast } from "../../components/toast.js?v=44";
 import { navigate } from "../../router.js?v=54";
 import { valueLedger, winningPosts, periodLabel } from "./insights-model.js?v=3";
-import { renderTrend, renderFirstRun, figure } from "./parts.js?v=9";
+import { renderPortfolioTiles, renderTrend, renderFirstRun, figure } from "./parts.js?v=11";
 
 // Insights › Value — the doc's screen 6b, and a tab this app did not have.
 //
@@ -38,7 +38,7 @@ export function renderValueTab(period) {
   return `
     <div class="insights-value">
       ${renderHeader(ledger, period)}
-      ${renderLedger(ledger, period)}
+      ${renderLedger(ledger)}
       ${renderGoals(ledger, period)}
       ${renderPosts(posts, period)}
       ${renderBoundary()}
@@ -60,50 +60,35 @@ function renderHeader(ledger, period) {
         <strong>${figure(ledger.reach)} people reached</strong>, roughly ${hours} hours of drafting you didn't do,
         and ${ledger.signalsActed} signals turned into work.
       </p>
+      <!-- The two assumptions the tiles' footnotes used to carry. They belong in one
+           line under the claim they qualify, not scattered one per card. -->
+      <p class="insights-value__assumptions">
+        Reach is summed from ${ledger.reachPlaybooks} Playbooks' reach goals; time saved counts 9 minutes per
+        accepted post.
+      </p>
     </header>`;
 }
 
 // Four figures, and every one of them is either summed from the rails behind it or
 // derived from the page's single piece of arithmetic. None is authored here.
-function renderLedger(ledger, period) {
-  const cards = [
-    {
-      label: "Reach, all posts via me",
-      value: figure(ledger.reach),
-      foot:
-        renderTrend(ledger.reachVariation) +
-        `<span class="insights-value__foot-text"> vs the window before · summed from ${ledger.reachPlaybooks} Playbooks' reach goals</span>`,
-    },
-    {
-      label: "Drafting time saved",
-      value: `~${Math.round(ledger.hoursSaved)} h`,
-      foot: `<span class="insights-value__foot-text">at 9 min per accepted post · ${escapeText(periodLabel(period))}</span>`,
-    },
-    {
-      label: "Signals turned into work",
-      value: `${ledger.signalsActed} / ${ledger.signalsSurfaced}`,
-      foot: `<span class="insights-value__foot-text">insights surfaced → drafted or decided · ${escapeText(periodLabel(period))}</span>`,
-    },
-    {
-      label: "Kept without editing",
-      value: `${ledger.keptRate}%`,
-      foot: `<span class="insights-value__foot-text">of ${figure(ledger.drafts)} drafts · your voice, first try</span>`,
-    },
-  ];
-
-  return `
-    <div class="insights-value__ledger">
-      ${cards
-        .map(
-          (c) => `
-        <div class="ap-card insights-value__card">
-          <span class="insights-value__label">${escapeText(c.label)}</span>
-          <span class="insights-figure insights-value__value">${escapeText(c.value)}</span>
-          <span class="insights-value__foot">${c.foot}</span>
-        </div>`,
-        )
-        .join("")}
-    </div>`;
+//
+// ── The same tiles as the other two tabs, 2026-08-25 ───────────────────────
+// These were four hand-made `.ap-card`s with 26px values and a footnote line each:
+// the same object as Performance's and Usage's portfolio rows — four figures about
+// the whole account — built with a different component. Two answers to one
+// question, and the tab that argues hardest for being checkable was the one whose
+// figures looked least like the ones it asks you to check them against.
+//
+// What the footnotes carried moves into the prose that owns it. The reach coverage
+// and the 9-min assumption were the two worth keeping, and both are in the caveat
+// under the goals block and the lead sentence above.
+function renderLedger(ledger) {
+  return renderPortfolioTiles([
+    { title: "Reach, all posts via me", count: ledger.reach },
+    { title: "Drafting time saved", metric: `~${Math.round(ledger.hoursSaved)} h` },
+    { title: "Signals turned into work", metric: `${ledger.signalsActed} / ${ledger.signalsSurfaced}` },
+    { title: "Kept without editing", count: ledger.keptRate, unit: "%" },
+  ]);
 }
 
 // The two-bar comparison, before over after. Both bars are Archie's own posts in

@@ -59,16 +59,38 @@ export function renderRing(score, tier) {
 // prefix was saying inline. The tiles sit on the page's grey while the panel's sit
 // inside its white card, so the two rows read as two layers rather than as peers.
 export function renderPortfolio({ label, note, tiles }) {
-  const cards = tiles.map((t) => renderWidgetCard({ overviewData: toOverviewData(t) }, { size: "mini" })).join("");
-
   return `
     <section class="insights-portfolio" aria-label="${escapeAttr(label)}">
       <p class="insights-portfolio__scope">
         <span class="insights-portfolio__label">${escapeText(label)}</span>
         <span class="insights-portfolio__note">· ${escapeText(note)}</span>
       </p>
-      <div class="insights-portfolio__tiles">${cards}</div>
+      ${renderPortfolioTiles(tiles)}
     </section>`;
+}
+
+// The bare grid, for a surface that states its own scope in prose above it — Value
+// opens on a sentence and does not need a second scope line under it.
+//
+// ── No variation, no narrative, 2026-08-25 ──────────────────────────────────
+// Stripped HERE rather than left to each call site, so a tile cannot grow a second
+// or third line back by being handed one. The row is a set of figures to compare at
+// a glance, and a trend chip on one tile but not the next, or an italic caveat
+// under one value, is what made the eye stop instead of scan. What those lines said
+// now lives in the prose that owns it: the scope line above the row, the panel's
+// meta line, the goals block's own trends.
+// `bodyHtml` is the one escape hatch, and it is the DS card's own: a tile whose
+// value is a SHAPE rather than a figure (the keep-rate dial) substitutes the middle
+// and keeps the card. Without it Usage had to draw its own grid around a hand-made
+// gauge plus a nested call to this one — a grid inside a grid.
+export function renderPortfolioTiles(tiles, { className = "" } = {}) {
+  const cards = tiles
+    .map((t) => {
+      const { variation, narrative, bodyHtml, ...figure } = t;
+      return renderWidgetCard({ overviewData: toOverviewData(figure), bodyHtml }, { size: "mini" });
+    })
+    .join("");
+  return `<div class="insights-portfolio__tiles${className ? ` ${escapeAttr(className)}` : ""}">${cards}</div>`;
 }
 
 // ── Trends ──────────────────────────────────────────────────────────────────

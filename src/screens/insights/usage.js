@@ -1,7 +1,5 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { navigate } from "../../router.js?v=54";
-import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
-import { renderOverviewCard, toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
 import {
   usageRows,
   usageStrip,
@@ -10,7 +8,14 @@ import {
   periodLabel,
   scaleVolume,
 } from "./insights-model.js?v=3";
-import { renderRail, renderPortfolio, renderBridge, renderFirstRun, figure } from "./parts.js?v=9";
+import {
+  renderRail,
+  renderPortfolio,
+  renderPortfolioTiles,
+  renderBridge,
+  renderFirstRun,
+  figure,
+} from "./parts.js?v=11";
 
 // Insights › Usage — the doc's screen 5a.
 //
@@ -111,39 +116,15 @@ function renderPanel(row, period) {
       <p class="insights-panel__meta">
         on ${figure(usage.drafts)} drafts · ${escapeText(periodLabel(period))} · keep rate against this portfolio's average
       </p>
-      <div class="insights-panel__widgets insights-panel__widgets--four">
-        ${renderKeptGauge(usage.keptRate, usageStrip(period).keptRate)}
-        ${renderWidgetCard(
-          {
-            overviewData: toOverviewData({
-              title: "Drafts generated",
-              count: usage.drafts,
-              narrative: `${usage.perDay} a day · ${periodLabel(period)}`,
-            }),
-          },
-          { size: "mini" },
-        )}
-        ${renderWidgetCard(
-          {
-            overviewData: toOverviewData({
-              title: "Posts published",
-              count: usage.posts,
-              narrative: `${usage.publishedShare}% of drafts · ${periodLabel(period)}`,
-            }),
-          },
-          { size: "mini" },
-        )}
-        ${renderWidgetCard(
-          {
-            overviewData: toOverviewData({
-              title: "Sources digested",
-              count: usage.sources,
-              narrative: `${usage.sourcesReused} reused more than once`,
-            }),
-          },
-          { size: "mini" },
-        )}
-      </div>
+      ${renderPortfolioTiles(
+        [
+          { title: "Kept without editing", bodyHtml: keptDial(usage.keptRate) },
+          { title: "Drafts generated", count: usage.drafts },
+          { title: "Posts published", count: usage.posts },
+          { title: "Sources digested", count: usage.sources },
+        ],
+        { className: "insights-panel__widgets--four" },
+      )}
       <div class="insights-panel__pair">
         ${renderNetworks(usage.networks, period)}
         ${renderVoice(usage.voice)}
@@ -168,12 +149,13 @@ function rankNote(row, period) {
 // A gauge expresses a part of a whole, so it is reserved for the one rate on this
 // panel — putting one on a volume like "640 drafts" would be a visual lie.
 //
-// The dial stays hand-drawn rather than becoming the report's half-donut: it is the
-// same annulus as the Performance ring, and converting one of the pair without the
-// other would break the thing that makes them read as one system. So it borrows the
-// real tile's card and title and substitutes only the middle.
-function renderKeptGauge(rate, portfolioRate) {
-  const dial = `
+// Just the dial now — the card around it is the same tile as the other three,
+// built by renderPortfolioTiles, so this returns only the shape that goes in the
+// middle. It stays hand-drawn rather than becoming the report's half-donut: it is
+// the same annulus as the Performance ring, and converting one of the pair without
+// the other would break the thing that makes them read as one system.
+function keptDial(rate) {
+  return `
     <div
       class="insights-gauge__dial"
       style="--gauge-progress: ${rate}"
@@ -181,14 +163,6 @@ function renderKeptGauge(rate, portfolioRate) {
       aria-label="${rate}% of drafts kept without editing"
     >
       <span class="insights-gauge__value">${escapeText(String(rate))}%</span>
-    </div>`;
-
-  return `
-    <div class="widget-card insights-gauge">
-      ${renderOverviewCard(
-        { title: "Kept without editing", narrative: `portfolio: ${portfolioRate}%` },
-        { bodyHtml: dial },
-      )}
     </div>`;
 }
 

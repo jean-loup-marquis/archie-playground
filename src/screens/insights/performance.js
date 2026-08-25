@@ -2,8 +2,6 @@ import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { getContexts } from "../../contexts-store.js?v=97";
 import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=116";
 import { navigate } from "../../router.js?v=54";
-import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
-import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
 import { showToast } from "../../components/toast.js?v=44";
 import { objectiveTier } from "../../objective-scoring.js?v=25";
 import { alertState, mutedUntilLabel, reopen, subscribe as subscribeAlerts } from "../../objective-alerts-store.js?v=6";
@@ -19,6 +17,7 @@ import {
 import {
   renderRail,
   renderPortfolio,
+  renderPortfolioTiles,
   renderRing,
   renderGoals,
   renderWhatWorked,
@@ -28,7 +27,7 @@ import {
   renderFirstRun,
   verdictWord,
   figure,
-} from "./parts.js?v=9";
+} from "./parts.js?v=11";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
@@ -193,7 +192,7 @@ function renderPanel(row, period) {
       ${copy ? `<p class="insights-panel__meta">${escapeText(copy.meta)} · ${escapeText(periodLabel(period))}</p>` : ""}
       ${renderGoals(objectives)}
       ${renderAlerts(row, objectives)}
-      <div class="insights-panel__widgets">${renderPanelWidgets(row.context, period)}</div>
+      ${renderPanelWidgets(row.context, period)}
       ${renderCapNote(period, { startedOn: "Apr 25" })}
       ${copy?.proof ? renderProof(copy, period) : ""}
       ${renderWhatWorked(copy?.whatWorked, {
@@ -205,17 +204,19 @@ function renderPanel(row, period) {
 
 // One metric, one widget, and the widget is a real Report Studio tile driven by the
 // same overviewData contract the report uses — layout is ours, the data shape is
-// theirs. `narrative` carries the period, which is how every figure here gets one.
+// theirs.
+//
+// Through renderPortfolioTiles, which is what strips the variation and the period
+// line: these three are the same kind of object as the row above the split, so they
+// are built by the same function rather than by a second path that could drift.
+// The window they cover is stated twice already, on the verdict line and the meta
+// line above them.
 function renderPanelWidgets(context, period) {
   const byId = new Map(playbookReportFor(context).map((w) => [w.id, w]));
-  return PANEL_WIDGET_IDS.map((id) => {
-    const w = byId.get(id);
-    if (!w) return "";
-    return renderWidgetCard(
-      { overviewData: toOverviewData({ ...w, count: scaleVolume(w.count, period), narrative: periodLabel(period) }) },
-      { size: "mini" },
-    );
-  }).join("");
+  const tiles = PANEL_WIDGET_IDS.map((id) => byId.get(id))
+    .filter(Boolean)
+    .map((w) => ({ ...w, count: scaleVolume(w.count, period) }));
+  return renderPortfolioTiles(tiles);
 }
 
 // What the reader already did about an objective, which the numbers cannot say.
