@@ -8605,7 +8605,14 @@ export const pillars = [
   },
 ];
 
-// ---- Archie's impact (the editorial lead + the hub's three widgets) -------
+// ---- Archie's impact (UNREAD since the Insights redesign) -----------------
+//
+// ⚠️ No screen calls archieImpact() any more, and the component this block was
+// written for — the `.editorial-lead` banner — was deleted with it. The reading
+// panel writes its own headline, body and meta from INSIGHTS_PANELS further down.
+// Kept for now rather than deleted in the same breath as the banner: 150 lines of
+// authored mock data is a product decision, not a cleanup. Same for ARCHIE_USAGE
+// below, whose 90-day calendar and streaks lost their UI two commits earlier.
 //
 // The `lead` is one sentence, read once, warmly — a hook, not a scoreboard. The
 // hub's `widgets` are the same shape as PLAYBOOK_REPORT entries so they render
@@ -8685,7 +8692,10 @@ export function archieImpact(context) {
   return ARCHIE_IMPACT[context.id] || null;
 }
 
-// ---- Archie's usage (the Insights › Usage tab) -----------------------------
+// ---- Archie's usage (UNREAD since the Insights redesign) ------------------
+//
+// ⚠️ archieUsage() and toneDistribution() have no callers: Usage reads
+// INSIGHTS_USAGE per Playbook now. See the note on ARCHIE_IMPACT above.
 //
 // The counterpoint to the objective tables: what Archie produced, and how you work
 // with it. Read once, warmly — a hook, not a scoreboard, hence a narrative line per

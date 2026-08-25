@@ -28,7 +28,7 @@
 //     paused,                   — stopped listening; the topics it found stay
 //     showTrending }            — gates the banner AND the trending page entry
 
-import { researchLanes as seed } from "./mocks.js?v=114";
+import { researchLanes as seed } from "./mocks.js?v=115";
 import { getContexts } from "./contexts-store.js?v=97";
 import { isNewUser } from "./user-mode.js?v=36";
 import { createNotifier } from "./store-utils.js?v=17";

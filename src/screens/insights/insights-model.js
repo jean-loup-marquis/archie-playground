@@ -6,7 +6,7 @@ import {
   insightsPortfolio,
   draftingHoursSaved,
   wordsDrafted,
-} from "../../mocks.js?v=114";
+} from "../../mocks.js?v=115";
 import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER } from "../../objective-scoring.js?v=25";
 
 // Insights' derivation layer — everything the three tabs read, computed once here.

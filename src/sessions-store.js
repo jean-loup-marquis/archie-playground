@@ -15,7 +15,7 @@
 //   addSession(session)          → Session     (used by future "new chat" flows)
 //   subscribe(fn)                → unsubscribe
 
-import { recentSessions as seed } from "./mocks.js?v=114";
+import { recentSessions as seed } from "./mocks.js?v=115";
 import { isNewUser } from "./user-mode.js?v=36";
 import { createNotifier } from "./store-utils.js?v=17";
 

@@ -1,6 +1,6 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { getContexts } from "../../contexts-store.js?v=97";
-import { insightsPanelFor, insightsHandled, playbookReportFor } from "../../mocks.js?v=114";
+import { insightsPanelFor, insightsHandled, playbookReportFor } from "../../mocks.js?v=115";
 import { navigate } from "../../router.js?v=54";
 import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
