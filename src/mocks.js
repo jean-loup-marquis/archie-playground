@@ -9263,14 +9263,6 @@ const INSIGHTS_USAGE = {
   },
 };
 
-// The quiet journal at the foot of the Performance rail. These signals left the
-// surfaces that solicited them — the feed and the chat opening — and re-read here
-// once, as a record. Nothing on this page asks for anything.
-const INSIGHTS_HANDLED = [
-  { label: "Reach sliding at Acme", state: "recovering" },
-  { label: "Noba pricing saves", state: "closed" },
-];
-
 /** Portfolio figures for one tab's strip. */
 export function insightsPortfolio(tab) {
   return INSIGHTS_PORTFOLIO[tab] || null;
@@ -9284,10 +9276,6 @@ export function insightsPanelFor(context) {
 /** The Usage half's numbers and copy for one Playbook. */
 export function insightsUsageFor(context) {
   return (context && INSIGHTS_USAGE[context.id]) || null;
-}
-
-export function insightsHandled() {
-  return INSIGHTS_HANDLED.map((h) => ({ ...h }));
 }
 
 /** Hours of drafting saved by N accepted posts — the page's one arithmetic. */

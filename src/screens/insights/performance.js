@@ -1,6 +1,6 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { getContexts } from "../../contexts-store.js?v=97";
-import { insightsPanelFor, insightsHandled, playbookReportFor } from "../../mocks.js?v=115";
+import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=116";
 import { navigate } from "../../router.js?v=54";
 import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
@@ -123,31 +123,21 @@ function renderRailFor(rows, activeId) {
       meta: verdictWord(r.tier),
       note: escapeText(r.reason),
     })),
-    footer: renderHandled(),
   });
 }
 
-// The quiet journal. These signals left the feed and the chat opening once they
-// were dealt with; this is where they are read again, as a record. It is the last
-// thing in the rail and it asks for nothing — this page never solicits.
-function renderHandled() {
-  const entries = insightsHandled();
-  if (entries.length === 0) return "";
-  const items = entries
-    .map(
-      (h) =>
-        `<span class="insights-handled__item">
-          <span class="insights-handled__what">${escapeText(h.label)}</span>
-          <span class="insights-handled__state insights-handled__state--${escapeAttr(h.state)}">${escapeText(h.state)}</span>
-        </span>`,
-    )
-    .join("");
-  return `
-    <div class="insights-handled">
-      <p class="insights-handled__label">Handled</p>
-      <div class="insights-handled__list">${items}</div>
-    </div>`;
-}
+// ── The handled journal is gone, 2026-08-25 ────────────────────────────────
+// It sat at the foot of this rail: two finished signals ("Reach sliding at Acme —
+// recovering", "Noba pricing saves — closed") re-read as a record. The doc asks
+// for it, and it is still the right idea somewhere — but not here, and not like
+// that. Nothing about it was actionable: it could not be opened, filtered or
+// walked back to the chat that closed it, so it was two lines of text occupying
+// the one place in the rail a reader looks when they have run out of Playbooks.
+// A record you cannot follow is decoration.
+//
+// Removed with it: renderHandled(), INSIGHTS_HANDLED + insightsHandled() in
+// mocks.js, and the .insights-handled* block in insights.css. If it comes back it
+// needs a destination per entry, which is a different feature.
 
 // E5 — everything Strong. Said once, above the panel, because a good month should
 // read as one: the alternative is seven green rows and a reader wondering what

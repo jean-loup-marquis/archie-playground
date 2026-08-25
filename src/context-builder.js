@@ -18,7 +18,7 @@ import { postAssistantMessage, postUserTurn, postUserProfilesTurn } from "./assi
 import * as rightPanel from "./components/right-panel.js?v=644";
 import { addContext, updateContext, getContextById } from "./contexts-store.js?v=97";
 import { analyzeWebsite } from "./context-mock-analysis.js?v=39";
-import { connectors as connectorMocks } from "./mocks.js?v=115";
+import { connectors as connectorMocks } from "./mocks.js?v=116";
 import { getConnectedProfiles, buildConnectedProfileItems, PROFILE_SEARCH_THRESHOLD } from "./social-profiles.js?v=85";
 import { cloneVoiceByLanguage, LANGUAGE_OPTIONS, DEFAULT_LANGUAGE } from "./languages.js?v=15";
 import { isFlagOn } from "./feature-flags.js?v=44";

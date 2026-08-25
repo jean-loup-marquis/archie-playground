@@ -169,6 +169,19 @@
   min-width: 0;
 }
 
+/* The panel starts on the first rail card's line, not on the rail's own top edge.
+   Without this it cleared the rail's HEADER too, so the two columns began 30px
+   apart and the eye compared the panel's border against the header's text instead
+   of border against border. Derived from the two things that push the first card
+   down — the header's line box and the rail's gap — so it cannot drift if either
+   changes. The Topic Feed solves the same problem the same way
+   (.research-feed__split.is-labelled > .research-feed__article).
+
+   Only with a rail: E4 has none, and Value is not a split at all. */
+.insights-split:not(.insights-split--single) > .insights-split__panel {
+  padding-top: calc(var(--ref-spacing-sm) + var(--sys-text-style-caption-bold-line-height) + var(--ref-spacing-xs));
+}
+
 .insights-split--single > .insights-split__panel {
   padding-left: var(--ref-spacing-md);
 }
@@ -204,7 +217,11 @@
 .insights-rail__header {
   margin: 0;
   padding: 0 var(--ref-spacing-xxxs);
-  font-size: var(--ref-font-size-xs);
+  /* Explicit, because the reading panel's top offset is calculated from it. It was
+     inheriting body's 18px, which made the alignment depend on a value nothing
+     here declared. This IS the caption-bold style: 12px uppercase. */
+  font-size: var(--sys-text-style-caption-bold-size);
+  line-height: var(--sys-text-style-caption-bold-line-height);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -328,62 +345,13 @@
   color: var(--ref-color-grey-80);
 }
 
-/* ── The handled journal ────────────────────────────────────────────────────
-   A card too, so it belongs to the column above it — but grey rather than white,
-   because it is the one thing in this rail that is not a choice. These signals
-   are finished; the card says "record", not "row eight". */
+/* The rail's footer slot. Only Usage fills it now — Performance's handled journal
+   is gone (see performance.js): a record with no destination per entry was two
+   lines of decoration in the one place the rail has left to say something. */
 .insights-rail__footer {
   margin-top: auto;
   padding-top: var(--ref-spacing-xxs);
   flex-shrink: 0;
-}
-
-.insights-handled {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card-lg);
-  background: var(--app-surface-subtle);
-}
-
-.insights-handled__label {
-  margin: 0;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: var(--app-label-tracking);
-  text-transform: uppercase;
-  color: var(--ref-color-grey-80);
-}
-
-.insights-handled__list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-}
-
-.insights-handled__item {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ref-spacing-xxs);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.insights-handled__what {
-  flex: 1;
-  color: var(--ref-color-grey-80);
-}
-
-.insights-handled__state {
-  flex-shrink: 0;
-  font-weight: 600;
-  color: var(--ref-color-grey-80);
-}
-
-.insights-handled__state--recovering {
-  color: var(--ref-color-green-150);
 }
 
 .insights-rail__note {
@@ -1210,6 +1178,7 @@
 
   .insights-split__panel,
   .insights-split--single > .insights-split__panel,
+  .insights-split:not(.insights-split--single) > .insights-split__panel,
   .insights-value {
     padding: var(--ref-spacing-sm);
   }

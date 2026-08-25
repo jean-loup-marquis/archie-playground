@@ -43,7 +43,7 @@
 //   unlinkBrief(briefId)              → clears the mark only
 //   subscribe(fn)                     → unsubscribe
 
-import { pillars as seed } from "./mocks.js?v=115";
+import { pillars as seed } from "./mocks.js?v=116";
 import { isNewUser } from "./user-mode.js?v=36";
 import { createNotifier } from "./store-utils.js?v=17";
 
