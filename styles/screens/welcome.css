@@ -584,6 +584,62 @@
   gap: var(--ref-spacing-xxs);
 }
 
+/* ── Objectives, coupled to measures (Audience & goals) ─────────────────
+   One block per objective: the chip stays its identity, the proposed
+   measures (metric + baseline) or the parked state read underneath. */
+.recap__objectives {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-sm);
+}
+
+.recap__objective {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.recap__objective-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.recap__measures {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-micro);
+}
+
+.recap__measure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-60);
+}
+
+.recap__measure-metric {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__objective-proxy {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-60);
+}
+
+.recap__objective-proxy strong {
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+
 /* ── Voice & style — quoted snippet lines ─────────────────────────────── */
 .recap__quotes {
   list-style: none;

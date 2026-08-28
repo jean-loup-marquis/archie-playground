@@ -22,12 +22,13 @@ import { isFlagOn } from "./feature-flags.js?v=44";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=85";
 import { open as openConfirmModal } from "./components/confirm-modal.js?v=36";
 import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=15";
+import { resolveObjectives } from "./objective-measures.js?v=1";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
   { key: "audience", label: "Primary audience", placeholder: "Add an audience…" },
   { key: "contentStyle", label: "Content style", placeholder: "Add a style…" },
-  { key: "objective", label: "Primary goal", placeholder: "Add a goal…" },
+  { key: "objective", label: "Objectives", placeholder: "Add an objective…" },
   { key: "contentAction", label: "Content action", placeholder: "Add an action…" },
 ];
 
@@ -134,8 +135,8 @@ const FIELD_HINTS = {
     a: "This guides the structure and format of every post Archie writes.",
   },
   objective: {
-    q: "What's your primary social media objective?",
-    a: "Archie will prioritise content angles that serve this goal.",
+    q: "What are your social media objectives?",
+    a: "Each objective is coupled to a metric that can be measured natively. An objective outside the catalog is kept and marked coming soon, with a proxy metric meanwhile.",
   },
   contentAction: {
     q: "What action should your content drive?",
@@ -524,6 +525,45 @@ function renderChips(values) {
   if (!list.length) return `<span class="recap__row-empty">Not set yet</span>`;
   return `<div class="recap__chips">${list
     .map((v) => `<span class="ap-tag blue recap__chip">${esc(v)}</span>`)
+    .join("")}</div>`;
+}
+
+// Objectives, read mode. Each label resolves (at render time, never stored) to
+// a coupled object: its proposed measures — metric + baseline — or its parked
+// state (coming soon + avowed proxy). The chip stays the objective's identity;
+// the measures are a quiet line underneath. Coming soon is `ap-badge blue`, the
+// app's one coming-soon convention — never orange.
+function renderObjectives(data) {
+  const resolved = resolveObjectives(data.objective, data.id);
+  if (!resolved.length) return `<span class="recap__row-empty">Not set yet</span>`;
+  return `<div class="recap__objectives">${resolved
+    .map((o) => {
+      if (o.status === "parked") {
+        return `
+          <div class="recap__objective recap__objective--parked">
+            <div class="recap__objective-head">
+              <span class="ap-tag blue recap__chip">${esc(o.label)}</span>
+              <span class="ap-badge blue recap__objective-soon">Coming soon</span>
+            </div>
+            <p class="recap__objective-proxy">${esc(o.soon)} Until then <strong>${esc(o.proxy.metricLabel)}</strong> stands in as a proxy.</p>
+          </div>`;
+      }
+      return `
+        <div class="recap__objective">
+          <div class="recap__objective-head">
+            <span class="ap-tag blue recap__chip">${esc(o.label)}</span>
+          </div>
+          <ul class="recap__measures">${o.measures
+            .map(
+              (m) => `
+            <li class="recap__measure">
+              <span class="recap__measure-metric">${esc(m.metricLabel)}</span>
+              <span class="recap__measure-baseline">baseline ${esc(m.baseline)}</span>
+            </li>`,
+            )
+            .join("")}</ul>
+        </div>`;
+    })
     .join("")}</div>`;
 }
 
@@ -1258,9 +1298,17 @@ function renderGoalsPanel(data, edit) {
       renderRow(contextLanguages(data).length > 1 ? "Languages" : "Language", renderLanguageChips(data)),
       renderRow("Business", renderText(data.businessSummary)),
       // Primary audience is single-select, so show it as plain text rather than
-      // a one-chip row; the other goal fields stay multi-value chips.
+      // a one-chip row; objectives render as coupled objects (measure or parked);
+      // the other goal fields stay multi-value chips.
       ...GOAL_FIELDS.map((f) =>
-        renderRow(f.label, f.key === "audience" ? renderText((data.audience || [])[0]) : renderChips(data[f.key])),
+        renderRow(
+          f.label,
+          f.key === "audience"
+            ? renderText((data.audience || [])[0])
+            : f.key === "objective"
+              ? renderObjectives(data)
+              : renderChips(data[f.key]),
+        ),
       ),
       renderRow("CTA links", renderCtaList(data)),
     ].join("");
