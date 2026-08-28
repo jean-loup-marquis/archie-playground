@@ -6,7 +6,7 @@
 
 import { navigate } from "../router.js?v=54";
 import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=477";
-import { mount } from "../playbook-view.js?v=121";
+import { mount } from "../playbook-view.js?v=122";
 import { open as openRenameModal } from "../components/rename-modal.js?v=16";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";
@@ -103,8 +103,13 @@ export function renderWelcomeAltRecap(_params, target) {
 // (the user is already a returning user). Mirrors enterArchie's save path.
 function finishIntegrated(sid) {
   patchDraft(sid, { onComplete: null });
+  // save() rebuilds the context through addContext's field whitelist, which
+  // doesn't know objectiveMeasures — carry the measure corrections over onto
+  // the saved context (a live store reference) by hand.
+  const measures = getDraft(sid)?.objectiveMeasures;
   const saved = save(sid);
   if (!saved) return;
+  if (measures) saved.objectiveMeasures = measures;
   const returnTo = readReturnTo();
   clearSessionId();
   clearPersistedDraft();
@@ -118,8 +123,13 @@ function finishIntegrated(sid) {
 // where the in-memory onComplete is gone.
 function enterArchie(sid) {
   patchDraft(sid, { onComplete: null });
+  // Same objectiveMeasures carry-over as finishIntegrated. Note: this path
+  // reloads the page, and stores re-seed from mocks on reload — like every
+  // other new-alt Playbook edit, the correction lives for the session only.
+  const measures = getDraft(sid)?.objectiveMeasures;
   const saved = save(sid);
   if (!saved) return;
+  if (measures) saved.objectiveMeasures = measures;
   clearSessionId();
   clearPersistedDraft();
   document.body.classList.remove("onboarding");

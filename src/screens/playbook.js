@@ -22,7 +22,7 @@ import { parseHashParams } from "../url-state.js?v=35";
 import { escapeHtml as esc } from "../utils.js?v=45";
 import { renderTopbar } from "../components/topbar.js?v=510";
 import { getContextById, getContexts, updateContext, deleteContext } from "../contexts-store.js?v=97";
-import { mount, snapshotEditable } from "../playbook-view.js?v=121";
+import { mount, snapshotEditable } from "../playbook-view.js?v=122";
 import { open as openRenameModal } from "../components/rename-modal.js?v=16";
 import { open as openConfirmModal } from "../components/confirm-modal.js?v=36";
 import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles-modal.js?v=72";
@@ -121,6 +121,9 @@ export function renderPlaybook(params, target) {
       onToggleDefault: isFlagOn("playbookDefault") ? toggleDefault : undefined,
       onAnalyzeVoice,
       onFooter,
+      // ?objective=<label> deep link (Insights' parked rows) — opens that
+      // objective's editor on mount. The label is the objective's identity.
+      openObjective: parseHashParams().get("objective") || null,
     };
   }
   function remount() {

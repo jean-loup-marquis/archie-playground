@@ -4,7 +4,7 @@ import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
 import { TIER_LABELS } from "../../objective-scoring.js?v=25";
 import { formatGroupedNumber } from "../../report-widgets/number-formatting.js?v=25";
-import { periodLabel, isAtCap } from "./insights-model.js?v=3";
+import { periodLabel, isAtCap } from "./insights-model.js?v=4";
 
 // The pieces both master-detail tabs draw, in one place so Performance and Usage
 // cannot drift into two versions of the same rail.
@@ -189,7 +189,12 @@ export function renderGoals(objectives) {
     .map(
       (o) => `
       <div class="insights-goal">
-        <span class="insights-goal__name">${escapeText(o.objective)}</span>
+        <span class="insights-goal__name">${escapeText(o.objective)}${
+          // The measure catalogue parks this intent — the number on this row is
+          // its avowed social proxy, and the row says so rather than letting
+          // "CTA clicks" pass as the real on-site measure.
+          o.viaProxy ? `<span class="insights-goal__proxy">via proxy · ${escapeText(o.metric)}</span>` : ""
+        }</span>
         <span class="insights-goal__track">
           <span
             class="insights-goal__fill insights-goal__fill--${escapeAttr(o.tier)}"
@@ -203,6 +208,29 @@ export function renderGoals(objectives) {
     .join("");
 
   return `<div class="insights-panel__goals">${rows}</div>`;
+}
+
+// The Playbook's parked objectives — intents the catalogue can't measure
+// natively yet. They used to be silently filtered out of this panel; an
+// objective the reader declared deserves a row saying WHY it has no number,
+// not an absence. No bar, no tier, no trend: nothing here is on pace or off
+// it. The name deep-links into the objective's editor on the Playbook.
+export function renderParkedGoals(parked, playbookId) {
+  if (!parked?.length) return "";
+  const rows = parked
+    .map(
+      (p) => `
+      <div class="insights-goal insights-goal--parked">
+        <a class="insights-goal__name insights-goal__name--link"
+           href="#/playbook/${escapeAttr(playbookId)}?section=objectives&objective=${encodeURIComponent(p.label)}">
+          ${escapeText(p.label)}
+        </a>
+        <span class="ap-badge blue">Coming soon</span>
+        <span class="insights-goal__soon">${escapeText(p.soon)} Meanwhile: ${escapeText(p.proxy.metricLabel)}.</span>
+      </div>`,
+    )
+    .join("");
+  return `<div class="insights-panel__goals insights-panel__goals--parked">${rows}</div>`;
 }
 
 // ── "What worked here" ──────────────────────────────────────────────────────

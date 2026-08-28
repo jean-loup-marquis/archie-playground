@@ -606,6 +606,46 @@
   white-space: nowrap;
 }
 
+/* A goal measured through its avowed proxy says so under its name. */
+.insights-goal__proxy {
+  display: block;
+  font-size: var(--ref-font-size-xs);
+  font-weight: var(--ref-font-weight-regular);
+  color: var(--ref-color-grey-60);
+}
+
+/* Parked objectives — declared intents the catalogue can't measure natively
+   yet. No bar, no figure, no trend: name + Coming soon + the one line saying
+   what unlocks the real measure. */
+.insights-panel__goals--parked {
+  border-top: none;
+  padding-top: 0;
+  margin-top: var(--ref-spacing-xs);
+}
+
+.insights-goal--parked {
+  grid-template-columns: 150px auto 1fr;
+}
+
+.insights-goal__name--link {
+  text-decoration: none;
+}
+
+.insights-goal__name--link:hover {
+  text-decoration: underline;
+  color: var(--ref-color-electric-blue-100);
+}
+
+.insights-goal__soon {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-60);
+}
+
+.insights-goals__adjust {
+  margin-top: var(--ref-spacing-xs);
+  width: fit-content;
+}
+
 /* ── Muted objectives ─────────────────────────────────────────────────────── */
 .insights-muted {
   display: flex;

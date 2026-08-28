@@ -8,6 +8,7 @@ import {
   wordsDrafted,
 } from "../../mocks.js?v=116";
 import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER } from "../../objective-scoring.js?v=25";
+import { resolveObjectives } from "../../objective-measures.js?v=2";
 
 // Insights' derivation layer — everything the three tabs read, computed once here.
 //
@@ -70,13 +71,31 @@ export function performanceRows() {
   return getContexts()
     .map((context) => {
       const objectives = objectiveCardsFor(context);
-      const { score, tier } = playbookScore(objectives);
+      // The measure catalogue's read on the same labels, layered over the
+      // measured cards (mocks stays the source of the NUMBERS):
+      //  · a card whose label the catalogue PARKS is measured via its avowed
+      //    proxy (Lead generation → CTA clicks) — mark it so the panel says so;
+      //  · a parked label with no card at all used to be silently dropped by
+      //    objectiveCardsFor's filter (ctx-agorapulse's "Product adoption") —
+      //    it now rides along in parkedObjectives, VISIBLE, coming soon.
+      // parkedObjectives stays a separate field: a parked objective has no
+      // progress/variation, and objectiveTier(undefined) reads "at-risk" while
+      // effectiveScore(undefined) is NaN — pushing one into `objectives` would
+      // poison the Playbook's ring.
+      const resolved = resolveObjectives(context.objective, context.id, context.objectiveMeasures);
+      const byLabel = new Map(resolved.map((r) => [r.label, r]));
+      const measured = objectives.map((o) => ({ ...o, viaProxy: byLabel.get(o.objective)?.status === "parked" }));
+      const parkedObjectives = resolved.filter(
+        (r) => r.status === "parked" && !objectives.some((o) => o.objective === r.label),
+      );
+      const { score, tier } = playbookScore(measured);
       const panel = insightsPanelFor(context);
       return {
         id: context.id,
         context,
         name: context.name,
-        objectives,
+        objectives: measured,
+        parkedObjectives,
         score: Math.round(score),
         tier,
         verdict: TIER_LABELS[tier],
@@ -150,6 +169,10 @@ export function performanceStrip(period = DEFAULT_PERIOD) {
     engagementRate: authored.engagementRate,
     onPace: tiers.filter((t) => t !== "at-risk").length,
     objectives: tiers.length,
+    // Parked objectives stay out of the pace fraction — they have no target to
+    // be on pace against — but the strip owes their count: "9 / 13" with one
+    // objective invisible was the silent filter's footprint.
+    comingSoon: rows.reduce((sum, r) => sum + r.parkedObjectives.length, 0),
     note: authored.note,
   };
 }

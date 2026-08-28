@@ -1,5 +1,5 @@
 import { navigate, route, setAfterRender, start } from "./router.js?v=54";
-import { renderInsights } from "./screens/insights/shell.js?v=23";
+import { renderInsights } from "./screens/insights/shell.js?v=24";
 import { isFlagOn } from "./feature-flags.js?v=44";
 import { initArchieLoader } from "./archie-loader.js?v=16";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=510";
@@ -47,8 +47,8 @@ import { renderResearchTrending } from "./screens/research-trending.js?v=251";
 import { renderWelcomeAlt } from "./screens/welcome-alt.js?v=18";
 // Settings route removed — the prototype Admin controls moved to the sidebar
 // cog popover (see admin-menu.js + sidebar.js); Social accounts page dropped.
-import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=469";
-import { renderPlaybook } from "./screens/playbook.js?v=483";
+import { renderWelcomeAltRecap } from "./screens/welcome-alt-recap.js?v=470";
+import { renderPlaybook } from "./screens/playbook.js?v=484";
 import * as __capAddSource from "./components/add-source-modal.js?v=122";
 import * as __capBug from "./components/bug-report-modal.js?v=38";
 import * as __capFeedback from "./components/feedback-modal.js?v=40";

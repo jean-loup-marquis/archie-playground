@@ -2,18 +2,20 @@
 // not measurable by itself; what is measurable is the MEASURE it carries: a
 // metric from the native catalogue plus a baseline (default: trailing 30-day
 // average; growth metrics: delta vs the previous period). Everything here is
-// DERIVED at render time, never stored: ctx.objective stays a string[] and the
-// objective's identity is its label, exactly like objective-alerts-store.
+// DERIVED at render time: ctx.objective stays a string[] and the objective's
+// identity is its label, exactly like objective-alerts-store. The one stored
+// thing is the user's CORRECTIONS — `data.objectiveMeasures[label]` holds only
+// the deviation ({ metricIds } for a measured objective, { proxyId } for a
+// parked one); an absent key means the derived defaults below.
 //
 // The generator contract (PP "Objectives in Archie"): an intent that binds to a
 // catalogue metric is measurable; a real intent that binds to nothing is PARKED
 // — shown "coming soon" with an avowed social proxy — never dropped.
 //
-// NOTE (slice 2): OBJECTIVE_METRICS in mocks.js measures "Lead generation" and
-// "Sales" through their PROXY (CTA clicks / attributed revenue) on the Insights
-// side, while this catalogue parks them. Narratively consistent — Insights reads
-// the avowed proxy — but the Insights card doesn't SAY "proxy" yet. That
-// reconciliation is the next slice; this module is the recap's truth.
+// NOTE (reconciled in Insights): OBJECTIVE_METRICS in mocks.js measures "Lead
+// generation" and "Sales" through their PROXY (CTA clicks / attributed revenue)
+// on the Insights side, while this catalogue parks them. Insights marks those
+// cards "via proxy" by resolving the label here — one story, two surfaces.
 
 // The slice of the native catalogue (~25 metrics) these couplings use. The
 // catalogue names the concept, not a per-network field.
@@ -33,6 +35,18 @@ const METRICS = {
   clicks: { label: "Link clicks" },
   paidReach: { label: "Paid reach" },
 };
+
+// The 7 catalogue families, for the measure picker — every metric above appears
+// in exactly one family.
+export const FAMILIES = [
+  { id: "awareness", label: "Awareness", metricIds: ["reach", "impressions", "mentions"] },
+  { id: "growth", label: "Audience growth", metricIds: ["followersNet"] },
+  { id: "engagement", label: "Engagement", metricIds: ["engagementRate", "comments", "savesShares"] },
+  { id: "video", label: "Video", metricIds: ["videoViews", "videoCompletion"] },
+  { id: "care", label: "Reputation & care", metricIds: ["sentiment", "responseTime", "reviews"] },
+  { id: "traffic", label: "Traffic", metricIds: ["clicks"] },
+  { id: "paid", label: "Paid", metricIds: ["paidReach"] },
+];
 
 // Pre-formatted baselines — a prototype shows, it never computes. Figures rhyme
 // with the measured cards in mocks.js (OBJECTIVE_METRICS / PLAYBOOK_REPORT)
@@ -64,6 +78,43 @@ const BASELINES_BY_CONTEXT = {
   "ctx-dwelling": { reach: "17,600 / 30-day avg" },
 };
 
+// A concept metric split by network — plain values (the concept line above them
+// carries the window), keyed by the platform slugs social-profiles.js uses so
+// the views can map straight to NETWORK_ICON_BY_PLATFORM / NETWORK_LABEL. Two
+// networks rarely compute one concept the same way (Instagram reach and
+// LinkedIn reach are not the same arithmetic), so the split is shown rather
+// than pretending the sum is one clean number. Rows sum to the concept
+// baseline where summing makes sense; rates and scores deliberately don't.
+const NETWORK_BASELINES = {
+  reach: { linkedin: "9,400", instagram: "6,200", x: "2,800" },
+  impressions: { linkedin: "41,300", instagram: "28,600", x: "14,300" },
+  mentions: { x: "21", instagram: "15", linkedin: "12" },
+  followersNet: { instagram: "+640", linkedin: "+430", x: "+170" },
+  engagementRate: { instagram: "5.2%", linkedin: "3.4%", x: "2.1%" },
+  comments: { instagram: "168", linkedin: "96", x: "48" },
+  savesShares: { instagram: "124", linkedin: "66" },
+  videoViews: { instagram: "3,400", youtube: "1,700", x: "500" },
+  videoCompletion: { youtube: "41%", instagram: "35%" },
+  sentiment: { linkedin: "80", instagram: "79", x: "71" },
+  responseTime: { instagram: "1h 18m", x: "2h 05m" },
+  reviews: { facebook: "17", instagram: "6" },
+  clicks: { linkedin: "64", instagram: "38", x: "24" },
+  paidReach: { instagram: "5,600", facebook: "4,200" },
+};
+
+// Per-Playbook splits, consistent with INSIGHTS_USAGE's network shares (Acme
+// publishes LinkedIn 71 / X 21 / Instagram 8) and with BASELINES_BY_CONTEXT
+// (the Acme rows sum to its sliding 14,800 reach).
+const NETWORK_BASELINES_BY_CONTEXT = {
+  "ctx-acme": { reach: { linkedin: "10,500", x: "3,100", instagram: "1,200" } },
+  "ctx-founder-voice": { reach: { linkedin: "9,900", x: "2,900" } },
+  "ctx-customer": {
+    reach: { linkedin: "6,000", instagram: "3,000", x: "1,400" },
+    clicks: { linkedin: "55", instagram: "32", x: "20" },
+  },
+  "ctx-dwelling": { reach: { instagram: "10,900", facebook: "4,200", x: "2,500" } },
+};
+
 // Measurable couplings — category → metric(s), from "Metrics & couplings".
 // Keys are the canonical labels the crawl and the seeds emit.
 const COUPLINGS = {
@@ -75,6 +126,7 @@ const COUPLINGS = {
   "Editorial resonance": ["savesShares"],
   "Video performance": ["videoViews", "videoCompletion"],
   Reputation: ["sentiment"],
+  "Brand reputation": ["sentiment"],
   "Customer care": ["responseTime", "reviews"],
   "Customer retention": ["responseTime", "sentiment"],
   Traffic: ["clicks"],
@@ -101,17 +153,24 @@ const PARKED = {
     soon: "Store analytics are not connected yet.",
     proxy: "clicks",
   },
+  "Net Promoter Score": {
+    soon: "NPS needs a survey connection.",
+    proxy: "sentiment",
+  },
 };
 
 // A custom label typed in edit mode resolves by: exact COUPLINGS → exact PARKED
 // (both case-insensitive) → first alias match → generic parked. An unknown
 // intent is a real intent: it is kept, coming soon, with Engagement rate as
-// the proxy.
+// the proxy. `\breach\b` keeps "Community Reached" out of Brand awareness
+// ("Reached" fails the word boundary) so it falls through to Community
+// building; "Grow reach" still matches.
 const ALIASES = [
-  [/awareness|reach|impression|visib|notorie/i, "Brand awareness"],
+  [/awareness|\breach\b|impression|visib|notorie/i, "Brand awareness"],
   [/personal brand|thought leader|authority|follower/i, "Build personal brand"],
   [/communit|engag/i, "Community building"],
   [/video|watch|youtube|reel|tiktok/i, "Video performance"],
+  [/net promoter|\bnps\b/i, "Net Promoter Score"],
   [/reputation|sentiment|brand health/i, "Reputation"],
   [/\bcare\b|support|response time|retention/i, "Customer care"],
   [/traffic|click|visit/i, "Traffic"],
@@ -132,40 +191,64 @@ function findKeyInsensitive(map, label) {
   return Object.keys(map).find((k) => k.toLowerCase() === needle);
 }
 
-function measureFor(metricId, contextId) {
+export function metricLabel(metricId) {
+  return METRICS[metricId]?.label || metricId;
+}
+
+export function baselineFor(metricId, contextId) {
   const perContext = BASELINES_BY_CONTEXT[contextId] || {};
+  return perContext[metricId] || DEFAULT_BASELINES[metricId];
+}
+
+function networksFor(metricId, contextId) {
+  const perContext = (NETWORK_BASELINES_BY_CONTEXT[contextId] || {})[metricId];
+  const split = perContext || NETWORK_BASELINES[metricId] || {};
+  return Object.entries(split).map(([platform, baseline]) => ({ platform, baseline }));
+}
+
+function measureFor(metricId, contextId) {
   return {
-    metricLabel: METRICS[metricId].label,
-    baseline: perContext[metricId] || DEFAULT_BASELINES[metricId],
+    metricId,
+    metricLabel: metricLabel(metricId),
+    baseline: baselineFor(metricId, contextId),
+    networks: networksFor(metricId, contextId),
   };
 }
 
-function resolveOne(label, contextId) {
+function resolveOne(label, contextId, override) {
   const canonical =
     findKeyInsensitive(COUPLINGS, label) ||
     findKeyInsensitive(PARKED, label) ||
     (ALIASES.find(([re]) => re.test(label)) || [])[1];
   if (canonical && COUPLINGS[canonical]) {
+    // A user-chosen measure set replaces the coupling's defaults; unknown ids
+    // (a rename moved the override across categories) are dropped silently.
+    const chosen = (override?.metricIds || []).filter((id) => METRICS[id]);
+    const ids = chosen.length ? chosen : COUPLINGS[canonical];
     return {
       label,
       status: "measured",
-      measures: COUPLINGS[canonical].map((id) => measureFor(id, contextId)),
+      measures: ids.map((id) => measureFor(id, contextId)),
     };
   }
   const parked = (canonical && PARKED[canonical]) || GENERIC_PARKED;
+  const proxyId = override?.proxyId && METRICS[override.proxyId] ? override.proxyId : parked.proxy;
   return {
     label,
     status: "parked",
     soon: parked.soon,
-    proxy: measureFor(parked.proxy, contextId),
+    proxy: measureFor(proxyId, contextId),
   };
 }
 
-/** The recap's one entry point: each objective label, resolved to a coupled
- *  object — measured (metric + baseline per measure) or parked (coming soon +
- *  avowed proxy). `contextId` may be undefined (onboarding draft): the account's
- *  social profiles already exist, so the default baselines stand in. */
-export function resolveObjectives(labels, contextId) {
+/** The one entry point: each objective label, resolved to a coupled object —
+ *  measured (metric + baseline per measure, each with its per-network split)
+ *  or parked (coming soon + avowed proxy). `contextId` may be undefined
+ *  (onboarding draft): the account's social profiles already exist, so the
+ *  default baselines stand in. `overrides` is the user's corrections map
+ *  (`data.objectiveMeasures`), keyed by label. */
+export function resolveObjectives(labels, contextId, overrides = {}) {
   const list = Array.isArray(labels) ? labels.filter(Boolean) : [];
-  return list.map((label) => resolveOne(label, contextId));
+  const map = overrides && typeof overrides === "object" ? overrides : {};
+  return list.map((label) => resolveOne(label, contextId, map[label]));
 }

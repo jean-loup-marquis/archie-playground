@@ -13,13 +13,14 @@ import {
   periodLabel,
   isAtCap,
   scaleVolume,
-} from "./insights-model.js?v=3";
+} from "./insights-model.js?v=4";
 import {
   renderRail,
   renderPortfolio,
   renderPortfolioTiles,
   renderRing,
   renderGoals,
+  renderParkedGoals,
   renderWhatWorked,
   renderBridge,
   renderCapNote,
@@ -27,7 +28,7 @@ import {
   renderFirstRun,
   verdictWord,
   figure,
-} from "./parts.js?v=12";
+} from "./parts.js?v=13";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
@@ -87,7 +88,13 @@ function renderPortfolioFor(period, playbooks) {
   const window = periodLabel(period);
   return renderPortfolio({
     label: `All ${playbooks} ${playbooks === 1 ? "Playbook" : "Playbooks"} · ${window}`,
-    note: strip.note,
+    // Parked objectives stay out of the pace fraction (no target to be on pace
+    // against), and tiles strip narratives by design — so the strip's mention
+    // of them lives here, in the prose that owns the row's caveats.
+    note:
+      strip.comingSoon > 0
+        ? `${strip.note} · ${strip.comingSoon} objective${strip.comingSoon > 1 ? "s" : ""} coming soon`
+        : strip.note,
     tiles: [
       {
         title: "Reach",
@@ -191,6 +198,16 @@ function renderPanel(row, period) {
       ${copy ? `<p class="insights-panel__body">${escapeText(copy.body)}</p>` : ""}
       ${copy ? `<p class="insights-panel__meta">${escapeText(copy.meta)} · ${escapeText(periodLabel(period))}</p>` : ""}
       ${renderGoals(objectives)}
+      ${renderParkedGoals(row.parkedObjectives, row.id)}
+      ${
+        // Straight to the objectives section of the Playbook — an anchor like
+        // "Open the Playbook" above (NOT data-insights-bridge, which toasts).
+        objectives.length || row.parkedObjectives.length
+          ? `<a class="ap-link standalone small insights-goals__adjust" href="#/playbook/${escapeAttr(
+              row.id,
+            )}?section=objectives">Adjust objectives<i class="ap-icon-arrow-right" aria-hidden="true"></i></a>`
+          : ""
+      }
       ${renderAlerts(row, objectives)}
       ${renderPanelWidgets(row.context, period)}
       ${renderCapNote(period, { startedOn: "Apr 25" })}

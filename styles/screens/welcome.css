@@ -584,27 +584,66 @@
   gap: var(--ref-spacing-xxs);
 }
 
-/* ── Objectives, coupled to measures (Audience & goals) ─────────────────
-   One block per objective: the chip stays its identity, the proposed
-   measures (metric + baseline) or the parked state read underneath. */
-.recap__objectives {
-  display: flex;
-  flex-direction: column;
+/* ── Objectives (dedicated section) ─────────────────────────────────────
+   One card per objective, on the Competitors card skeleton: the whole card
+   opens the per-objective editor; the measures (metric + baseline) or the
+   parked state read underneath the name. */
+.recap__objgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--ref-spacing-sm);
 }
 
-.recap__objective {
+.recap__objcard {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  min-width: 0;
 }
 
-.recap__objective-head {
+.recap__objcard-open {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
+  flex: 1;
+  padding: var(--ref-spacing-sm);
+  text-align: left;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface);
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) var(--app-ease-out);
+}
+
+.recap__objcard-open:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.recap__objcard-head {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
+  min-width: 0;
 }
 
+.recap__objcard-name {
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The adder (section edit mode) reuses the generic chip-add field. */
+.recap__objadd {
+  margin-top: var(--ref-spacing-sm);
+}
+
+/* Measure lines — shared by the cards and the editor modal. Span-based:
+   inside a card they live in a <button>, which allows phrasing content only. */
 .recap__measures {
   list-style: none;
   margin: 0;
@@ -629,6 +668,7 @@
 }
 
 .recap__objective-proxy {
+  display: block;
   margin: 0;
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -638,6 +678,109 @@
 .recap__objective-proxy strong {
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
+}
+
+/* ── The per-objective editor modal ─────────────────────────────────────── */
+/* Same DS .ap-dialog chrome as the competitor modal, narrower: name + measures. */
+.recap__objmodal-backdrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ref-spacing-lg);
+}
+
+.recap__objmodal.ap-dialog {
+  width: min(520px, 100%);
+  max-height: 88vh;
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.recap__objmodal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+}
+
+.recap__objmodal-content > .ap-badge {
+  align-self: flex-start;
+}
+
+.recap__objmodal-sec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.recap__objmeasure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-micro);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface-subtle);
+}
+
+.recap__objmeasure-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.recap__objmeasure-name {
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.recap__objmeasure-baseline {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+  margin-right: auto;
+}
+
+/* Per-network split — a native <details>, closed by default: reading stays at
+   concept level, the reconciliation is one click deep. */
+.recap__objnet summary {
+  cursor: pointer;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+  width: fit-content;
+}
+
+.recap__objnet[open] summary {
+  margin-bottom: var(--app-spacing-micro);
+}
+
+.recap__objnet-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-micro);
+}
+
+.recap__objnet-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.recap__objnet-row i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-60);
+}
+
+.recap__objnet-name {
+  min-width: 72px;
+}
+
+.recap__objnet-baseline {
+  color: var(--ref-color-grey-60);
+}
+
+.recap__objpicker {
+  width: 100%;
 }
 
 /* ── Voice & style — quoted snippet lines ─────────────────────────────── */
