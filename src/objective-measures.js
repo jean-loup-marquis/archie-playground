@@ -19,11 +19,12 @@
 //
 // Alignment note (platform prototype/sc-203354-report-studio-objective-widget):
 // target + targetProposed and the "Suggested target" copy come from that
-// prototype (proposeTarget = baseline × 1.15); its window model is
-// ROLLING | FIXED — Archie adds the RECURRING cadences (weekly/monthly/
-// quarterly) it lacks, and keeps 'deadline' as platform's FIXED. Identity
-// diverges on purpose for now: platform keys objectives by id, Archie by
-// label — flagged in the PP handoff, not resolved here.
+// prototype (proposeTarget = baseline × 1.15), and the window model IS
+// platform's — ROLLING | FIXED, nothing else. A recurring cadence
+// (weekly/monthly/quarterly) was tried and dropped: rolling already reads on
+// the trailing window, and a second periodicity dimension bought density, not
+// meaning. Identity still diverges on purpose: platform keys objectives by
+// id, Archie by label — flagged in the PP handoff, not resolved here.
 //
 // NOTE (reconciled in Insights): OBJECTIVE_METRICS in mocks.js measures "Lead
 // generation" and "Sales" through their PROXY (CTA clicks / attributed revenue)
@@ -62,23 +63,33 @@ export const FAMILIES = [
   { id: "paid", label: "Paid", metricIds: ["paidReach"] },
 ];
 
-// The objective's window — how the target is read. Default: monthly, the
-// 30-day-average world every baseline below is authored in. Defined on the
-// objective, inherited by its measures, deviable per measure (a deviation is
-// a deliberate act — the beginning of a split, per "split late").
+// The objective's window — platform's two kinds, exactly: ROLLING (reads on
+// the trailing 30 days, no end) or FIXED (ends on a date). Default: rolling —
+// the 30-day-average world every baseline below is authored in. Defined on
+// the objective, inherited by its measures, deviable per measure (a deviation
+// is a deliberate act — the beginning of a split, per "split late").
 export const WINDOWS = [
-  { id: "weekly", label: "Every week" },
-  { id: "monthly", label: "Every month" },
-  { id: "quarterly", label: "Every quarter" },
-  { id: "deadline", label: "Ends on a date" },
+  { id: "rolling", label: "Rolling 30-day window" },
+  { id: "fixed", label: "Ends on a date" },
 ];
 
-export const DEFAULT_WINDOW = { type: "monthly" };
+export const DEFAULT_WINDOW = { type: "rolling" };
 
+// Anything that isn't a dated FIXED window reads as rolling — including the
+// recurring cadences an earlier slice stored ('monthly' etc.), which collapse
+// to their rolling meaning rather than breaking.
+function normalizeWindow(window) {
+  if (!window) return { ...DEFAULT_WINDOW };
+  if (window.type === "fixed" || window.type === "deadline") return { type: "fixed", date: window.date };
+  return { type: "rolling" };
+}
+
+// Rolling is the default and reads as no caption — only a FIXED window earns
+// a line on the cards and the Insights headers.
 export function windowLabel(window) {
-  const w = window || DEFAULT_WINDOW;
-  if (w.type === "deadline") return w.date ? `Ends on ${formatDay(w.date)}` : "Ends on a date";
-  return WINDOWS.find((o) => o.id === w.type)?.label || "Every month";
+  const w = normalizeWindow(window);
+  if (w.type === "fixed") return w.date ? `Ends on ${formatDay(w.date)}` : "Ends on a date";
+  return "";
 }
 
 function formatDay(iso) {
@@ -87,14 +98,10 @@ function formatDay(iso) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-// What the baseline was read over, phrased for the measure's window.
-function baselineNoteFor(metricId, window) {
-  const growth = METRICS[metricId]?.growth;
-  const w = (window || DEFAULT_WINDOW).type;
-  if (w === "weekly") return growth ? "vs previous 7 days" : "/ 7-day avg";
-  if (w === "quarterly") return growth ? "vs previous quarter" : "/ 90-day avg";
-  if (w === "deadline") return growth ? "since the window opened" : "/ 30-day avg";
-  return growth ? "vs previous 30 days" : "/ 30-day avg";
+// What the baseline was read over. Both window kinds read the same trailing
+// 30 days — FIXED changes where the target ENDS, not what the baseline is.
+function baselineNoteFor(metricId) {
+  return METRICS[metricId]?.growth ? "vs previous 30 days" : "/ 30-day avg";
 }
 
 // Pre-formatted baseline VALUES — a prototype shows, it never measures. Figures
@@ -299,16 +306,16 @@ function measureFor(metricId, contextId, override, objectiveWindow) {
   const ov = override || {};
   const deviation = ov.measureWindows?.[metricId];
   const window = deviation
-    ? { ...deviation, inherited: false }
-    : { ...(objectiveWindow || DEFAULT_WINDOW), inherited: true };
+    ? { ...normalizeWindow(deviation), inherited: false }
+    : { ...normalizeWindow(objectiveWindow), inherited: true };
   const baselineValue = ov.baselines?.[metricId] ?? baselineFor(metricId, contextId);
   const target = ov.targets?.[metricId] ?? DEFAULT_TARGETS[metricId];
   return {
     metricId,
     metricLabel: metricLabel(metricId),
     baselineValue,
-    baselineNote: baselineNoteFor(metricId, window),
-    baseline: `${baselineValue} ${baselineNoteFor(metricId, window)}`,
+    baselineNote: baselineNoteFor(metricId),
+    baseline: `${baselineValue} ${baselineNoteFor(metricId)}`,
     target,
     targetProposed: ov.targets?.[metricId] == null,
     progressPct: progressPctFor(metricId, baselineValue, target),
@@ -322,7 +329,7 @@ function resolveOne(label, contextId, override) {
     findKeyInsensitive(COUPLINGS, label) ||
     findKeyInsensitive(PARKED, label) ||
     (ALIASES.find(([re]) => re.test(label)) || [])[1];
-  const window = override?.window ? { ...override.window } : { ...DEFAULT_WINDOW };
+  const window = normalizeWindow(override?.window);
   const base = { label, window, windowLabel: windowLabel(window) };
   if (canonical && COUPLINGS[canonical]) {
     // A user-chosen measure set replaces the coupling's defaults; unknown ids

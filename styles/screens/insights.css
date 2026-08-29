@@ -662,6 +662,11 @@
 .insights-goalgroup__window {
   font-size: var(--ref-font-size-xs);
   color: var(--ref-color-grey-60);
+}
+
+/* The trend anchors the right edge; the window caption (FIXED only) sits
+   beside it. Rolling is the default and shows no caption. */
+.insights-goalgroup__head .insights-trend {
   margin-left: auto;
 }
 

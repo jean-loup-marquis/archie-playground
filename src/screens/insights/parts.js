@@ -4,7 +4,7 @@ import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
 import { TIER_LABELS } from "../../objective-scoring.js?v=25";
 import { formatGroupedNumber } from "../../report-widgets/number-formatting.js?v=25";
-import { periodLabel, isAtCap } from "./insights-model.js?v=5";
+import { periodLabel, isAtCap } from "./insights-model.js?v=6";
 
 // The pieces both master-detail tabs draw, in one place so Performance and Usage
 // cannot drift into two versions of the same rail.
@@ -221,7 +221,7 @@ export function renderGoals(objectives, resolvedList = []) {
               // letting "CTA clicks" pass as the real on-site measure.
               o.viaProxy ? `<span class="insights-goal__proxy">via proxy · ${escapeText(o.metric)}</span>` : ""
             }
-            <span class="insights-goalgroup__window">${escapeText(resolved?.windowLabel || "")}</span>
+            ${resolved?.windowLabel ? `<span class="insights-goalgroup__window">${escapeText(resolved.windowLabel)}</span>` : ""}
             ${renderTrend(o.variationPercent, { suffix: " · 30d" })}
           </div>
           ${rows}

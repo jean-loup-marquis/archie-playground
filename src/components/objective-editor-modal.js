@@ -22,7 +22,7 @@
 import { escapeHtml as esc } from "../utils.js?v=45";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "../social-profiles.js?v=85";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=35";
-import { resolveObjectives, metricLabel, baselineFor, FAMILIES, WINDOWS } from "../objective-measures.js?v=3";
+import { resolveObjectives, metricLabel, baselineFor, FAMILIES, WINDOWS } from "../objective-measures.js?v=4";
 
 const MODAL_ID = "objectiveEditor";
 
@@ -178,7 +178,7 @@ function renderBody(o) {
         </select>
       </div>
       ${
-        o.window.type === "deadline"
+        o.window.type === "fixed"
           ? `<div class="objed__field">
                <span class="objed__flabel">Ends on</span>
                <div class="ap-input-group">
@@ -281,7 +281,7 @@ function renderMeasure(m, o, { removable = false, proxy = false } = {}) {
           ).join("")}
         </select>
         ${
-          !m.window.inherited && m.window.type === "deadline"
+          !m.window.inherited && m.window.type === "fixed"
             ? `<div class="ap-input-group objed__bound-input">
                  <input type="date" data-objed-measure-date="${m.metricId}" value="${esc(m.window.date || "")}" aria-label="Measure end date" />
                </div>`
@@ -394,7 +394,7 @@ function onInput(event) {
   }
   if (t.matches("[data-objed-date]")) {
     const ov = overrideFor();
-    ov.window = { type: "deadline", date: t.value };
+    ov.window = { type: "fixed", date: t.value };
     return;
   }
   const md = t.closest("[data-objed-measure-date]");
@@ -402,7 +402,7 @@ function onInput(event) {
     const id = md.dataset.objedMeasureDate;
     const ov = overrideFor();
     ov.measureWindows = ov.measureWindows || {};
-    ov.measureWindows[id] = { type: "deadline", date: t.value };
+    ov.measureWindows[id] = { type: "fixed", date: t.value };
   }
 }
 
@@ -412,7 +412,7 @@ function onChange(event) {
   if (t.matches("[data-objed-window]")) {
     const ov = overrideFor();
     const prevDate = ov.window?.date;
-    ov.window = t.value === "deadline" ? { type: "deadline", date: prevDate } : { type: t.value };
+    ov.window = t.value === "fixed" ? { type: "fixed", date: prevDate } : { type: t.value };
     notify();
     render();
     return;
@@ -425,7 +425,7 @@ function onChange(event) {
     if (t.value === "inherit") delete ov.measureWindows[id];
     else {
       const prev = ov.measureWindows[id];
-      ov.measureWindows[id] = t.value === "deadline" ? { type: "deadline", date: prev?.date } : { type: t.value };
+      ov.measureWindows[id] = t.value === "fixed" ? { type: "fixed", date: prev?.date } : { type: t.value };
     }
     notify();
     render();

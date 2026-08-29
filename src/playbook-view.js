@@ -22,8 +22,8 @@ import { isFlagOn } from "./feature-flags.js?v=44";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=85";
 import { open as openConfirmModal } from "./components/confirm-modal.js?v=36";
 import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=15";
-import { resolveObjectives } from "./objective-measures.js?v=3";
-import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=1";
+import { resolveObjectives } from "./objective-measures.js?v=4";
+import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=2";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -594,7 +594,7 @@ function renderObjectiveCard(o, i, edit) {
           <span class="recap__objcard-name">${name}</span>
           ${parked ? `<span class="ap-badge blue recap__objective-soon">Coming soon</span>` : ""}
         </span>
-        <span class="recap__objcard-window">${esc(o.windowLabel)}</span>
+        ${o.windowLabel ? `<span class="recap__objcard-window">${esc(o.windowLabel)}</span>` : ""}
         ${renderObjectiveBody(o)}
       </button>
       ${

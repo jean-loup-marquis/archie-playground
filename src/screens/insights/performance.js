@@ -1,6 +1,6 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { getContexts, getContextById, updateContext } from "../../contexts-store.js?v=97";
-import { open as openObjectiveEditor } from "../../components/objective-editor-modal.js?v=1";
+import { open as openObjectiveEditor } from "../../components/objective-editor-modal.js?v=2";
 import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=116";
 import { navigate } from "../../router.js?v=54";
 import { showToast } from "../../components/toast.js?v=44";
@@ -14,7 +14,7 @@ import {
   periodLabel,
   isAtCap,
   scaleVolume,
-} from "./insights-model.js?v=5";
+} from "./insights-model.js?v=6";
 import {
   renderRail,
   renderPortfolio,
@@ -29,7 +29,7 @@ import {
   renderFirstRun,
   verdictWord,
   figure,
-} from "./parts.js?v=14";
+} from "./parts.js?v=15";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
