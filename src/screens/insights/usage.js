@@ -15,7 +15,7 @@ import {
   renderBridge,
   renderFirstRun,
   figure,
-} from "./parts.js?v=16";
+} from "./parts.js?v=17";
 
 // Insights › Usage — the doc's screen 5a.
 //

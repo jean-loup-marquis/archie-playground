@@ -4,7 +4,6 @@ import { open as openObjectiveEditor } from "../../components/objective-editor-m
 import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=116";
 import { navigate } from "../../router.js?v=54";
 import { showToast } from "../../components/toast.js?v=44";
-import { objectiveTier } from "../../objective-scoring.js?v=25";
 import { alertState, mutedUntilLabel, reopen, subscribe as subscribeAlerts } from "../../objective-alerts-store.js?v=6";
 import {
   performanceRows,
@@ -19,7 +18,6 @@ import {
   renderRail,
   renderPortfolio,
   renderPortfolioTiles,
-  renderRing,
   renderGoals,
   renderParkedGoals,
   renderWhatWorked,
@@ -27,9 +25,8 @@ import {
   renderCapNote,
   renderTrend,
   renderFirstRun,
-  verdictWord,
   figure,
-} from "./parts.js?v=16";
+} from "./parts.js?v=17";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
@@ -119,24 +116,30 @@ function renderPortfolioFor(period, playbooks) {
   });
 }
 
-// E4 — with one Playbook there is no "where to look first", so the rail does not
-// render a list of one. It comes back on its own at the second Playbook.
+// E4 — with one Playbook there is no rail, so it does not render a list of one.
+// It comes back on its own at the second Playbook.
+//
+// ── The verdict, the score and the reason left this rail, 2026-08-29 ────────
+// A grade on the Playbook itself ("At risk · 47/100 · reach −9%") read as an
+// alarm on the brand — anxiogenic, and aimed at the wrong object: what has a
+// target is an OBJECTIVE, and the objectives carry their own verdicts on the
+// cards in the panel. The rail's one job now is navigation between Playbooks;
+// its meta says how many objectives each carries, which is inventory, not
+// judgment. (The worst-first ordering and default selection still come from
+// the derived tiers — the page still opens where attention is owed, it just
+// doesn't grade anyone for it.)
 function renderRailFor(rows, activeId) {
   return renderRail({
-    header: `${rows.length} Playbooks · where to look first`,
+    header: `${rows.length} Playbooks`,
     selected: activeId,
-    // Verdict on the meta line, the Playbook as the headline, the reason as the
-    // body — the Topic Feed card's own three-part read. The verdict was buried in
-    // a subtitle before, which put the one word the rail exists to convey below
-    // the one thing the reader already knows they are looking at.
-    rows: rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      figure: r.score,
-      figureLabel: "/100",
-      meta: verdictWord(r.tier),
-      note: escapeText(r.reason),
-    })),
+    rows: rows.map((r) => {
+      const count = r.objectives.length + r.parkedObjectives.length;
+      return {
+        id: r.id,
+        name: r.name,
+        meta: `${count} objective${count === 1 ? "" : "s"}`,
+      };
+    }),
   });
 }
 
@@ -161,36 +164,24 @@ function renderAllClear(rows, active) {
     <div class="insights-allclear">
       <p class="insights-allclear__title">Nothing needs your hand this week.</p>
       <p class="insights-allclear__body">
-        All ${rows.length} Playbooks are ${verdictWord("strong")}. The panel opens on your best trend —
-        ${escapeText(active?.name || "")} — in proof mode.
+        Every objective across your ${rows.length} Playbooks is on track. The panel opens on your best
+        trend — ${escapeText(active?.name || "")} — in proof mode.
       </p>
     </div>`;
 }
 
 function renderPanel(row, period) {
   const copy = insightsPanelFor(row.context);
-  const objectives = row.objectives.map((o) => ({
-    ...o,
-    tier: objectiveTier(o.progress, o.variationPercent),
-  }));
-  const firstObjectiveLabel = objectives[0]?.objective || row.parkedObjectives[0]?.label || "";
+  const objectives = row.objectives;
 
+  // No ring, no score, no Playbook-level verdict in this head — a grade on the
+  // brand itself read as an alarm. The panel's subject is the OBJECTIVES: the
+  // Playbook is just where they live, so its head is a name and the way out.
   return `
     <article class="ap-card insights-panel" data-insights-panel="${escapeAttr(row.id)}">
       <header class="insights-panel__head">
-        ${renderRing(row.score, row.tier)}
         <div class="insights-panel__id">
           <h2 class="insights-panel__name">${escapeText(row.name)}</h2>
-          <!-- The verdict says 30 days and NOT the selected window, on purpose. A
-               verdict is a goal's progress against a monthly target, so it does not
-               move when the reader asks for a week or two months — and printing
-               "score 88 / 100 · last 60 days" beside a figure that did not change
-               is exactly the kind of number this page is written not to print. The
-               volume figures below carry the selected window instead. -->
-          <p class="insights-panel__verdict">
-            ${verdictWord(row.tier)}
-            <span class="insights-panel__score"> · score ${row.score} / 100 · goals measured on 30 days</span>
-          </p>
         </div>
         <a class="ap-link standalone small insights-panel__open" href="#/playbook/${escapeAttr(row.id)}">
           Open the Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i>
@@ -202,17 +193,12 @@ function renderPanel(row, period) {
       ${renderGoals(objectives, row.resolved)}
       ${renderParkedGoals(row.parkedObjectives)}
       ${
-        // Opens the first objective's editor IN PLACE — adjusting an objective
-        // must not require a trip to the Playbook (each group's name opens its
-        // own). NOT data-insights-bridge, which toasts.
-        // A button, not .ap-link-on-a-button: the DS splits navigation (link —
-        // "Open the Playbook" above) from actions (button — this opens the
-        // editor in place). Ghost grey, the panel's own action treatment.
-        firstObjectiveLabel
-          ? `<button type="button" class="ap-button ghost grey insights-goals__adjust" data-insights-objective="${escapeAttr(
-              firstObjectiveLabel,
-            )}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust objectives</span></button>`
-          : ""
+        // Creates a fresh objective and opens its editor IN PLACE — a card
+        // edits by clicking the card itself, so the footer action only ADDS.
+        // Discreet on purpose: ghost grey, the panel's own action treatment.
+        `<button type="button" class="ap-button ghost grey insights-goals__adjust" data-insights-add-objective>
+           <i class="ap-icon-plus" aria-hidden="true"></i><span>Add objective</span>
+         </button>`
       }
       ${renderAlerts(row, objectives)}
       ${renderPanelWidgets(row.context, period)}
@@ -369,6 +355,24 @@ export function bindPerformanceTab(root, period) {
     // (see objective-editor-modal); updateContext only notifies, which repaints
     // this tab through the shell's contexts subscription. The body-level modal
     // survives that repaint — it lives outside the tab's root.
+    // "Add objective" — creates a fresh objective on the read Playbook and
+    // opens its editor in place; naming it IS the first edit.
+    if (event.target.closest("[data-insights-add-objective]")) {
+      const ctx = getContextById(resolveSelection(performanceRows(), selected));
+      if (!ctx) return;
+      const labels = Array.isArray(ctx.objective) ? ctx.objective : (ctx.objective = []);
+      let name = "New objective";
+      let n = 2;
+      while (labels.some((l) => l.toLowerCase() === name.toLowerCase())) name = `New objective ${n++}`;
+      labels.push(name);
+      updateContext(ctx.id, { objective: labels.slice(), updatedAt: "just now" });
+      openObjectiveEditor({
+        data: ctx,
+        label: name,
+        onChange: () => updateContext(ctx.id, { updatedAt: "just now" }),
+      });
+      return;
+    }
     const objectiveBtn = event.target.closest("[data-insights-objective]");
     if (objectiveBtn) {
       // Same resolution as the render: `selected` is null until a rail click.

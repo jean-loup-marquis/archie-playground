@@ -158,12 +158,16 @@ export function renderRail({ header, rows, selected, footer = "" }) {
       >
         <span class="insights-rail__meta">
           ${r.meta}
-          <span class="insights-rail__spacer"></span>
-          <span class="insights-rail__figure">
-            ${escapeText(String(r.figure))}${
-              r.figureLabel ? `<span class="insights-rail__figure-unit">${escapeText(r.figureLabel)}</span>` : ""
-            }
-          </span>
+          ${
+            r.figure != null
+              ? `<span class="insights-rail__spacer"></span>
+                 <span class="insights-rail__figure">
+                   ${escapeText(String(r.figure))}${
+                     r.figureLabel ? `<span class="insights-rail__figure-unit">${escapeText(r.figureLabel)}</span>` : ""
+                   }
+                 </span>`
+              : ""
+          }
         </span>
         <span class="insights-rail__name">${escapeText(r.name)}</span>
         ${r.note ? `<span class="insights-rail__note-line">${r.note}</span>` : ""}
@@ -181,14 +185,17 @@ export function renderRail({ header, rows, selected, footer = "" }) {
 }
 
 // ── The panel's objective cards ─────────────────────────────────────────────
-// One card per objective: a header (the objective — clicking it opens the
-// per-objective editor IN PLACE, no trip to the Playbook — its window when
-// fixed, and its VERDICT) over one row per MEASURE (bar toward target +
-// bounds). The verdict is a COUNT over the measures — the PP's own definition
-// ("2 of 3 measures on track"), computed on render, never stored. No variation
-// percent and no window mention on the verdict: the objective carries no score
-// of its own. The measure rows read from the same catalogue the editor writes,
-// so an edit here repaints here; each bar wears its own measure's tier.
+// One card per objective — the DS card, and the WHOLE card is the edit
+// affordance (it opens the per-objective editor in place, no trip to the
+// Playbook): a pen glued to the title read as "rename me", when the click
+// edits the objective. Head: the objective, its window when fixed, and its
+// VERDICT — a COUNT over the measures (the PP's own definition), computed on
+// render, never stored, shown as the word alone; the "2 of 3 measures on
+// track" arithmetic lives in a tooltip on the verdict. No variation percent
+// and no window mention: the objective carries no score of its own. One row
+// per MEASURE below (bar toward target + bounds), each bar wearing its own
+// measure's tier — the rows read from the same catalogue the editor writes,
+// so an edit here repaints here. Span-only children: the card is a <button>.
 export function renderGoals(objectives, resolvedList = []) {
   if (objectives.length === 0) return "";
   const byLabel = new Map(resolvedList.map((r) => [r.label, r]));
@@ -201,7 +208,7 @@ export function renderGoals(objectives, resolvedList = []) {
         .map((m) => {
           const tier = measureTier(m.progressPct);
           return `
-          <div class="insights-goal">
+          <span class="insights-goal">
             <span class="insights-goal__name insights-goal__name--measure">${escapeText(m.metricLabel)}${
               m.scopeLabel ? ` · ${escapeText(m.scopeLabel)}` : ""
             }</span>
@@ -211,33 +218,31 @@ export function renderGoals(objectives, resolvedList = []) {
                 : `<span class="insights-goal__fill insights-goal__fill--${escapeAttr(tier)}" style="width: ${m.progressPct}%"></span>`
             }</span>
             <span class="insights-figure insights-goal__value">${escapeText(m.baselineValue)} → ${escapeText(m.target || "—")}</span>
-          </div>`;
+          </span>`;
         })
         .join("");
       return `
-        <div class="insights-objcard">
-          <div class="insights-goalgroup__head">
-            <button type="button" class="insights-goalgroup__name" data-insights-objective="${escapeAttr(o.objective)}">
-              ${escapeText(o.objective)}<i class="ap-icon-pen" aria-hidden="true"></i>
-            </button>
+        <button type="button" class="ap-card insights-objcard" data-insights-objective="${escapeAttr(o.objective)}" aria-label="Edit ${escapeAttr(o.objective)}">
+          <span class="insights-objcard__head">
+            <span class="insights-objcard__name">${escapeText(o.objective)}</span>
             ${
               // The measure catalogue parks this intent — the numbers below are
               // its avowed social proxy, and the card says so rather than
               // letting "CTA clicks" pass as the real on-site measure.
               o.viaProxy ? `<span class="insights-goal__proxy">via proxy · ${escapeText(o.metric)}</span>` : ""
             }
-            ${resolved?.windowLabel ? `<span class="insights-goalgroup__window">${escapeText(resolved.windowLabel)}</span>` : ""}
+            ${resolved?.windowLabel ? `<span class="insights-objcard__window">${escapeText(resolved.windowLabel)}</span>` : ""}
             ${
               verdict?.tier
                 ? `<span class="insights-objcard__verdict">
                      <span class="insights-verdict insights-verdict--${escapeAttr(verdict.tier)}">${escapeText(verdict.label)}</span>
-                     <span class="insights-objcard__count">· ${verdict.onTrack} of ${verdict.total} measure${verdict.total > 1 ? "s" : ""} on track</span>
+                     <span class="ap-tooltip top-right insights-objcard__verdict-tip" aria-hidden="true">${verdict.onTrack} of ${verdict.total} measure${verdict.total > 1 ? "s" : ""} on track</span>
                    </span>`
                 : ""
             }
-          </div>
+          </span>
           ${rows}
-        </div>`;
+        </button>`;
     })
     .join("");
 
@@ -254,15 +259,15 @@ export function renderParkedGoals(parked) {
   const cards = parked
     .map(
       (p) => `
-      <div class="insights-objcard insights-objcard--parked">
-        <div class="insights-goalgroup__head">
-          <button type="button" class="insights-goalgroup__name" data-insights-objective="${escapeAttr(p.label)}">
-            ${escapeText(p.label)}<i class="ap-icon-pen" aria-hidden="true"></i>
-          </button>
+      <button type="button" class="ap-card insights-objcard insights-objcard--parked" data-insights-objective="${escapeAttr(
+        p.label,
+      )}" aria-label="Edit ${escapeAttr(p.label)}">
+        <span class="insights-objcard__head">
+          <span class="insights-objcard__name">${escapeText(p.label)}</span>
           <span class="ap-badge blue">Coming soon</span>
-        </div>
+        </span>
         <span class="insights-goal__soon">${escapeText(p.soon)} Meanwhile: ${escapeText(p.proxy.metricLabel)}.</span>
-      </div>`,
+      </button>`,
     )
     .join("");
   return `<div class="insights-panel__goals insights-panel__goals--parked">${cards}</div>`;

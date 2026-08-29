@@ -607,74 +607,60 @@
 }
 
 /* ── Objective cards — one per objective, one row per MEASURE ─────────────
-   The card head carries the objective-level truths (name → opens the editor
-   in place, via-proxy caption, window when fixed, and the COUNTED verdict —
-   no variation, no score); the rows below carry each measure's bar toward
-   its target and its bounds, coloured by that measure's own tier. */
+   The DS card (.ap-card supplies the white surface, grey-10 border, radius,
+   sm padding and sm gap — no spacing of our own), and the WHOLE card is a
+   <button>: clicking anywhere opens the objective's editor in place. The head
+   carries name, via-proxy caption, window when fixed, and the verdict word;
+   the count behind the verdict lives in its tooltip. */
 .insights-objcard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-spacing-micro);
-  padding: var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-md);
+  font: inherit;
+  text-align: left;
+  width: 100%;
   max-width: 760px;
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) var(--app-ease-out);
 }
 
-.insights-objcard__verdict {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: baseline;
-  gap: var(--ref-spacing-xxs);
-  font-size: var(--ref-font-size-xs);
-  white-space: nowrap;
+.insights-objcard:hover {
+  border-color: var(--ref-color-electric-blue-100);
 }
 
-.insights-objcard__count {
-  color: var(--ref-color-grey-60);
-}
-
-.insights-goalgroup__head {
+.insights-objcard__head {
   display: flex;
   align-items: baseline;
   gap: var(--ref-spacing-xs);
 }
 
-/* The objective's name is the edit affordance — a real button (this page's
-   whole point is not going back to the Playbook), pen revealed on hover. */
-.insights-goalgroup__name {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
+.insights-objcard__name {
   font-size: var(--ref-font-size-sm);
   font-weight: var(--app-font-weight-semibold);
   color: var(--sys-text-color-default);
-  cursor: pointer;
-  text-align: left;
 }
 
-.insights-goalgroup__name i {
-  font-size: var(--sys-icon-css-xs);
-  color: var(--ref-color-grey-60);
-  opacity: 0;
-  transition: opacity var(--ref-animation-short) var(--app-ease-out);
-}
-
-.insights-goalgroup__name:hover {
-  color: var(--ref-color-electric-blue-100);
-}
-
-.insights-goalgroup__name:hover i {
-  opacity: 1;
-}
-
-.insights-goalgroup__window {
+.insights-objcard__window {
   font-size: var(--ref-font-size-xs);
   color: var(--ref-color-grey-60);
+}
+
+/* The verdict word, arithmetic one hover away. Visibility on the APP class,
+   never on .ap-tooltip (CLAUDE.md). */
+.insights-objcard__verdict {
+  position: relative;
+  margin-left: auto;
+  display: inline-flex;
+  font-size: var(--ref-font-size-xs);
+  white-space: nowrap;
+}
+
+.insights-objcard__verdict-tip {
+  display: none;
+  bottom: calc(100% + var(--ref-spacing-xxs));
+  right: 0;
+  width: max-content;
+}
+
+.insights-objcard__verdict:hover > .insights-objcard__verdict-tip {
+  display: block;
 }
 
 /* A goal measured through its avowed proxy says so beside its name. */
@@ -684,11 +670,9 @@
   color: var(--ref-color-grey-60);
 }
 
-/* Measure rows sit slightly in from their objective's head. */
 .insights-goal__name--measure {
   font-weight: var(--ref-font-weight-regular);
   color: var(--ref-color-grey-80);
-  padding-left: var(--ref-spacing-sm);
 }
 
 /* Parked objectives — declared intents the catalogue can't measure natively
