@@ -1,16 +1,29 @@
 // Objective → measure coupling. An objective is a qualitative intent — a label,
-// not measurable by itself; what is measurable is the MEASURE it carries: a
-// metric from the native catalogue plus a baseline (default: trailing 30-day
-// average; growth metrics: delta vs the previous period). Everything here is
-// DERIVED at render time: ctx.objective stays a string[] and the objective's
-// identity is its label, exactly like objective-alerts-store. The one stored
-// thing is the user's CORRECTIONS — `data.objectiveMeasures[label]` holds only
-// the deviation ({ metricIds } for a measured objective, { proxyId } for a
-// parked one); an absent key means the derived defaults below.
+// not measurable by itself; what is measurable is the MEASURE it carries:
+// a metric from the native catalogue + a baseline + a target + a window
+// (the PP's full contract). Everything here is DERIVED at render time:
+// ctx.objective stays a string[] and the objective's identity is its label,
+// exactly like objective-alerts-store. The one stored thing is the user's
+// CORRECTIONS — `data.objectiveMeasures[label]` holds only the deviation:
+//   { metricIds?: string[],                 // measured: chosen metrics
+//     proxyId?: string,                     // parked: chosen proxy
+//     window?: { type, date? },             // objective-level window
+//     measureWindows?: { [metricId]: window },   // per-measure deviation
+//     baselines?: { [metricId]: string },   // edited baseline VALUES
+//     targets?:  { [metricId]: string } }   // edited targets (kills "Suggested")
+// An absent key means the derived defaults below.
 //
 // The generator contract (PP "Objectives in Archie"): an intent that binds to a
 // catalogue metric is measurable; a real intent that binds to nothing is PARKED
 // — shown "coming soon" with an avowed social proxy — never dropped.
+//
+// Alignment note (platform prototype/sc-203354-report-studio-objective-widget):
+// target + targetProposed and the "Suggested target" copy come from that
+// prototype (proposeTarget = baseline × 1.15); its window model is
+// ROLLING | FIXED — Archie adds the RECURRING cadences (weekly/monthly/
+// quarterly) it lacks, and keeps 'deadline' as platform's FIXED. Identity
+// diverges on purpose for now: platform keys objectives by id, Archie by
+// label — flagged in the PP handoff, not resolved here.
 //
 // NOTE (reconciled in Insights): OBJECTIVE_METRICS in mocks.js measures "Lead
 // generation" and "Sales" through their PROXY (CTA clicks / attributed revenue)
@@ -18,19 +31,20 @@
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
 // The slice of the native catalogue (~25 metrics) these couplings use. The
-// catalogue names the concept, not a per-network field.
+// catalogue names the concept, not a per-network field. `lowerIsBetter`
+// suppresses the progress gauge — a bar "toward target" lies when less is more.
 const METRICS = {
   reach: { label: "Reach" },
   impressions: { label: "Impressions" },
   mentions: { label: "Brand mentions" },
-  followersNet: { label: "Followers net growth" },
+  followersNet: { label: "Followers net growth", growth: true },
   engagementRate: { label: "Engagement rate" },
   comments: { label: "Comments received" },
   savesShares: { label: "Saves & shares" },
   videoViews: { label: "Video views" },
   videoCompletion: { label: "Completion rate" },
   sentiment: { label: "Sentiment score" },
-  responseTime: { label: "Response time" },
+  responseTime: { label: "Response time", lowerIsBetter: true },
   reviews: { label: "Reviews handled" },
   clicks: { label: "Link clicks" },
   paidReach: { label: "Paid reach" },
@@ -48,37 +62,94 @@ export const FAMILIES = [
   { id: "paid", label: "Paid", metricIds: ["paidReach"] },
 ];
 
-// Pre-formatted baselines — a prototype shows, it never computes. Figures rhyme
-// with the measured cards in mocks.js (OBJECTIVE_METRICS / PLAYBOOK_REPORT)
+// The objective's window — how the target is read. Default: monthly, the
+// 30-day-average world every baseline below is authored in. Defined on the
+// objective, inherited by its measures, deviable per measure (a deviation is
+// a deliberate act — the beginning of a split, per "split late").
+export const WINDOWS = [
+  { id: "weekly", label: "Every week" },
+  { id: "monthly", label: "Every month" },
+  { id: "quarterly", label: "Every quarter" },
+  { id: "deadline", label: "Ends on a date" },
+];
+
+export const DEFAULT_WINDOW = { type: "monthly" };
+
+export function windowLabel(window) {
+  const w = window || DEFAULT_WINDOW;
+  if (w.type === "deadline") return w.date ? `Ends on ${formatDay(w.date)}` : "Ends on a date";
+  return WINDOWS.find((o) => o.id === w.type)?.label || "Every month";
+}
+
+function formatDay(iso) {
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+// What the baseline was read over, phrased for the measure's window.
+function baselineNoteFor(metricId, window) {
+  const growth = METRICS[metricId]?.growth;
+  const w = (window || DEFAULT_WINDOW).type;
+  if (w === "weekly") return growth ? "vs previous 7 days" : "/ 7-day avg";
+  if (w === "quarterly") return growth ? "vs previous quarter" : "/ 90-day avg";
+  if (w === "deadline") return growth ? "since the window opened" : "/ 30-day avg";
+  return growth ? "vs previous 30 days" : "/ 30-day avg";
+}
+
+// Pre-formatted baseline VALUES — a prototype shows, it never measures. Figures
+// rhyme with the measured cards in mocks.js (OBJECTIVE_METRICS / PLAYBOOK_REPORT)
 // wherever both exist: reach 18,400, clicks 126, followers +1,240, rate 4.1%.
 const DEFAULT_BASELINES = {
-  reach: "18,400 / 30-day avg",
-  impressions: "84,200 / 30-day avg",
-  mentions: "48 / 30-day avg",
-  followersNet: "+1,240 vs previous 30 days",
-  engagementRate: "4.1% / 30-day avg",
-  comments: "312 / 30-day avg",
-  savesShares: "190 / 30-day avg",
-  videoViews: "5,600 / 30-day avg",
-  videoCompletion: "38% / 30-day avg",
-  sentiment: "76 / 30-day avg",
-  responseTime: "1h 42m / 30-day avg",
-  reviews: "23 / 30-day avg",
-  clicks: "126 / 30-day avg",
-  paidReach: "9,800 / 30-day avg",
+  reach: "18,400",
+  impressions: "84,200",
+  mentions: "48",
+  followersNet: "+1,240",
+  engagementRate: "4.1%",
+  comments: "312",
+  savesShares: "190",
+  videoViews: "5,600",
+  videoCompletion: "38%",
+  sentiment: "76",
+  responseTime: "1h 42m",
+  reviews: "23",
+  clicks: "126",
+  paidReach: "9,800",
 };
 
-// Per-Playbook baselines layered over the defaults, keyed by context id then
-// metric — hand-derived from OBJECTIVE_METRICS_BY_CONTEXT so the same brand
-// tells the same story on every surface (Acme's reach slides on purpose).
+// Proposed targets, per metric — pre-formatted, rhyming with mocks.js `goal`
+// where a card exists (reach 20,000, clicks 150, followers +1,500, rate 5.0%).
+// The proposal rule is the platform prototype's: baseline × 1.15, rounded to a
+// clean figure; the values are authored by hand because a prototype shows.
+// A target stays PROPOSED ("Suggested") until the user edits it.
+const DEFAULT_TARGETS = {
+  reach: "20,000",
+  impressions: "95,000",
+  mentions: "60",
+  followersNet: "+1,500",
+  engagementRate: "5.0%",
+  comments: "380",
+  savesShares: "240",
+  videoViews: "7,000",
+  videoCompletion: "45%",
+  sentiment: "82",
+  responseTime: "1h 15m",
+  reviews: "30",
+  clicks: "150",
+  paidReach: "12,000",
+};
+
+// Per-Playbook baseline values layered over the defaults, keyed by context id
+// then metric — hand-derived from OBJECTIVE_METRICS_BY_CONTEXT so the same
+// brand tells the same story on every surface (Acme's reach slides on purpose).
 const BASELINES_BY_CONTEXT = {
-  "ctx-acme": { reach: "14,800 / 30-day avg" },
-  "ctx-founder-voice": { reach: "12,800 / 30-day avg" },
-  "ctx-customer": { reach: "10,400 / 30-day avg", clicks: "107 / 30-day avg" },
-  "ctx-dwelling": { reach: "17,600 / 30-day avg" },
+  "ctx-acme": { reach: "14,800" },
+  "ctx-founder-voice": { reach: "12,800" },
+  "ctx-customer": { reach: "10,400", clicks: "107" },
+  "ctx-dwelling": { reach: "17,600" },
 };
 
-// A concept metric split by network — plain values (the concept line above them
+// A concept metric split by network — plain values (the bounds line above them
 // carries the window), keyed by the platform slugs social-profiles.js uses so
 // the views can map straight to NETWORK_ICON_BY_PLATFORM / NETWORK_LABEL. Two
 // networks rarely compute one concept the same way (Instagram reach and
@@ -206,11 +277,42 @@ function networksFor(metricId, contextId) {
   return Object.entries(split).map(([platform, baseline]) => ({ platform, baseline }));
 }
 
-function measureFor(metricId, contextId) {
+// "14,800" → 14800, "4.1%" → 4.1, "+1,240" → 1240, "€8,900" → 8900,
+// "1h 42m" → null. The gauge's one computation — an edited target has to move
+// the bar, so the two bounds are parsed rather than authored as a percent.
+function parseMetricValue(str) {
+  if (typeof str !== "string") return null;
+  const cleaned = str.replace(/[€$,+\s]/g, "").replace(/%$/, "");
+  if (!/^\d+(\.\d+)?$/.test(cleaned)) return null;
+  return Number(cleaned);
+}
+
+function progressPctFor(metricId, baselineValue, target) {
+  if (METRICS[metricId]?.lowerIsBetter) return null;
+  const current = parseMetricValue(baselineValue);
+  const goal = parseMetricValue(target);
+  if (current == null || goal == null || goal <= 0) return null;
+  return Math.max(0, Math.min(100, Math.round((current / goal) * 100)));
+}
+
+function measureFor(metricId, contextId, override, objectiveWindow) {
+  const ov = override || {};
+  const deviation = ov.measureWindows?.[metricId];
+  const window = deviation
+    ? { ...deviation, inherited: false }
+    : { ...(objectiveWindow || DEFAULT_WINDOW), inherited: true };
+  const baselineValue = ov.baselines?.[metricId] ?? baselineFor(metricId, contextId);
+  const target = ov.targets?.[metricId] ?? DEFAULT_TARGETS[metricId];
   return {
     metricId,
     metricLabel: metricLabel(metricId),
-    baseline: baselineFor(metricId, contextId),
+    baselineValue,
+    baselineNote: baselineNoteFor(metricId, window),
+    baseline: `${baselineValue} ${baselineNoteFor(metricId, window)}`,
+    target,
+    targetProposed: ov.targets?.[metricId] == null,
+    progressPct: progressPctFor(metricId, baselineValue, target),
+    window,
     networks: networksFor(metricId, contextId),
   };
 }
@@ -220,33 +322,36 @@ function resolveOne(label, contextId, override) {
     findKeyInsensitive(COUPLINGS, label) ||
     findKeyInsensitive(PARKED, label) ||
     (ALIASES.find(([re]) => re.test(label)) || [])[1];
+  const window = override?.window ? { ...override.window } : { ...DEFAULT_WINDOW };
+  const base = { label, window, windowLabel: windowLabel(window) };
   if (canonical && COUPLINGS[canonical]) {
     // A user-chosen measure set replaces the coupling's defaults; unknown ids
     // (a rename moved the override across categories) are dropped silently.
     const chosen = (override?.metricIds || []).filter((id) => METRICS[id]);
     const ids = chosen.length ? chosen : COUPLINGS[canonical];
     return {
-      label,
+      ...base,
       status: "measured",
-      measures: ids.map((id) => measureFor(id, contextId)),
+      measures: ids.map((id) => measureFor(id, contextId, override, window)),
     };
   }
   const parked = (canonical && PARKED[canonical]) || GENERIC_PARKED;
   const proxyId = override?.proxyId && METRICS[override.proxyId] ? override.proxyId : parked.proxy;
   return {
-    label,
+    ...base,
     status: "parked",
     soon: parked.soon,
-    proxy: measureFor(proxyId, contextId),
+    proxy: measureFor(proxyId, contextId, override, window),
   };
 }
 
 /** The one entry point: each objective label, resolved to a coupled object —
- *  measured (metric + baseline per measure, each with its per-network split)
- *  or parked (coming soon + avowed proxy). `contextId` may be undefined
- *  (onboarding draft): the account's social profiles already exist, so the
- *  default baselines stand in. `overrides` is the user's corrections map
- *  (`data.objectiveMeasures`), keyed by label. */
+ *  measured (per measure: metric, baseline, target [proposed until edited],
+ *  window [objective's unless deviated], progress %, per-network split) or
+ *  parked (coming soon + avowed proxy, same measure shape). `contextId` may be
+ *  undefined (onboarding draft): the account's social profiles already exist,
+ *  so the default baselines stand in. `overrides` is the user's corrections
+ *  map (`data.objectiveMeasures`), keyed by label. */
 export function resolveObjectives(labels, contextId, overrides = {}) {
   const list = Array.isArray(labels) ? labels.filter(Boolean) : [];
   const map = overrides && typeof overrides === "object" ? overrides : {};

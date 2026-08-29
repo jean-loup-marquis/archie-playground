@@ -22,7 +22,8 @@ import { isFlagOn } from "./feature-flags.js?v=44";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=85";
 import { open as openConfirmModal } from "./components/confirm-modal.js?v=36";
 import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=15";
-import { resolveObjectives, metricLabel, baselineFor, FAMILIES } from "./objective-measures.js?v=2";
+import { resolveObjectives } from "./objective-measures.js?v=3";
+import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=1";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -182,11 +183,6 @@ let refModalIndex = null; // open reference-image detail modal (index) or null
 let pillarModalIndex = null; // open content-pillar detail modal (index) or null
 let pillarMenuOpen = false; // the pillar dialog's split-button dropdown
 let cmpModalIndex = null; // open competitor detail modal (index) or null
-let objModalIndex = null; // open objective editor modal (index into data.objective) or null
-// The objective editor's rename field is a plain input the guarded onInput never
-// tracks; its value would be lost on every repaint (each measure add/remove
-// rebuilds the modal), so it is stashed here before any repaint and re-rendered.
-let objRenameDraft = null;
 let cmpScanning = false; // "Discover competitors" scan in flight
 let cmpScanTimer = null; // the scan's pending timeout
 let cmpScanFoundNone = false; // last scan returned nothing new (show the note)
@@ -226,8 +222,6 @@ export function mount(target, config) {
   snapshot = null;
   audienceCustom = false;
   cmpModalIndex = null;
-  objModalIndex = null;
-  objRenameDraft = null;
   cmpScanning = false;
   cmpScanFoundNone = false;
   // Deep link straight into one objective's editor (?objective=<label> — the
@@ -235,8 +229,8 @@ export function mount(target, config) {
   // is read by the screen, never here: playbook-view stays route-ignorant.
   if (cfg.openObjective) {
     const labels = cfg.getData()?.objective || [];
-    const i = labels.findIndex((l) => (l || "").toLowerCase() === cfg.openObjective.toLowerCase());
-    if (i >= 0) objModalIndex = i;
+    const wanted = labels.find((l) => (l || "").toLowerCase() === cfg.openObjective.toLowerCase());
+    if (wanted) openObjectiveEditorFor(wanted);
   }
   // The three capped lists always open compact. Carrying an expanded state over
   // from a previous Playbook would show one brand's list expanded because you
@@ -287,8 +281,6 @@ export function mount(target, config) {
     pillarModalIndex = null;
     pillarMenuOpen = false;
     cmpModalIndex = null;
-    objModalIndex = null;
-    objRenameDraft = null;
     mountTarget = null;
     cfg = null;
     editScope = null;
@@ -564,7 +556,9 @@ function renderChips(values) {
 
 // The measure lines / parked proxy line of one resolved objective. Span-only:
 // this fragment lives inside the card's <button>, which allows phrasing
-// content only.
+// content only. Each measure carries its mini gauge (progress toward target,
+// accent blue — progress, not a verdict) and its bounds; the window reads once
+// in the card head, so the per-measure lines stay bare figures.
 function renderObjectiveBody(o) {
   if (o.status === "parked") {
     return `<span class="recap__objective-proxy">${esc(o.soon)} Until then <strong>${esc(
@@ -576,7 +570,12 @@ function renderObjectiveBody(o) {
       (m) => `
       <span class="recap__measure">
         <span class="recap__measure-metric">${esc(m.metricLabel)}</span>
-        <span class="recap__measure-baseline">baseline ${esc(m.baseline)}</span>
+        ${
+          m.progressPct != null
+            ? `<span class="recap__measure-track"><span class="recap__measure-fill" style="width: ${m.progressPct}%"></span></span>`
+            : ""
+        }
+        <span class="recap__measure-bounds">${esc(m.baselineValue)} → ${esc(m.target || "—")}</span>
       </span>`,
     )
     .join("")}</span>`;
@@ -595,6 +594,7 @@ function renderObjectiveCard(o, i, edit) {
           <span class="recap__objcard-name">${name}</span>
           ${parked ? `<span class="ap-badge blue recap__objective-soon">Coming soon</span>` : ""}
         </span>
+        <span class="recap__objcard-window">${esc(o.windowLabel)}</span>
         ${renderObjectiveBody(o)}
       </button>
       ${
@@ -638,135 +638,20 @@ function renderObjectivesPanel(data, edit) {
   `;
 }
 
-// The measure picker — a DS details/summary select (same anatomy as the
-// audience picker), grouped by catalogue family, each option carrying the
-// metric's baseline as a second line. Options act on CLICK, so the picker
-// works outside section edit mode despite the guarded onInput/onChange.
-function renderMetricPicker(o, data, { proxy = false } = {}) {
-  const chosen = new Set(proxy ? [o.proxy.metricId] : o.measures.map((m) => m.metricId));
-  const attr = proxy ? "data-recap-obj-proxy-pick" : "data-recap-obj-measure-add";
-  const groups = FAMILIES.map(
-    (f) => `
-      <div class="ap-select-group"><span class="ap-select-group-label">${esc(f.label)}</span></div>
-      <div class="ap-select-options">${f.metricIds
-        .map((id) => {
-          const on = chosen.has(id);
-          return `
-            <div class="ap-select-option${on ? " selected" : ""}" ${attr}="${id}" role="option" aria-selected="${on}">
-              <span class="ap-select-option-content">
-                <span class="ap-select-option-title">${esc(metricLabel(id))}</span>
-                <span class="ap-select-option-caption">${esc(baselineFor(id, data.id))}</span>
-              </span>
-              ${on ? `<i class="ap-icon-check" aria-hidden="true"></i>` : ""}
-            </div>`;
-        })
-        .join("")}</div>`,
-  ).join("");
-  return `
-    <details class="ap-select recap__objpicker" data-recap-obj-details>
-      <summary class="ap-select-trigger">
-        <span class="ap-select-value ap-select-placeholder">${proxy ? "Change the proxy metric…" : "Add a measure…"}</span>
-        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
-      </summary>
-      <div class="ap-select-dropdown" role="listbox" aria-label="${proxy ? "Proxy metric" : "Add a measure"}">
-        ${groups}
-      </div>
-    </details>`;
-}
-
-// One measure row inside the editor: metric + baseline (+ remove when more
-// than one remains) and the per-network split. Reading stays at concept level;
-// the split is shown here because two networks rarely compute one concept the
-// same way — the reconciliation is displayed, not hidden behind a clean sum.
-function renderObjectiveMeasureRow(m, { removable = false, proxy = false } = {}) {
-  const networks = (m.networks || [])
-    .map(
-      (n) => `
-      <span class="recap__objnet-row">
-        <i class="${NETWORK_ICON_BY_PLATFORM[n.platform] || "ap-icon-link"}" aria-hidden="true"></i>
-        <span class="recap__objnet-name">${esc(NETWORK_LABEL[n.platform] || n.platform)}</span>
-        <span class="recap__objnet-baseline">${esc(n.baseline)}</span>
-      </span>`,
-    )
-    .join("");
-  return `
-    <div class="recap__objmeasure">
-      <div class="recap__objmeasure-head">
-        <span class="recap__objmeasure-name">${esc(m.metricLabel)}</span>
-        ${proxy ? `<span class="ap-tag grey mini">Proxy</span>` : ""}
-        <span class="recap__objmeasure-baseline">baseline ${esc(m.baseline)}</span>
-        ${
-          removable
-            ? `<button type="button" class="recap__cta-remove" data-recap-obj-measure-remove="${m.metricId}" aria-label="Remove ${esc(
-                m.metricLabel,
-              )}"><i class="ap-icon-close"></i></button>`
-            : ""
-        }
-      </div>
-      ${
-        networks
-          ? `<details class="recap__objnet">
-               <summary>By network</summary>
-               <div class="recap__objnet-rows">${networks}</div>
-             </details>`
-          : ""
-      }
-    </div>`;
-}
-
-// Per-objective editor — "confirms or corrects in one gesture": rename the
-// label, swap/add/remove measures, or re-pick a parked objective's proxy.
-// Available in READ mode (like accepting a competitor suggestion): every
-// correction commits immediately when no section edit is in flight. The rename
-// input is the one non-click control; it is read at Done (and stashed before
-// every repaint) so the guarded onInput never needs to see it.
-function renderObjectiveModal(data) {
-  if (objModalIndex == null) return "";
-  const labels = Array.isArray(data.objective) ? data.objective : [];
-  const label = labels[objModalIndex];
-  if (label == null) return "";
-  const o = resolveObjectives([label], data.id, data.objectiveMeasures)[0];
-  const parked = o.status === "parked";
-  const renameVal = objRenameDraft != null ? objRenameDraft : label;
-
-  const measuresBlock = parked
-    ? `
-      <div class="recap__objmodal-sec">
-        <span class="recap__refedit-flabel">Measure</span>
-        <p class="recap__cmpmodal-note">${esc(o.soon)} Until it lands, the proxy below stands in.</p>
-        ${renderObjectiveMeasureRow(o.proxy, { proxy: true })}
-        ${renderMetricPicker(o, data, { proxy: true })}
-      </div>`
-    : `
-      <div class="recap__objmodal-sec">
-        <span class="recap__refedit-flabel">Measures</span>
-        ${o.measures.map((m) => renderObjectiveMeasureRow(m, { removable: o.measures.length > 1 })).join("")}
-        ${renderMetricPicker(o, data)}
-      </div>`;
-
-  return `
-  <div class="app-modal-backdrop recap__objmodal-backdrop" data-recap-objmodal-backdrop>
-    <aside class="ap-dialog recap__objmodal" role="dialog" aria-modal="true" aria-label="Objective">
-      <div class="ap-dialog-header"><span class="ap-dialog-title">Objective</span></div>
-      <button type="button" class="ap-dialog-close" data-recap-obj-close aria-label="Close"><i class="ap-icon-close"></i></button>
-      <div class="ap-dialog-content recap__objmodal-content">
-        ${parked ? `<span class="ap-badge blue recap__objective-soon">Coming soon</span>` : ""}
-        <div class="recap__objmodal-sec">
-          <span class="recap__refedit-flabel">Objective</span>
-          <div class="ap-input-group">
-            <input type="text" data-recap-obj-rename value="${esc(renameVal)}" placeholder="What this objective is called" aria-label="Objective name" />
-          </div>
-        </div>
-        ${measuresBlock}
-      </div>
-      <div class="ap-dialog-footer">
-        <div class="ap-dialog-footer-left"></div>
-        <div class="ap-dialog-footer-right">
-          <button type="button" class="ap-button primary orange" data-recap-obj-close><span>Done</span></button>
-        </div>
-      </div>
-    </aside>
-  </div>`;
+// Opens the shared per-objective editor (components/objective-editor-modal) on
+// one of this view's objectives. The editor mutates the live data object and
+// notifies on each correction: outside a section edit that commits right away
+// (like accepting a competitor suggestion), inside one the section's Save owns
+// the commit. The repaint re-derives the cards from the mutated data.
+function openObjectiveEditorFor(label) {
+  openObjectiveEditor({
+    data: cfg.getData(),
+    label,
+    onChange: () => {
+      if (!editScope) cfg.commit?.();
+      repaintPreservingScroll();
+    },
+  });
 }
 
 function renderQuotes(values) {
@@ -2428,7 +2313,6 @@ function paint() {
     </div>
     ${renderRefModal(data)}${renderPillarModalIfOpen(data)}
     ${competitorsOn() ? renderCompetitorModal(data) : ""}
-    ${renderObjectiveModal(data)}
   `;
 
   mountTarget.innerHTML = html`
@@ -2454,9 +2338,7 @@ function portalModal() {
     refModalHost.remove();
     refModalHost = null;
   }
-  const modalEl = mountTarget?.querySelector(
-    ".recap__refmodal-backdrop, .recap__cmpmodal-backdrop, .recap__objmodal-backdrop",
-  );
+  const modalEl = mountTarget?.querySelector(".recap__refmodal-backdrop, .recap__cmpmodal-backdrop");
   if (!modalEl) return;
   refModalHost = document.createElement("div");
   refModalHost.className = "recap__refmodal-host";
@@ -2552,56 +2434,6 @@ function startCompetitorScan() {
   }, CMP_SCAN_MS);
 }
 
-// ── Objective editor mutations ───────────────────────────────────────────
-
-// The rename input lives in the portalled modal and is never tracked by the
-// guarded onInput — capture its current value before any repaint destroys it.
-function stashObjRename() {
-  const input = refModalHost?.querySelector("[data-recap-obj-rename]");
-  if (input) objRenameDraft = input.value;
-}
-
-// Apply one correction to the open objective's override entry. The entry is
-// created on first correction, seeded from the resolved state so it only ever
-// stores the deviation. Commits immediately outside section edit mode — the
-// editor is its own transaction, like accepting a competitor suggestion.
-function mutateOpenObjective(data, fn) {
-  const label = (Array.isArray(data.objective) ? data.objective : [])[objModalIndex];
-  if (label == null) return;
-  stashObjRename();
-  const resolved = resolveObjectives([label], data.id, data.objectiveMeasures)[0];
-  if (!data.objectiveMeasures || typeof data.objectiveMeasures !== "object") data.objectiveMeasures = {};
-  const override = data.objectiveMeasures[label] || {};
-  fn(override, resolved);
-  data.objectiveMeasures[label] = override;
-  if (!editScope) cfg.commit?.();
-  repaintPreservingScroll();
-}
-
-// Close the editor, applying the rename on the way out. The label IS the
-// identity: renaming re-resolves the objective (its coupling may change) and
-// orphans any objective-alerts-store state keyed on the old label — an
-// accepted prototype trade-off, see that store's header comment.
-function applyObjModal(data) {
-  const labels = Array.isArray(data.objective) ? data.objective : [];
-  const oldLabel = labels[objModalIndex];
-  stashObjRename();
-  const next = (objRenameDraft || "").trim();
-  let renamed = false;
-  if (oldLabel != null && next && next !== oldLabel) {
-    labels[objModalIndex] = next;
-    if (data.objectiveMeasures?.[oldLabel] !== undefined) {
-      data.objectiveMeasures[next] = data.objectiveMeasures[oldLabel];
-      delete data.objectiveMeasures[oldLabel];
-    }
-    renamed = true;
-  }
-  objModalIndex = null;
-  objRenameDraft = null;
-  if (renamed && !editScope) cfg.commit?.();
-  repaintPreservingScroll();
-}
-
 // ── Edit-mode mutations ──────────────────────────────────────────────────
 
 function addChip(field) {
@@ -2677,16 +2509,6 @@ function onClick(event) {
   const data = cfg.getData();
   if (!data) return;
 
-  // Close any open measure picker in the objective editor when a click lands
-  // outside it — the portalled modal is out of reach of the screen-level
-  // details-closer (screens/playbook.js), and onboarding has none at all.
-  if (objModalIndex != null && refModalHost) {
-    const inPicker = event.target.closest("[data-recap-obj-details]");
-    refModalHost.querySelectorAll("[data-recap-obj-details][open]").forEach((d) => {
-      if (d !== inPicker) d.removeAttribute("open");
-    });
-  }
-
   const penBtn = event.target.closest("[data-recap-edit-card]");
   if (penBtn) {
     if (penBtn.dataset.recapEditCard === "brand") ensureBrand(data);
@@ -2709,8 +2531,6 @@ function onClick(event) {
     editScope = null;
     refModalIndex = null;
     cmpModalIndex = null;
-    objModalIndex = null;
-    objRenameDraft = null;
     // pillarModalIndex is deliberately NOT cleared — see the note on
     // renderPillarModal. You cancel a pillar edit to go back to reading it.
     audienceCustom = false;
@@ -2751,8 +2571,6 @@ function onClick(event) {
     editScope = null;
     refModalIndex = null;
     cmpModalIndex = null;
-    objModalIndex = null;
-    objRenameDraft = null;
     // Same as Cancel: stay in the pillar dialog so the edit is visible where it
     // was made.
     audienceCustom = false;
@@ -2820,14 +2638,12 @@ function onClick(event) {
   }
 
   // ── Objectives ────────────────────────────────────────────────────────────
-  // The editor works in READ mode too (a correction shouldn't require entering
-  // the section editor), so every control below is click-driven and commits
-  // immediately when no section edit is in flight.
+  // A card opens the shared per-objective editor — available in READ mode too:
+  // a correction shouldn't require entering the section editor.
   const objOpen = event.target.closest("[data-recap-obj-open]");
   if (objOpen) {
-    objModalIndex = Number(objOpen.dataset.recapObjOpen);
-    objRenameDraft = null;
-    repaintPreservingScroll();
+    const label = (Array.isArray(data.objective) ? data.objective : [])[Number(objOpen.dataset.recapObjOpen)];
+    if (label != null) openObjectiveEditorFor(label);
     return;
   }
 
@@ -2839,44 +2655,7 @@ function onClick(event) {
     if (label == null) return;
     labels.splice(idx, 1);
     if (data.objectiveMeasures) delete data.objectiveMeasures[label];
-    objModalIndex = null; // indices shifted — the open modal no longer means anything
     repaintPreservingScroll();
-    return;
-  }
-
-  const objMeasureAdd = event.target.closest("[data-recap-obj-measure-add]");
-  if (objMeasureAdd) {
-    const id = objMeasureAdd.dataset.recapObjMeasureAdd;
-    mutateOpenObjective(data, (override, resolved) => {
-      const ids = override.metricIds?.length ? override.metricIds : resolved.measures.map((m) => m.metricId);
-      if (!ids.includes(id)) override.metricIds = [...ids, id];
-      else override.metricIds = ids;
-    });
-    return;
-  }
-
-  const objMeasureRemove = event.target.closest("[data-recap-obj-measure-remove]");
-  if (objMeasureRemove) {
-    const id = objMeasureRemove.dataset.recapObjMeasureRemove;
-    mutateOpenObjective(data, (override, resolved) => {
-      const ids = override.metricIds?.length ? override.metricIds : resolved.measures.map((m) => m.metricId);
-      if (ids.length <= 1) return; // an objective keeps at least one measure
-      override.metricIds = ids.filter((x) => x !== id);
-    });
-    return;
-  }
-
-  const objProxyPick = event.target.closest("[data-recap-obj-proxy-pick]");
-  if (objProxyPick) {
-    const id = objProxyPick.dataset.recapObjProxyPick;
-    mutateOpenObjective(data, (override) => {
-      override.proxyId = id;
-    });
-    return;
-  }
-
-  if (event.target.closest("[data-recap-obj-close]") || event.target.matches?.("[data-recap-objmodal-backdrop]")) {
-    applyObjModal(data);
     return;
   }
 

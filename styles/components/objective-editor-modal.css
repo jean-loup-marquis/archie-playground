@@ -1,0 +1,238 @@
+/* Per-objective editor modal — shared by the Playbook's Objectives section and
+   Insights (opened in place). DS .ap-dialog chrome; the content scrolls and the
+   measure picker's dropdown flows IN PLACE instead of floating, because
+   .ap-dialog is overflow:hidden and would clip an absolute dropdown. */
+
+.objed__backdrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ref-spacing-lg);
+}
+
+/* `display: flex` above would silently beat the UA's [hidden] rule. */
+.objed__backdrop[hidden] {
+  display: none;
+}
+
+.objed.ap-dialog {
+  width: min(560px, 100%);
+  max-height: 88vh;
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.objed__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-md);
+  overflow-y: auto;
+}
+
+.objed__soon-badge {
+  align-self: flex-start;
+}
+
+.objed__sec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+}
+
+.objed__sec--row {
+  flex-direction: row;
+  gap: var(--ref-spacing-sm);
+}
+
+.objed__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  flex: 1;
+  min-width: 0;
+}
+
+.objed__flabel {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ref-color-grey-60);
+}
+
+.objed__note {
+  margin: 0;
+  font-size: var(--sys-text-style-caption-size);
+  line-height: var(--sys-text-style-caption-line-height);
+  color: var(--ref-color-grey-60);
+}
+
+/* ── One measure ─────────────────────────────────────────────────────── */
+.objed__measure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface-subtle);
+}
+
+.objed__measure-head {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.objed__measure-name {
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+  margin-right: auto;
+}
+
+.objed__measure-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--app-radius-sm);
+  color: var(--ref-color-grey-60);
+  cursor: pointer;
+}
+
+.objed__measure-remove:hover {
+  color: var(--ref-color-grey-100);
+  background: var(--ref-color-grey-10);
+}
+
+.objed__measure-remove i {
+  font-size: var(--sys-icon-css-sm);
+}
+
+/* Bounds — editable baseline ("From") and target, side by side. */
+.objed__bounds {
+  display: flex;
+  gap: var(--ref-spacing-sm);
+}
+
+.objed__bound {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  min-width: 0;
+}
+
+.objed__bound-label {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+  white-space: nowrap;
+}
+
+.objed__bound-input {
+  width: 96px;
+}
+
+.objed__bound-input input {
+  width: 100%;
+}
+
+.objed__bound-note {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+  white-space: nowrap;
+}
+
+/* The gauge — progress toward the target, accent blue (progress, not verdict). */
+.objed__gauge {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.objed__track {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-10);
+  overflow: hidden;
+}
+
+.objed__fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-electric-blue-100);
+}
+
+.objed__pct {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+  white-space: nowrap;
+}
+
+/* Per-network split — a native <details>, closed by default. */
+.objed__net summary {
+  cursor: pointer;
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+  width: fit-content;
+}
+
+.objed__net[open] summary {
+  margin-bottom: var(--app-spacing-micro);
+}
+
+.objed__net-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-micro);
+}
+
+.objed__net-row {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
+}
+
+.objed__net-row i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-60);
+}
+
+.objed__net-name {
+  min-width: 72px;
+}
+
+.objed__net-baseline {
+  color: var(--ref-color-grey-60);
+}
+
+/* The measure's own window (inherits the objective's by default). */
+.objed__measure-window {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+}
+
+.objed__measure-window .ap-native-select {
+  flex: 1;
+}
+
+/* ── The measure picker ──────────────────────────────────────────────────
+   Inside .ap-dialog (overflow: hidden) the DS's absolute dropdown gets
+   clipped — the open dropdown flows in place instead and the dialog content
+   scrolls. Box-shadow dropped: an in-flow block casting a popover shadow
+   reads as a rendering glitch. */
+.objed__picker {
+  width: 100%;
+}
+
+.objed__picker .ap-select-dropdown {
+  position: static;
+  margin-top: var(--ref-spacing-xxxs);
+  box-shadow: none;
+  border: 1px solid var(--app-border-soft);
+}

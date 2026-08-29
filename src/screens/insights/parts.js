@@ -4,7 +4,7 @@ import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
 import { TIER_LABELS } from "../../objective-scoring.js?v=25";
 import { formatGroupedNumber } from "../../report-widgets/number-formatting.js?v=25";
-import { periodLabel, isAtCap } from "./insights-model.js?v=4";
+import { periodLabel, isAtCap } from "./insights-model.js?v=5";
 
 // The pieces both master-detail tabs draw, in one place so Performance and Usage
 // cannot drift into two versions of the same rail.
@@ -179,52 +179,73 @@ export function renderRail({ header, rows, selected, footer = "" }) {
     </nav>`;
 }
 
-// ── The panel's goal rows ───────────────────────────────────────────────────
-// Always on 30 days and it says so, whatever the selector reads. A goal target is
-// monthly; restating it against a week would compare a number to a target it was
-// never set against, which is the one thing this page is written not to do.
-export function renderGoals(objectives) {
+// ── The panel's goal groups ─────────────────────────────────────────────────
+// One group per objective: a header (the objective, its window, its 30-day
+// trend — clicking it opens the per-objective editor IN PLACE, no trip to the
+// Playbook) over one row per MEASURE (bar toward target + bounds). The mocks
+// card keeps the objective-level truths (tier colour, trend); the measure rows
+// read from the same catalogue the editor writes, so an edit here repaints
+// here. The window is each objective's own; the trend stays the card's 30-day
+// reading whatever the selector shows — a target is set against its window,
+// never against the page's.
+export function renderGoals(objectives, resolvedList = []) {
   if (objectives.length === 0) return "";
-  const rows = objectives
-    .map(
-      (o) => `
-      <div class="insights-goal">
-        <span class="insights-goal__name">${escapeText(o.objective)}${
-          // The measure catalogue parks this intent — the number on this row is
-          // its avowed social proxy, and the row says so rather than letting
-          // "CTA clicks" pass as the real on-site measure.
-          o.viaProxy ? `<span class="insights-goal__proxy">via proxy · ${escapeText(o.metric)}</span>` : ""
-        }</span>
-        <span class="insights-goal__track">
-          <span
-            class="insights-goal__fill insights-goal__fill--${escapeAttr(o.tier)}"
-            style="width: ${Math.min(100, o.progress)}%"
-          ></span>
-        </span>
-        <span class="insights-figure insights-goal__value">${escapeText(o.value)} / ${escapeText(o.goal)}</span>
-        ${renderTrend(o.variationPercent, { suffix: " · 30d" })}
-      </div>`,
-    )
+  const byLabel = new Map(resolvedList.map((r) => [r.label, r]));
+  const groups = objectives
+    .map((o) => {
+      const resolved = byLabel.get(o.objective);
+      const measures = !resolved ? [] : resolved.status === "measured" ? resolved.measures : [resolved.proxy];
+      const rows = measures
+        .map(
+          (m) => `
+          <div class="insights-goal">
+            <span class="insights-goal__name insights-goal__name--measure">${escapeText(m.metricLabel)}</span>
+            <span class="insights-goal__track">${
+              m.progressPct == null
+                ? ""
+                : `<span class="insights-goal__fill insights-goal__fill--${escapeAttr(o.tier)}" style="width: ${m.progressPct}%"></span>`
+            }</span>
+            <span class="insights-figure insights-goal__value">${escapeText(m.baselineValue)} → ${escapeText(m.target || "—")}</span>
+          </div>`,
+        )
+        .join("");
+      return `
+        <div class="insights-goalgroup">
+          <div class="insights-goalgroup__head">
+            <button type="button" class="insights-goalgroup__name" data-insights-objective="${escapeAttr(o.objective)}">
+              ${escapeText(o.objective)}<i class="ap-icon-pen" aria-hidden="true"></i>
+            </button>
+            ${
+              // The measure catalogue parks this intent — the numbers below are
+              // its avowed social proxy, and the group says so rather than
+              // letting "CTA clicks" pass as the real on-site measure.
+              o.viaProxy ? `<span class="insights-goal__proxy">via proxy · ${escapeText(o.metric)}</span>` : ""
+            }
+            <span class="insights-goalgroup__window">${escapeText(resolved?.windowLabel || "")}</span>
+            ${renderTrend(o.variationPercent, { suffix: " · 30d" })}
+          </div>
+          ${rows}
+        </div>`;
+    })
     .join("");
 
-  return `<div class="insights-panel__goals">${rows}</div>`;
+  return `<div class="insights-panel__goals">${groups}</div>`;
 }
 
 // The Playbook's parked objectives — intents the catalogue can't measure
 // natively yet. They used to be silently filtered out of this panel; an
 // objective the reader declared deserves a row saying WHY it has no number,
 // not an absence. No bar, no tier, no trend: nothing here is on pace or off
-// it. The name deep-links into the objective's editor on the Playbook.
-export function renderParkedGoals(parked, playbookId) {
+// it. The name opens the objective's editor in place, like the groups above.
+export function renderParkedGoals(parked) {
   if (!parked?.length) return "";
   const rows = parked
     .map(
       (p) => `
       <div class="insights-goal insights-goal--parked">
-        <a class="insights-goal__name insights-goal__name--link"
-           href="#/playbook/${escapeAttr(playbookId)}?section=objectives&objective=${encodeURIComponent(p.label)}">
-          ${escapeText(p.label)}
-        </a>
+        <button type="button" class="insights-goalgroup__name" data-insights-objective="${escapeAttr(p.label)}">
+          ${escapeText(p.label)}<i class="ap-icon-pen" aria-hidden="true"></i>
+        </button>
         <span class="ap-badge blue">Coming soon</span>
         <span class="insights-goal__soon">${escapeText(p.soon)} Meanwhile: ${escapeText(p.proxy.metricLabel)}.</span>
       </div>`,

@@ -3,11 +3,11 @@ import { renderTopbar, setTopbarActions, clearTopbarActions } from "../../compon
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
 import { navigate, getPath } from "../../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=53";
-import { renderUsageTab, bindUsageTab } from "./usage.js?v=60";
-import { renderValueTab, bindValueTab } from "./value.js?v=8";
+import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=54";
+import { renderUsageTab, bindUsageTab } from "./usage.js?v=61";
+import { renderValueTab, bindValueTab } from "./value.js?v=9";
 import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=26";
-import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=4";
+import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=5";
 
 // Insights — one page, three tabs, one panel that changes job.
 //

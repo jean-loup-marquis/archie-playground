@@ -637,6 +637,13 @@
   white-space: nowrap;
 }
 
+/* The objective's window ("Every month", "Ends on Dec 31, 2026") — read once in
+   the head so the measure lines below stay bare figures. */
+.recap__objcard-window {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+}
+
 /* The adder (section edit mode) reuses the generic chip-add field. */
 .recap__objadd {
   margin-top: var(--ref-spacing-sm);
@@ -655,7 +662,7 @@
 
 .recap__measure {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
   line-height: var(--sys-text-style-caption-line-height);
@@ -664,6 +671,33 @@
 
 .recap__measure-metric {
   font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The mini gauge — progress toward the target. Accent blue on purpose: the
+   card reads progress, not a verdict (tier colours stay on Insights). */
+.recap__measure-track {
+  flex: 1;
+  min-width: 28px;
+  height: 4px;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-grey-10);
+  overflow: hidden;
+}
+
+.recap__measure-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--app-radius-pill);
+  background: var(--ref-color-electric-blue-100);
+}
+
+.recap__measure-bounds {
+  white-space: nowrap;
   color: var(--ref-color-grey-80);
 }
 
@@ -679,110 +713,6 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
 }
-
-/* ── The per-objective editor modal ─────────────────────────────────────── */
-/* Same DS .ap-dialog chrome as the competitor modal, narrower: name + measures. */
-.recap__objmodal-backdrop {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--ref-spacing-lg);
-}
-
-.recap__objmodal.ap-dialog {
-  width: min(520px, 100%);
-  max-height: 88vh;
-  box-shadow: var(--app-shadow-popover-lg);
-}
-
-.recap__objmodal-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-md);
-}
-
-.recap__objmodal-content > .ap-badge {
-  align-self: flex-start;
-}
-
-.recap__objmodal-sec {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
-}
-
-.recap__objmeasure {
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-spacing-micro);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-md);
-  background: var(--app-surface-subtle);
-}
-
-.recap__objmeasure-head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
-.recap__objmeasure-name {
-  font-size: var(--sys-text-style-body-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-}
-
-.recap__objmeasure-baseline {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
-  margin-right: auto;
-}
-
-/* Per-network split — a native <details>, closed by default: reading stays at
-   concept level, the reconciliation is one click deep. */
-.recap__objnet summary {
-  cursor: pointer;
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
-  width: fit-content;
-}
-
-.recap__objnet[open] summary {
-  margin-bottom: var(--app-spacing-micro);
-}
-
-.recap__objnet-rows {
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-spacing-micro);
-}
-
-.recap__objnet-row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.recap__objnet-row i {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-60);
-}
-
-.recap__objnet-name {
-  min-width: 72px;
-}
-
-.recap__objnet-baseline {
-  color: var(--ref-color-grey-60);
-}
-
-.recap__objpicker {
-  width: 100%;
-}
-
 /* ── Voice & style — quoted snippet lines ─────────────────────────────── */
 .recap__quotes {
   list-style: none;

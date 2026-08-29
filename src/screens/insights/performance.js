@@ -1,5 +1,6 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
-import { getContexts } from "../../contexts-store.js?v=97";
+import { getContexts, getContextById, updateContext } from "../../contexts-store.js?v=97";
+import { open as openObjectiveEditor } from "../../components/objective-editor-modal.js?v=1";
 import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=116";
 import { navigate } from "../../router.js?v=54";
 import { showToast } from "../../components/toast.js?v=44";
@@ -13,7 +14,7 @@ import {
   periodLabel,
   isAtCap,
   scaleVolume,
-} from "./insights-model.js?v=4";
+} from "./insights-model.js?v=5";
 import {
   renderRail,
   renderPortfolio,
@@ -28,7 +29,7 @@ import {
   renderFirstRun,
   verdictWord,
   figure,
-} from "./parts.js?v=13";
+} from "./parts.js?v=14";
 
 // Insights › Performance — the doc's screens 4a and 6a.
 //
@@ -172,6 +173,7 @@ function renderPanel(row, period) {
     ...o,
     tier: objectiveTier(o.progress, o.variationPercent),
   }));
+  const firstObjectiveLabel = objectives[0]?.objective || row.parkedObjectives[0]?.label || "";
 
   return `
     <article class="ap-card insights-panel" data-insights-panel="${escapeAttr(row.id)}">
@@ -197,15 +199,16 @@ function renderPanel(row, period) {
       ${copy ? `<p class="insights-panel__headline">${escapeText(copy.headline)}</p>` : ""}
       ${copy ? `<p class="insights-panel__body">${escapeText(copy.body)}</p>` : ""}
       ${copy ? `<p class="insights-panel__meta">${escapeText(copy.meta)} · ${escapeText(periodLabel(period))}</p>` : ""}
-      ${renderGoals(objectives)}
-      ${renderParkedGoals(row.parkedObjectives, row.id)}
+      ${renderGoals(objectives, row.resolved)}
+      ${renderParkedGoals(row.parkedObjectives)}
       ${
-        // Straight to the objectives section of the Playbook — an anchor like
-        // "Open the Playbook" above (NOT data-insights-bridge, which toasts).
-        objectives.length || row.parkedObjectives.length
-          ? `<a class="ap-link standalone small insights-goals__adjust" href="#/playbook/${escapeAttr(
-              row.id,
-            )}?section=objectives">Adjust objectives<i class="ap-icon-arrow-right" aria-hidden="true"></i></a>`
+        // Opens the first objective's editor IN PLACE — adjusting an objective
+        // must not require a trip to the Playbook (each group's name opens its
+        // own). NOT data-insights-bridge, which toasts.
+        firstObjectiveLabel
+          ? `<button type="button" class="ap-link standalone small insights-goals__adjust" data-insights-objective="${escapeAttr(
+              firstObjectiveLabel,
+            )}">Adjust objectives<i class="ap-icon-arrow-right" aria-hidden="true"></i></button>`
           : ""
       }
       ${renderAlerts(row, objectives)}
@@ -356,6 +359,25 @@ export function bindPerformanceTab(root, period) {
     }
     if (event.target.closest("[data-insights-start-chat]")) {
       navigate("/");
+      return;
+    }
+    // A goal group's name, a parked row, or "Adjust objectives" — opens the
+    // shared per-objective editor IN PLACE. The editor mutates the live ctx
+    // (see objective-editor-modal); updateContext only notifies, which repaints
+    // this tab through the shell's contexts subscription. The body-level modal
+    // survives that repaint — it lives outside the tab's root.
+    const objectiveBtn = event.target.closest("[data-insights-objective]");
+    if (objectiveBtn) {
+      // Same resolution as the render: `selected` is null until a rail click.
+      const ctx = getContextById(resolveSelection(performanceRows(), selected));
+      const label = objectiveBtn.dataset.insightsObjective;
+      if (ctx && label) {
+        openObjectiveEditor({
+          data: ctx,
+          label,
+          onChange: () => updateContext(ctx.id, { updatedAt: "just now" }),
+        });
+      }
       return;
     }
     // Ahead of the rail handler: this button sits inside the panel, not the rail,

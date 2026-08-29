@@ -606,12 +606,77 @@
   white-space: nowrap;
 }
 
-/* A goal measured through its avowed proxy says so under its name. */
+/* ── Goal groups — one per objective, one row per MEASURE ─────────────────
+   The group head carries the objective-level truths (name → opens the editor
+   in place, via-proxy caption, window, 30-day trend); the rows below carry
+   each measure's bar toward its target and its bounds. */
+.insights-goalgroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-micro);
+}
+
+.insights-goalgroup + .insights-goalgroup {
+  margin-top: var(--ref-spacing-xs);
+}
+
+.insights-goalgroup__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  max-width: 760px;
+}
+
+/* The objective's name is the edit affordance — a real button (this page's
+   whole point is not going back to the Playbook), pen revealed on hover. */
+.insights-goalgroup__name {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--ref-font-size-sm);
+  font-weight: var(--app-font-weight-semibold);
+  color: var(--sys-text-color-default);
+  cursor: pointer;
+  text-align: left;
+}
+
+.insights-goalgroup__name i {
+  font-size: var(--sys-icon-css-xs);
+  color: var(--ref-color-grey-60);
+  opacity: 0;
+  transition: opacity var(--ref-animation-short) var(--app-ease-out);
+}
+
+.insights-goalgroup__name:hover {
+  color: var(--ref-color-electric-blue-100);
+}
+
+.insights-goalgroup__name:hover i {
+  opacity: 1;
+}
+
+.insights-goalgroup__window {
+  font-size: var(--ref-font-size-xs);
+  color: var(--ref-color-grey-60);
+  margin-left: auto;
+}
+
+/* A goal measured through its avowed proxy says so beside its name. */
 .insights-goal__proxy {
-  display: block;
   font-size: var(--ref-font-size-xs);
   font-weight: var(--ref-font-weight-regular);
   color: var(--ref-color-grey-60);
+}
+
+/* Measure rows sit slightly in from their objective's head. */
+.insights-goal__name--measure {
+  font-weight: var(--ref-font-weight-regular);
+  color: var(--ref-color-grey-80);
+  padding-left: var(--ref-spacing-sm);
 }
 
 /* Parked objectives — declared intents the catalogue can't measure natively
@@ -624,16 +689,8 @@
 }
 
 .insights-goal--parked {
-  grid-template-columns: 150px auto 1fr;
-}
-
-.insights-goal__name--link {
-  text-decoration: none;
-}
-
-.insights-goal__name--link:hover {
-  text-decoration: underline;
-  color: var(--ref-color-electric-blue-100);
+  grid-template-columns: auto auto 1fr;
+  justify-content: start;
 }
 
 .insights-goal__soon {
@@ -644,6 +701,7 @@
 .insights-goals__adjust {
   margin-top: var(--ref-spacing-xs);
   width: fit-content;
+  cursor: pointer;
 }
 
 /* ── Muted objectives ─────────────────────────────────────────────────────── */

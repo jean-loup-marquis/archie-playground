@@ -8,7 +8,7 @@ import {
   wordsDrafted,
 } from "../../mocks.js?v=116";
 import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER } from "../../objective-scoring.js?v=25";
-import { resolveObjectives } from "../../objective-measures.js?v=2";
+import { resolveObjectives } from "../../objective-measures.js?v=3";
 
 // Insights' derivation layer — everything the three tabs read, computed once here.
 //
@@ -96,6 +96,10 @@ export function performanceRows() {
         name: context.name,
         objectives: measured,
         parkedObjectives,
+        // The full catalogue read (measures + targets + windows), for the
+        // per-measure goal rows. `objectives` (the mocks cards) keeps driving
+        // score, tiers, trends and alerts — the two rhyme by construction.
+        resolved,
         score: Math.round(score),
         tier,
         verdict: TIER_LABELS[tier],
