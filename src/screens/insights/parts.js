@@ -4,7 +4,8 @@ import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
 import { TIER_LABELS } from "../../objective-scoring.js?v=25";
 import { formatGroupedNumber } from "../../report-widgets/number-formatting.js?v=25";
-import { periodLabel, isAtCap } from "./insights-model.js?v=6";
+import { periodLabel, isAtCap } from "./insights-model.js?v=7";
+import { objectiveVerdict, measureTier } from "../../objective-measures.js?v=5";
 
 // The pieces both master-detail tabs draw, in one place so Performance and Usage
 // cannot drift into two versions of the same rail.
@@ -179,57 +180,68 @@ export function renderRail({ header, rows, selected, footer = "" }) {
     </nav>`;
 }
 
-// ── The panel's goal groups ─────────────────────────────────────────────────
-// One group per objective: a header (the objective, its window, its 30-day
-// trend — clicking it opens the per-objective editor IN PLACE, no trip to the
-// Playbook) over one row per MEASURE (bar toward target + bounds). The mocks
-// card keeps the objective-level truths (tier colour, trend); the measure rows
-// read from the same catalogue the editor writes, so an edit here repaints
-// here. The window is each objective's own; the trend stays the card's 30-day
-// reading whatever the selector shows — a target is set against its window,
-// never against the page's.
+// ── The panel's objective cards ─────────────────────────────────────────────
+// One card per objective: a header (the objective — clicking it opens the
+// per-objective editor IN PLACE, no trip to the Playbook — its window when
+// fixed, and its VERDICT) over one row per MEASURE (bar toward target +
+// bounds). The verdict is a COUNT over the measures — the PP's own definition
+// ("2 of 3 measures on track"), computed on render, never stored. No variation
+// percent and no window mention on the verdict: the objective carries no score
+// of its own. The measure rows read from the same catalogue the editor writes,
+// so an edit here repaints here; each bar wears its own measure's tier.
 export function renderGoals(objectives, resolvedList = []) {
   if (objectives.length === 0) return "";
   const byLabel = new Map(resolvedList.map((r) => [r.label, r]));
-  const groups = objectives
+  const cards = objectives
     .map((o) => {
       const resolved = byLabel.get(o.objective);
       const measures = !resolved ? [] : resolved.status === "measured" ? resolved.measures : [resolved.proxy];
+      const verdict = resolved ? objectiveVerdict(resolved) : null;
       const rows = measures
-        .map(
-          (m) => `
+        .map((m) => {
+          const tier = measureTier(m.progressPct);
+          return `
           <div class="insights-goal">
-            <span class="insights-goal__name insights-goal__name--measure">${escapeText(m.metricLabel)}</span>
+            <span class="insights-goal__name insights-goal__name--measure">${escapeText(m.metricLabel)}${
+              m.scopeLabel ? ` · ${escapeText(m.scopeLabel)}` : ""
+            }</span>
             <span class="insights-goal__track">${
-              m.progressPct == null
+              m.progressPct == null || !tier
                 ? ""
-                : `<span class="insights-goal__fill insights-goal__fill--${escapeAttr(o.tier)}" style="width: ${m.progressPct}%"></span>`
+                : `<span class="insights-goal__fill insights-goal__fill--${escapeAttr(tier)}" style="width: ${m.progressPct}%"></span>`
             }</span>
             <span class="insights-figure insights-goal__value">${escapeText(m.baselineValue)} → ${escapeText(m.target || "—")}</span>
-          </div>`,
-        )
+          </div>`;
+        })
         .join("");
       return `
-        <div class="insights-goalgroup">
+        <div class="insights-objcard">
           <div class="insights-goalgroup__head">
             <button type="button" class="insights-goalgroup__name" data-insights-objective="${escapeAttr(o.objective)}">
               ${escapeText(o.objective)}<i class="ap-icon-pen" aria-hidden="true"></i>
             </button>
             ${
               // The measure catalogue parks this intent — the numbers below are
-              // its avowed social proxy, and the group says so rather than
+              // its avowed social proxy, and the card says so rather than
               // letting "CTA clicks" pass as the real on-site measure.
               o.viaProxy ? `<span class="insights-goal__proxy">via proxy · ${escapeText(o.metric)}</span>` : ""
             }
             ${resolved?.windowLabel ? `<span class="insights-goalgroup__window">${escapeText(resolved.windowLabel)}</span>` : ""}
-            ${renderTrend(o.variationPercent, { suffix: " · 30d" })}
+            ${
+              verdict?.tier
+                ? `<span class="insights-objcard__verdict">
+                     <span class="insights-verdict insights-verdict--${escapeAttr(verdict.tier)}">${escapeText(verdict.label)}</span>
+                     <span class="insights-objcard__count">· ${verdict.onTrack} of ${verdict.total} measure${verdict.total > 1 ? "s" : ""} on track</span>
+                   </span>`
+                : ""
+            }
           </div>
           ${rows}
         </div>`;
     })
     .join("");
 
-  return `<div class="insights-panel__goals">${groups}</div>`;
+  return `<div class="insights-panel__goals">${cards}</div>`;
 }
 
 // The Playbook's parked objectives — intents the catalogue can't measure
@@ -239,19 +251,21 @@ export function renderGoals(objectives, resolvedList = []) {
 // it. The name opens the objective's editor in place, like the groups above.
 export function renderParkedGoals(parked) {
   if (!parked?.length) return "";
-  const rows = parked
+  const cards = parked
     .map(
       (p) => `
-      <div class="insights-goal insights-goal--parked">
-        <button type="button" class="insights-goalgroup__name" data-insights-objective="${escapeAttr(p.label)}">
-          ${escapeText(p.label)}<i class="ap-icon-pen" aria-hidden="true"></i>
-        </button>
-        <span class="ap-badge blue">Coming soon</span>
+      <div class="insights-objcard insights-objcard--parked">
+        <div class="insights-goalgroup__head">
+          <button type="button" class="insights-goalgroup__name" data-insights-objective="${escapeAttr(p.label)}">
+            ${escapeText(p.label)}<i class="ap-icon-pen" aria-hidden="true"></i>
+          </button>
+          <span class="ap-badge blue">Coming soon</span>
+        </div>
         <span class="insights-goal__soon">${escapeText(p.soon)} Meanwhile: ${escapeText(p.proxy.metricLabel)}.</span>
       </div>`,
     )
     .join("");
-  return `<div class="insights-panel__goals insights-panel__goals--parked">${rows}</div>`;
+  return `<div class="insights-panel__goals insights-panel__goals--parked">${cards}</div>`;
 }
 
 // ── "What worked here" ──────────────────────────────────────────────────────

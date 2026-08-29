@@ -1,28 +1,37 @@
 // Per-objective editor — the one place an objective is corrected: rename the
-// label, swap/add/remove measures, edit each measure's baseline and target
-// (the target arrives PROPOSED — "Suggested" — and the tag falls the moment
-// it is edited, per the PP's "propose, never decide"), set the objective's
-// window (weekly / monthly / quarterly / ends-on-a-date) that its measures
-// inherit and may deviate from, and re-pick a parked objective's proxy.
+// label, add/remove measures (the same metric may appear twice with two
+// scopes), scope a measure to a network or to specific profiles of one
+// network, edit each measure's baseline and target (the target arrives
+// PROPOSED — "Suggested" — and the tag falls the moment it is edited, per the
+// PP's "propose, never decide"), set the objective's window (rolling / ends
+// on a date) that its measures inherit and may deviate from, and re-pick a
+// parked objective's proxy.
 //
 // A real body-level modal shared by the Playbook section AND Insights (which
-// opens it in place — no navigation), replacing the portalled editor that
-// lived inside playbook-view: there it sat behind the recap's guarded
-// onInput/onChange and needed a rename-stash hack; here it owns its DOM and
-// listeners, so text fields are tracked normally.
+// opens it in place — no navigation). Every dropdown in here is the DS
+// .ap-select composition with the `inline-dropdown` variant (ds-patches.css):
+// no native <select> popup (OS-styled, it reads foreign in the dialog), and
+// nothing for .ap-dialog's overflow:hidden to clip — the content scrolls.
 //
 // open({ data, label, onChange }): `data` is the LIVE draft/Context object,
 // mutated in place — the corrections live in data.objectiveMeasures[label]
-// and only store the deviation (see objective-measures.js). `onChange()` fires
-// after each mutation; the caller commits/repaints. The label stays the
-// objective's identity: a rename (applied on Done) moves the override key and
-// re-resolves — and orphans any objective-alerts-store state keyed on the old
-// label, an accepted prototype trade-off (see that store's header).
+// (see objective-measures.js for the shape). `onChange()` fires after each
+// mutation; the caller commits/repaints. The label stays the objective's
+// identity: a rename (applied on Done) moves the override key and re-resolves
+// — and orphans any objective-alerts-store state keyed on the old label, an
+// accepted prototype trade-off (see that store's header).
 
 import { escapeHtml as esc } from "../utils.js?v=45";
-import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "../social-profiles.js?v=85";
+import { NETWORK_LABEL, getConnectedProfiles } from "../social-profiles.js?v=85";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=35";
-import { resolveObjectives, metricLabel, baselineFor, FAMILIES, WINDOWS } from "../objective-measures.js?v=4";
+import {
+  resolveObjectives,
+  materializeMeasureEntries,
+  metricLabel,
+  baselineFor,
+  FAMILIES,
+  WINDOWS,
+} from "../objective-measures.js?v=5";
 
 const MODAL_ID = "objectiveEditor";
 
@@ -30,6 +39,7 @@ let backdrop = null;
 let panel = null;
 let bodyEl = null;
 let initialized = false;
+let idSeq = 0;
 
 let data = null; // the live draft/Context object
 let label = null; // the open objective's label (identity)
@@ -121,6 +131,28 @@ function overrideFor() {
   return data.objectiveMeasures[label];
 }
 
+// Duplicates (Reach on LinkedIn + Reach on Instagram) make the measure list
+// positional — it materializes on the first structural correction, from the
+// stored entries or the coupling's defaults.
+function ensureMeasures() {
+  const ov = overrideFor();
+  if (!Array.isArray(ov.measures)) ov.measures = materializeMeasureEntries(label, ov);
+  return ov.measures;
+}
+
+function updateEntry(mid, fn) {
+  const entry = ensureMeasures().find((e) => (e.id || e.metricId) === mid);
+  if (!entry) return;
+  fn(entry);
+  notify();
+  render();
+}
+
+function genId() {
+  idSeq += 1;
+  return `m-${idSeq.toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
 function notify() {
   onChangeCb?.();
 }
@@ -145,8 +177,8 @@ function applyRename() {
 
 // ── Render ─────────────────────────────────────────────────────────────────
 
-// Structural re-render (add/remove/proxy/window changes). Text inputs are
-// tracked on `input` and re-injected here, so typing never repaints.
+// Structural re-render (add/remove/scope/proxy/window changes). Text inputs
+// are tracked on `input` and re-injected here, so typing never repaints.
 function render() {
   const input = bodyEl.querySelector("[data-objed-rename]");
   if (input) renameDraft = input.value;
@@ -171,11 +203,12 @@ function renderBody(o) {
     <div class="objed__sec--row">
       <div class="ap-form-field objed__field">
         <label>Window</label>
-        <select class="ap-native-select" data-objed-window aria-label="Objective window">
-          ${WINDOWS.map(
-            (w) => `<option value="${w.id}"${o.window.type === w.id ? " selected" : ""}>${esc(w.label)}</option>`,
-          ).join("")}
-        </select>
+        ${renderDsSelect({
+          value: o.window.type,
+          options: WINDOWS.map((w) => ({ value: w.id, label: w.label })),
+          attr: "data-objed-owin-pick",
+          ariaLabel: "Objective window",
+        })}
       </div>
       ${
         o.window.type === "fixed"
@@ -214,10 +247,50 @@ function renderParkedBlock(o) {
     </div>`;
 }
 
-// One measure: bounds (editable baseline + target), the gauge, the per-network
-// split, and the measure's own window (inherits the objective's by default —
-// deviating is a deliberate act, the beginning of a split).
+// A DS select (details/summary + option rows) whose dropdown flows in place —
+// the `inline-dropdown` ds-patches variant. Options act on CLICK and carry
+// the pick attribute + the owning measure's id.
+function renderDsSelect({ value, options, attr, mid = "", ariaLabel, placeholder = "" }) {
+  const selected = options.find((opt) => opt.value === value);
+  return `
+    <details class="ap-select inline-dropdown" data-objed-select>
+      <summary class="ap-select-trigger">
+        <span class="ap-select-value${selected ? "" : " ap-select-placeholder"}">${esc(selected ? selected.label : placeholder)}</span>
+        <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
+      </summary>
+      <div class="ap-select-dropdown" role="listbox" aria-label="${esc(ariaLabel)}">
+        <div class="ap-select-options">
+          ${options
+            .map(
+              (opt) => `
+              <div class="ap-select-option${opt.value === value ? " selected" : ""}" ${attr}="${esc(opt.value)}"${
+                mid ? ` data-objed-mid="${esc(mid)}"` : ""
+              } role="option" aria-selected="${opt.value === value}">
+                <span class="ap-select-option-text">${esc(opt.label)}</span>
+                ${opt.value === value ? `<i class="ap-icon-check" aria-hidden="true"></i>` : ""}
+              </div>`,
+            )
+            .join("")}
+        </div>
+      </div>
+    </details>`;
+}
+
+// The networks a measure can be scoped to — the ones with connected profiles.
+function connectedNetworks() {
+  const seen = [];
+  getConnectedProfiles().forEach((p) => {
+    if (!seen.includes(p.platform)) seen.push(p.platform);
+  });
+  return seen;
+}
+
+// One measure: bounds (editable baseline with its provenance one hover away,
+// editable target), the gauge, the scope (a network, then optionally specific
+// profiles of it), and the measure's own window (inherits the objective's by
+// default — deviating is a deliberate act, the beginning of a split).
 function renderMeasure(m, o, { removable = false, proxy = false } = {}) {
+  const mid = m.id;
   const gauge =
     m.progressPct == null
       ? ""
@@ -226,25 +299,35 @@ function renderMeasure(m, o, { removable = false, proxy = false } = {}) {
         <span class="objed__track"><span class="objed__fill" style="width: ${m.progressPct}%"></span></span>
         <span class="objed__pct">${m.progressPct}% of the way to target</span>
       </div>`;
-  const networks = (m.networks || [])
-    .map(
-      (n) => `
-      <span class="objed__net-row">
-        <i class="${NETWORK_ICON_BY_PLATFORM[n.platform] || "ap-icon-link"}" aria-hidden="true"></i>
-        <span class="objed__net-name">${esc(NETWORK_LABEL[n.platform] || n.platform)}</span>
-        <span class="objed__net-baseline">${esc(n.baseline)}</span>
-      </span>`,
-    )
-    .join("");
+  const network = m.scope?.network || "all";
+  const scopeBlock = proxy
+    ? ""
+    : `
+      <div class="ap-form-field objed__bound objed__scope">
+        <label>On</label>
+        ${renderDsSelect({
+          value: network,
+          options: [
+            { value: "all", label: "All networks" },
+            ...connectedNetworks().map((n) => ({ value: n, label: NETWORK_LABEL[n] || n })),
+          ],
+          attr: "data-objed-net-pick",
+          mid,
+          ariaLabel: "Measure scope",
+        })}
+      </div>
+      ${network !== "all" ? renderProfilePicker(m, mid) : ""}`;
   const windowValue = m.window.inherited ? "inherit" : m.window.type;
   return `
     <div class="objed__measure">
       <div class="objed__measure-head">
-        <span class="objed__measure-name">${esc(m.metricLabel)}</span>
+        <span class="objed__measure-name">${esc(m.metricLabel)}${
+          m.scopeLabel ? `<span class="objed__measure-scope"> · ${esc(m.scopeLabel)}</span>` : ""
+        }</span>
         ${proxy ? `<span class="ap-badge blue">Proxy</span>` : ""}
         ${
           removable
-            ? `<button type="button" class="ap-icon-button transparent" data-objed-measure-remove="${m.metricId}" aria-label="Remove ${esc(
+            ? `<button type="button" class="ap-icon-button transparent" data-objed-measure-remove="${esc(mid)}" aria-label="Remove ${esc(
                 m.metricLabel,
               )}"><i class="ap-icon-close"></i></button>`
             : ""
@@ -254,46 +337,39 @@ function renderMeasure(m, o, { removable = false, proxy = false } = {}) {
         <div class="ap-form-field objed__bound">
           <label>From</label>
           <div class="ap-input-group">
-            <input type="text" data-objed-baseline="${m.metricId}" value="${esc(m.baselineValue)}" aria-label="Baseline" />
+            <input type="text" data-objed-baseline data-objed-mid="${esc(mid)}" value="${esc(m.baselineValue || "")}" aria-label="Baseline" />
           </div>
-          <span class="objed__bound-note">${esc(m.baselineNote)}</span>
+          <span class="objed__hint">
+            <i class="ap-icon-info" aria-hidden="true" role="img" aria-label="${esc(m.baselineHint)}"></i>
+            <span class="ap-tooltip top objed__hint-tip" aria-hidden="true">${esc(m.baselineHint)}</span>
+          </span>
         </div>
         <div class="ap-form-field objed__bound">
           <label>Target</label>
           <div class="ap-input-group">
-            <input type="text" data-objed-target="${m.metricId}" value="${esc(m.target || "")}" aria-label="Target" />
+            <input type="text" data-objed-target data-objed-mid="${esc(mid)}" value="${esc(m.target || "")}" aria-label="Target" />
           </div>
           ${m.targetProposed ? `<span class="ap-badge blue">Suggested</span>` : ""}
         </div>
       </div>
       ${gauge}
-      ${
-        networks
-          ? `<div class="ap-accordion collapsed objed__net" data-objed-net>
-               <div class="ap-accordion-header" data-objed-net-toggle>
-                 <span class="ap-accordion-title">By network</span>
-                 <button type="button" class="ap-icon-button ap-accordion-toggle" aria-label="Toggle networks">
-                   <i class="ap-icon-chevron-up"></i>
-                 </button>
-               </div>
-               <div class="ap-accordion-content">
-                 <div class="objed__net-rows">${networks}</div>
-               </div>
-             </div>`
-          : ""
-      }
+      ${scopeBlock}
       <div class="ap-form-field objed__bound objed__measure-window">
         <label>Window</label>
-        <select class="ap-native-select" data-objed-measure-window="${m.metricId}" aria-label="Measure window">
-          <option value="inherit"${windowValue === "inherit" ? " selected" : ""}>Same as objective</option>
-          ${WINDOWS.map(
-            (w) => `<option value="${w.id}"${windowValue === w.id ? " selected" : ""}>${esc(w.label)}</option>`,
-          ).join("")}
-        </select>
+        ${renderDsSelect({
+          value: windowValue,
+          options: [
+            { value: "inherit", label: "Same as objective" },
+            ...WINDOWS.map((w) => ({ value: w.id, label: w.label })),
+          ],
+          attr: "data-objed-mwin-pick",
+          mid,
+          ariaLabel: "Measure window",
+        })}
         ${
           !m.window.inherited && m.window.type === "fixed"
             ? `<div class="ap-input-group">
-                 <input type="date" data-objed-measure-date="${m.metricId}" value="${esc(m.window.date || "")}" aria-label="Measure end date" />
+                 <input type="date" data-objed-mdate data-objed-mid="${esc(mid)}" value="${esc(m.window.date || "")}" aria-label="Measure end date" />
                </div>`
             : ""
         }
@@ -301,20 +377,39 @@ function renderMeasure(m, o, { removable = false, proxy = false } = {}) {
     </div>`;
 }
 
+// Narrowing to specific profiles of the picked network — checkboxes, none
+// checked = the whole network.
+function renderProfilePicker(m, mid) {
+  const profiles = getConnectedProfiles().filter((p) => p.platform === m.scope.network);
+  if (!profiles.length) return "";
+  const picked = new Set(m.scope.profileIds || []);
+  return `
+    <div class="objed__profiles">
+      ${profiles
+        .map(
+          (p) => `
+          <label class="ap-checkbox-container">
+            <input type="checkbox" data-objed-profile="${esc(p.id)}" data-objed-mid="${esc(mid)}"${picked.has(p.id) ? " checked" : ""} />
+            <i></i>
+            <span>${esc(p.name || p.handle)}</span>
+          </label>`,
+        )
+        .join("")}
+    </div>`;
+}
+
 // The measure picker — a DS details/summary select grouped by catalogue
 // family, each option carrying the metric's default baseline as its caption.
-// Inside a .ap-dialog (overflow: hidden) the DS's absolute dropdown gets
-// clipped, so the picker carries the `inline-dropdown` variant (ds-patches.css):
-// the open dropdown flows in place and the dialog content scrolls instead.
+// Adding never dedupes: the same metric twice with two scopes is two measures.
 function renderMetricPicker(o, { proxy = false } = {}) {
-  const chosen = new Set(proxy ? [o.proxy.metricId] : o.measures.map((m) => m.metricId));
+  const proxyId = proxy ? o.proxy.metricId : null;
   const attr = proxy ? "data-objed-proxy-pick" : "data-objed-measure-add";
   const groups = FAMILIES.map(
     (f) => `
       <div class="ap-select-group"><span class="ap-select-group-label">${esc(f.label)}</span></div>
       <div class="ap-select-options">${f.metricIds
         .map((id) => {
-          const on = chosen.has(id);
+          const on = proxy && id === proxyId;
           return `
             <div class="ap-select-option${on ? " selected" : ""}" ${attr}="${id}" role="option" aria-selected="${on}">
               <span class="ap-select-option-content">
@@ -327,7 +422,7 @@ function renderMetricPicker(o, { proxy = false } = {}) {
         .join("")}</div>`,
   ).join("");
   return `
-    <details class="ap-select inline-dropdown objed__picker" data-objed-picker>
+    <details class="ap-select inline-dropdown objed__picker" data-objed-select>
       <summary class="ap-select-trigger">
         <span class="ap-select-value ap-select-placeholder">${proxy ? "Change the proxy metric…" : "Add a measure…"}</span>
         <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -342,55 +437,86 @@ function renderMetricPicker(o, { proxy = false } = {}) {
 
 function onClick(event) {
   if (!data) return;
+
+  // One open dropdown at a time — close any DS select the click lands outside.
+  const inSelect = event.target.closest("[data-objed-select]");
+  bodyEl.querySelectorAll("[data-objed-select][open]").forEach((d) => {
+    if (d !== inSelect) d.removeAttribute("open");
+  });
+
   if (event.target.closest("[data-objed-close]")) {
     close();
     return;
   }
 
-  // The per-network accordion — the whole header toggles, per the DS anatomy
-  // (.collapsed hides the content and rotates the chevron).
-  const netToggle = event.target.closest("[data-objed-net-toggle]");
-  if (netToggle) {
-    netToggle.closest("[data-objed-net]")?.classList.toggle("collapsed");
-    return;
-  }
-
   const add = event.target.closest("[data-objed-measure-add]");
   if (add) {
-    if (!add.classList.contains("selected")) {
-      const id = add.dataset.objedMeasureAdd;
-      const ov = overrideFor();
-      const ids = ov.metricIds?.length ? ov.metricIds : current().measures.map((m) => m.metricId);
-      if (!ids.includes(id)) ov.metricIds = [...ids, id];
-      notify();
-      render();
-    }
+    ensureMeasures().push({ id: genId(), metricId: add.dataset.objedMeasureAdd });
+    notify();
+    render();
     return;
   }
 
   const remove = event.target.closest("[data-objed-measure-remove]");
   if (remove) {
-    const id = remove.dataset.objedMeasureRemove;
-    const ov = overrideFor();
-    const ids = ov.metricIds?.length ? ov.metricIds : current().measures.map((m) => m.metricId);
-    if (ids.length <= 1) return; // an objective keeps at least one measure
-    ov.metricIds = ids.filter((x) => x !== id);
+    const measures = ensureMeasures();
+    if (measures.length <= 1) return; // an objective keeps at least one measure
+    const mid = remove.dataset.objedMeasureRemove;
+    overrideFor().measures = measures.filter((e) => (e.id || e.metricId) !== mid);
     notify();
     render();
     return;
   }
 
-  const proxy = event.target.closest("[data-objed-proxy-pick]");
-  if (proxy) {
-    overrideFor().proxyId = proxy.dataset.objedProxyPick;
+  const proxyPick = event.target.closest("[data-objed-proxy-pick]");
+  if (proxyPick) {
+    // A new proxy metric resets the proxy's bounds — the old baseline/target
+    // described another metric.
+    overrideFor().proxy = { metricId: proxyPick.dataset.objedProxyPick };
     notify();
     render();
+    return;
+  }
+
+  const owin = event.target.closest("[data-objed-owin-pick]");
+  if (owin) {
+    const ov = overrideFor();
+    const prevDate = ov.window?.date;
+    const type = owin.dataset.objedOwinPick;
+    ov.window = type === "fixed" ? { type: "fixed", date: prevDate } : { type: "rolling" };
+    notify();
+    render();
+    return;
+  }
+
+  const mwin = event.target.closest("[data-objed-mwin-pick]");
+  if (mwin) {
+    const type = mwin.dataset.objedMwinPick;
+    updateEntry(mwin.dataset.objedMid, (entry) => {
+      if (type === "inherit") delete entry.window;
+      else entry.window = type === "fixed" ? { type: "fixed", date: entry.window?.date } : { type: "rolling" };
+    });
+    return;
+  }
+
+  const net = event.target.closest("[data-objed-net-pick]");
+  if (net) {
+    const network = net.dataset.objedNetPick;
+    updateEntry(net.dataset.objedMid, (entry) => {
+      if (network === "all") delete entry.scope;
+      else entry.scope = { network };
+      // The suggested bounds follow the scope — a kept baseline would describe
+      // the previous scope's world.
+      delete entry.baseline;
+      delete entry.target;
+    });
     return;
   }
 }
 
-// Text fields write through on every keystroke (the gauge and "Suggested" tag
-// refresh on `change` — blur/Enter — so typing never repaints under the caret).
+// Text fields write through on every keystroke (the gauge and "Suggested"
+// badge refresh on `change` — blur/Enter — so typing never repaints under the
+// caret).
 function onInput(event) {
   if (!data) return;
   const t = event.target;
@@ -398,16 +524,13 @@ function onInput(event) {
     renameDraft = t.value;
     return;
   }
+  const mid = t.dataset.objedMid;
   if (t.matches("[data-objed-baseline]")) {
-    const ov = overrideFor();
-    ov.baselines = ov.baselines || {};
-    ov.baselines[t.dataset.objedBaseline] = t.value;
+    writeMeasureField(mid, "baseline", t.value);
     return;
   }
   if (t.matches("[data-objed-target]")) {
-    const ov = overrideFor();
-    ov.targets = ov.targets || {};
-    ov.targets[t.dataset.objedTarget] = t.value;
+    writeMeasureField(mid, "target", t.value);
     return;
   }
   if (t.matches("[data-objed-date]")) {
@@ -415,44 +538,42 @@ function onInput(event) {
     ov.window = { type: "fixed", date: t.value };
     return;
   }
-  const md = t.closest("[data-objed-measure-date]");
-  if (md) {
-    const id = md.dataset.objedMeasureDate;
-    const ov = overrideFor();
-    ov.measureWindows = ov.measureWindows || {};
-    ov.measureWindows[id] = { type: "fixed", date: t.value };
+  if (t.matches("[data-objed-mdate]")) {
+    const entry = ensureMeasures().find((e) => (e.id || e.metricId) === mid);
+    if (entry) entry.window = { type: "fixed", date: t.value };
   }
+}
+
+// The proxy's bounds live on override.proxy; a measure's on its entry.
+function writeMeasureField(mid, field, value) {
+  if (mid === "proxy") {
+    const ov = overrideFor();
+    ov.proxy = { metricId: current().proxy.metricId, ...ov.proxy, [field]: value };
+    return;
+  }
+  const entry = ensureMeasures().find((e) => (e.id || e.metricId) === mid);
+  if (entry) entry[field] = value;
 }
 
 function onChange(event) {
   if (!data) return;
   const t = event.target;
-  if (t.matches("[data-objed-window]")) {
-    const ov = overrideFor();
-    const prevDate = ov.window?.date;
-    ov.window = t.value === "fixed" ? { type: "fixed", date: prevDate } : { type: t.value };
-    notify();
-    render();
+  const profile = t.closest("[data-objed-profile]");
+  if (profile) {
+    updateEntry(profile.dataset.objedMid, (entry) => {
+      if (!entry.scope?.network) return;
+      const ids = new Set(entry.scope.profileIds || []);
+      if (t.checked) ids.add(profile.dataset.objedProfile);
+      else ids.delete(profile.dataset.objedProfile);
+      entry.scope.profileIds = [...ids];
+      if (!entry.scope.profileIds.length) delete entry.scope.profileIds;
+      // The suggested bounds follow the scope.
+      delete entry.baseline;
+      delete entry.target;
+    });
     return;
   }
-  const mw = t.closest("[data-objed-measure-window]");
-  if (mw) {
-    const id = mw.dataset.objedMeasureWindow;
-    const ov = overrideFor();
-    ov.measureWindows = ov.measureWindows || {};
-    if (t.value === "inherit") delete ov.measureWindows[id];
-    else {
-      const prev = ov.measureWindows[id];
-      ov.measureWindows[id] = t.value === "fixed" ? { type: "fixed", date: prev?.date } : { type: t.value };
-    }
-    notify();
-    render();
-    return;
-  }
-  if (
-    t.matches("[data-objed-baseline], [data-objed-target], [data-objed-date]") ||
-    t.closest("[data-objed-measure-date]")
-  ) {
+  if (t.matches("[data-objed-baseline], [data-objed-target], [data-objed-date], [data-objed-mdate]")) {
     notify();
     render();
   }

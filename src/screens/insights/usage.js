@@ -7,7 +7,7 @@ import {
   resolveSelection,
   periodLabel,
   scaleVolume,
-} from "./insights-model.js?v=6";
+} from "./insights-model.js?v=7";
 import {
   renderRail,
   renderPortfolio,
@@ -15,7 +15,7 @@ import {
   renderBridge,
   renderFirstRun,
   figure,
-} from "./parts.js?v=15";
+} from "./parts.js?v=16";
 
 // Insights › Usage — the doc's screen 5a.
 //

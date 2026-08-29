@@ -606,25 +606,38 @@
   white-space: nowrap;
 }
 
-/* ── Goal groups — one per objective, one row per MEASURE ─────────────────
-   The group head carries the objective-level truths (name → opens the editor
-   in place, via-proxy caption, window, 30-day trend); the rows below carry
-   each measure's bar toward its target and its bounds. */
-.insights-goalgroup {
+/* ── Objective cards — one per objective, one row per MEASURE ─────────────
+   The card head carries the objective-level truths (name → opens the editor
+   in place, via-proxy caption, window when fixed, and the COUNTED verdict —
+   no variation, no score); the rows below carry each measure's bar toward
+   its target and its bounds, coloured by that measure's own tier. */
+.insights-objcard {
   display: flex;
   flex-direction: column;
   gap: var(--app-spacing-micro);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-md);
+  max-width: 760px;
 }
 
-.insights-goalgroup + .insights-goalgroup {
-  margin-top: var(--ref-spacing-xs);
+.insights-objcard__verdict {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--ref-font-size-xs);
+  white-space: nowrap;
+}
+
+.insights-objcard__count {
+  color: var(--ref-color-grey-60);
 }
 
 .insights-goalgroup__head {
   display: flex;
   align-items: baseline;
   gap: var(--ref-spacing-xs);
-  max-width: 760px;
 }
 
 /* The objective's name is the edit affordance — a real button (this page's
@@ -664,12 +677,6 @@
   color: var(--ref-color-grey-60);
 }
 
-/* The trend anchors the right edge; the window caption (FIXED only) sits
-   beside it. Rolling is the default and shows no caption. */
-.insights-goalgroup__head .insights-trend {
-  margin-left: auto;
-}
-
 /* A goal measured through its avowed proxy says so beside its name. */
 .insights-goal__proxy {
   font-size: var(--ref-font-size-xs);
@@ -685,17 +692,12 @@
 }
 
 /* Parked objectives — declared intents the catalogue can't measure natively
-   yet. No bar, no figure, no trend: name + Coming soon + the one line saying
-   what unlocks the real measure. */
+   yet. Same card, no rows: name + Coming soon + the one line saying what
+   unlocks the real measure. */
 .insights-panel__goals--parked {
   border-top: none;
   padding-top: 0;
   margin-top: var(--ref-spacing-xs);
-}
-
-.insights-goal--parked {
-  grid-template-columns: auto auto 1fr;
-  justify-content: start;
 }
 
 .insights-goal__soon {

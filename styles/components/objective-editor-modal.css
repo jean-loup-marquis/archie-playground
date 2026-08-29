@@ -148,43 +148,50 @@
   white-space: nowrap;
 }
 
-/* Per-network split — a DS accordion, collapsed by default, slimmed to sit
-   inside the measure sub-card (the sizing rides the app class). */
-.objed__net .ap-accordion-title {
-  font-size: var(--sys-text-style-caption-size);
+/* The scope suffix beside the measure's name ("· LinkedIn", "· 2 profiles"). */
+.objed__measure-scope {
+  font-weight: var(--ref-font-weight-regular);
   color: var(--ref-color-grey-60);
 }
 
-.objed__net .ap-accordion-content {
-  padding: var(--ref-spacing-xxs) 0 0;
+/* Baseline provenance — an info glyph, the sentence one hover away.
+   Visibility on the APP class, never on .ap-tooltip (CLAUDE.md). */
+.objed__hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* Icon / network / value — one grid so the values align across rows; each row
-   contributes its three cells via display:contents (no fixed column widths). */
-.objed__net-rows {
-  display: grid;
-  grid-template-columns: max-content max-content 1fr;
-  column-gap: var(--ref-spacing-xs);
-  row-gap: var(--app-spacing-micro);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
-}
-
-.objed__net-row {
-  display: contents;
-}
-
-.objed__net-row i {
+.objed__hint > i {
   font-size: var(--sys-icon-css-sm);
   color: var(--ref-color-grey-60);
 }
 
-.objed__net-baseline {
-  color: var(--ref-color-grey-60);
+.objed__hint-tip {
+  display: none;
+  bottom: calc(100% + var(--ref-spacing-xxs));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 240px;
+  white-space: normal;
 }
 
-/* The measure's own window (inherits the objective's by default). */
-.objed__measure-window .ap-native-select {
+.objed__hint:hover > .objed__hint-tip {
+  display: block;
+}
+
+/* Narrowing a network scope to specific profiles — checkboxes, none checked
+   means the whole network. */
+.objed__profiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xxs);
+  padding-left: var(--ref-spacing-lg);
+}
+
+/* The DS selects sit inline beside their row label. */
+.objed__bound .ap-select {
   flex: 1;
   min-width: 0;
 }

@@ -22,8 +22,8 @@ import { isFlagOn } from "./feature-flags.js?v=44";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=85";
 import { open as openConfirmModal } from "./components/confirm-modal.js?v=36";
 import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=15";
-import { resolveObjectives } from "./objective-measures.js?v=4";
-import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=3";
+import { resolveObjectives } from "./objective-measures.js?v=5";
+import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=4";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -569,7 +569,7 @@ function renderObjectiveBody(o) {
     .map(
       (m) => `
       <span class="recap__measure">
-        <span class="recap__measure-metric">${esc(m.metricLabel)}</span>
+        <span class="recap__measure-metric">${esc(m.metricLabel)}${m.scopeLabel ? ` · ${esc(m.scopeLabel)}` : ""}</span>
         ${
           m.progressPct != null
             ? `<span class="recap__measure-track"><span class="recap__measure-fill" style="width: ${m.progressPct}%"></span></span>`

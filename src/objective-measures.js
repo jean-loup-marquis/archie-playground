@@ -1,51 +1,58 @@
 // Objective → measure coupling. An objective is a qualitative intent — a label,
 // not measurable by itself; what is measurable is the MEASURE it carries:
-// a metric from the native catalogue + a baseline + a target + a window
-// (the PP's full contract). Everything here is DERIVED at render time:
-// ctx.objective stays a string[] and the objective's identity is its label,
-// exactly like objective-alerts-store. The one stored thing is the user's
-// CORRECTIONS — `data.objectiveMeasures[label]` holds only the deviation:
-//   { metricIds?: string[],                 // measured: chosen metrics
-//     proxyId?: string,                     // parked: chosen proxy
-//     window?: { type, date? },             // objective-level window
-//     measureWindows?: { [metricId]: window },   // per-measure deviation
-//     baselines?: { [metricId]: string },   // edited baseline VALUES
-//     targets?:  { [metricId]: string } }   // edited targets (kills "Suggested")
-// An absent key means the derived defaults below.
+// a metric from the native catalogue + a SCOPE (all networks, one network, or
+// specific profiles of one network) + a baseline + a target + a window (the
+// PP's full contract). The same metric may appear twice with two scopes —
+// Reach on LinkedIn and Reach on Instagram are two measures — so a measure's
+// identity is its own id, not its metric. Everything here is DERIVED at render
+// time: ctx.objective stays a string[] and the objective's identity is its
+// label, exactly like objective-alerts-store.
+//
+// The stored corrections — `data.objectiveMeasures[label]`:
+//   { measures?: [ { id, metricId, scope?: { network, profileIds? },
+//                    baseline?, target?, window? } ],   // materialized list
+//     proxy?:   { metricId, baseline?, target? },       // parked objective
+//     window?:  { type: 'rolling' | 'fixed', date? } }  // objective window
+// An absent `measures` means the coupling's defaults. The list materializes on
+// the first structural correction; per-entry fields stay sparse. (Older drafts
+// stored per-metric maps — metricIds/baselines/targets/measureWindows — and
+// are normalized on read.)
 //
 // The generator contract (PP "Objectives in Archie"): an intent that binds to a
 // catalogue metric is measurable; a real intent that binds to nothing is PARKED
 // — shown "coming soon" with an avowed social proxy — never dropped.
 //
 // Alignment note (platform prototype/sc-203354-report-studio-objective-widget):
-// target + targetProposed and the "Suggested target" copy come from that
-// prototype (proposeTarget = baseline × 1.15), and the window model IS
-// platform's — ROLLING | FIXED, nothing else. A recurring cadence
-// (weekly/monthly/quarterly) was tried and dropped: rolling already reads on
-// the trailing window, and a second periodicity dimension bought density, not
-// meaning. Identity still diverges on purpose: platform keys objectives by
-// id, Archie by label — flagged in the PP handoff, not resolved here.
+// target + targetProposed ("Suggested") and proposeTarget = baseline × 1.15
+// come from that prototype, as does the window model (ROLLING | FIXED) and the
+// objective verdict — a COUNT over its measures, never a weighted score.
+// Identity still diverges on purpose: platform keys objectives by id, Archie
+// by label — flagged in the PP handoff, not resolved here.
 //
 // NOTE (reconciled in Insights): OBJECTIVE_METRICS in mocks.js measures "Lead
 // generation" and "Sales" through their PROXY (CTA clicks / attributed revenue)
 // on the Insights side, while this catalogue parks them. Insights marks those
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
+import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=85";
+
 // The slice of the native catalogue (~25 metrics) these couplings use. The
 // catalogue names the concept, not a per-network field. `lowerIsBetter`
-// suppresses the progress gauge — a bar "toward target" lies when less is more.
+// suppresses the progress gauge — a bar "toward target" lies when less is
+// more. `rate` marks scale-free metrics: a rate is never split by profile
+// count, a volume is.
 const METRICS = {
   reach: { label: "Reach" },
   impressions: { label: "Impressions" },
   mentions: { label: "Brand mentions" },
   followersNet: { label: "Followers net growth", growth: true },
-  engagementRate: { label: "Engagement rate" },
+  engagementRate: { label: "Engagement rate", rate: true },
   comments: { label: "Comments received" },
   savesShares: { label: "Saves & shares" },
   videoViews: { label: "Video views" },
-  videoCompletion: { label: "Completion rate" },
-  sentiment: { label: "Sentiment score" },
-  responseTime: { label: "Response time", lowerIsBetter: true },
+  videoCompletion: { label: "Completion rate", rate: true },
+  sentiment: { label: "Sentiment score", rate: true },
+  responseTime: { label: "Response time", lowerIsBetter: true, rate: true },
   reviews: { label: "Reviews handled" },
   clicks: { label: "Link clicks" },
   paidReach: { label: "Paid reach" },
@@ -64,10 +71,8 @@ export const FAMILIES = [
 ];
 
 // The objective's window — platform's two kinds, exactly: ROLLING (reads on
-// the trailing 30 days, no end) or FIXED (ends on a date). Default: rolling —
-// the 30-day-average world every baseline below is authored in. Defined on
-// the objective, inherited by its measures, deviable per measure (a deviation
-// is a deliberate act — the beginning of a split, per "split late").
+// the trailing 30 days, no end) or FIXED (ends on a date). Default: rolling.
+// Defined on the objective, inherited by its measures, deviable per measure.
 export const WINDOWS = [
   { id: "rolling", label: "Rolling 30-day window" },
   { id: "fixed", label: "Ends on a date" },
@@ -75,9 +80,6 @@ export const WINDOWS = [
 
 export const DEFAULT_WINDOW = { type: "rolling" };
 
-// Anything that isn't a dated FIXED window reads as rolling — including the
-// recurring cadences an earlier slice stored ('monthly' etc.), which collapse
-// to their rolling meaning rather than breaking.
 function normalizeWindow(window) {
   if (!window) return { ...DEFAULT_WINDOW };
   if (window.type === "fixed" || window.type === "deadline") return { type: "fixed", date: window.date };
@@ -98,10 +100,12 @@ function formatDay(iso) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-// What the baseline was read over. Both window kinds read the same trailing
-// 30 days — FIXED changes where the target ENDS, not what the baseline is.
-function baselineNoteFor(metricId) {
-  return METRICS[metricId]?.growth ? "vs previous 30 days" : "/ 30-day avg";
+// Where the suggested baseline comes from — tooltip copy, never an inline
+// mention: the row shows the figure, the provenance is one hover away.
+export function baselineHint(metricId) {
+  return METRICS[metricId]?.growth
+    ? "Suggested from your previous 30 days"
+    : "Suggested from your trailing 30-day average";
 }
 
 // Pre-formatted baseline VALUES — a prototype shows, it never measures. Figures
@@ -124,11 +128,11 @@ const DEFAULT_BASELINES = {
   paidReach: "9,800",
 };
 
-// Proposed targets, per metric — pre-formatted, rhyming with mocks.js `goal`
-// where a card exists (reach 20,000, clicks 150, followers +1,500, rate 5.0%).
-// The proposal rule is the platform prototype's: baseline × 1.15, rounded to a
-// clean figure; the values are authored by hand because a prototype shows.
-// A target stays PROPOSED ("Suggested") until the user edits it.
+// Proposed targets for the ALL-NETWORKS scope, pre-formatted, rhyming with
+// mocks.js `goal` where a card exists (reach 20,000, clicks 150, followers
+// +1,500, rate 5.0%). Scoped measures propose their target from the scoped
+// baseline instead — baseline × 1.15, the platform prototype's rule. A target
+// stays PROPOSED ("Suggested") until the user edits it.
 const DEFAULT_TARGETS = {
   reach: "20,000",
   impressions: "95,000",
@@ -156,13 +160,12 @@ const BASELINES_BY_CONTEXT = {
   "ctx-dwelling": { reach: "17,600" },
 };
 
-// A concept metric split by network — plain values (the bounds line above them
-// carries the window), keyed by the platform slugs social-profiles.js uses so
-// the views can map straight to NETWORK_ICON_BY_PLATFORM / NETWORK_LABEL. Two
-// networks rarely compute one concept the same way (Instagram reach and
-// LinkedIn reach are not the same arithmetic), so the split is shown rather
-// than pretending the sum is one clean number. Rows sum to the concept
-// baseline where summing makes sense; rates and scores deliberately don't.
+// A concept metric read on ONE network — the baseline a network-scoped measure
+// opens with. Plain values, keyed by the platform slugs social-profiles.js
+// uses. Rows sum to the concept baseline where summing makes sense; rates and
+// scores deliberately don't (two networks rarely compute one concept the same
+// way). A connected network missing from a split falls back to a documented
+// derivation rather than a hole.
 const NETWORK_BASELINES = {
   reach: { linkedin: "9,400", instagram: "6,200", x: "2,800" },
   impressions: { linkedin: "41,300", instagram: "28,600", x: "14,300" },
@@ -278,20 +281,37 @@ export function baselineFor(metricId, contextId) {
   return perContext[metricId] || DEFAULT_BASELINES[metricId];
 }
 
-function networksFor(metricId, contextId) {
-  const perContext = (NETWORK_BASELINES_BY_CONTEXT[contextId] || {})[metricId];
-  const split = perContext || NETWORK_BASELINES[metricId] || {};
-  return Object.entries(split).map(([platform, baseline]) => ({ platform, baseline }));
-}
-
+// ── Parsing & formatting — the gauge's one computation ─────────────────────
 // "14,800" → 14800, "4.1%" → 4.1, "+1,240" → 1240, "€8,900" → 8900,
-// "1h 42m" → null. The gauge's one computation — an edited target has to move
-// the bar, so the two bounds are parsed rather than authored as a percent.
+// "1h 42m" → null. An edited target has to move the bar and a scoped baseline
+// has to derive from its network's, so the bounds are parsed rather than
+// authored as percents.
 function parseMetricValue(str) {
   if (typeof str !== "string") return null;
   const cleaned = str.replace(/[€$,+\s]/g, "").replace(/%$/, "");
   if (!/^\d+(\.\d+)?$/.test(cleaned)) return null;
   return Number(cleaned);
+}
+
+// Format a derived number the way its source string was formatted.
+function formatLike(sourceStr, num) {
+  if (num == null || Number.isNaN(num)) return null;
+  const pct = /%$/.test(sourceStr || "");
+  const signed = /^\+/.test(sourceStr || "");
+  if (pct) return `${Math.round(num * 10) / 10}%`;
+  const grouped = Math.round(num).toLocaleString("en-US");
+  return signed ? `+${grouped}` : grouped;
+}
+
+// baseline × 1.15, rounded to a clean figure — the platform prototype's
+// proposeTarget, applied to scoped measures (the all-networks targets are
+// authored in DEFAULT_TARGETS).
+function proposeTarget(baselineStr) {
+  const value = parseMetricValue(baselineStr);
+  if (value == null) return null;
+  const raised = value * 1.15;
+  const magnitude = 10 ** Math.max(0, Math.floor(Math.log10(raised)) - 1);
+  return formatLike(baselineStr, Math.round(raised / magnitude) * magnitude);
 }
 
 function progressPctFor(metricId, baselineValue, target) {
@@ -302,26 +322,89 @@ function progressPctFor(metricId, baselineValue, target) {
   return Math.max(0, Math.min(100, Math.round((current / goal) * 100)));
 }
 
-function measureFor(metricId, contextId, override, objectiveWindow) {
-  const ov = override || {};
-  const deviation = ov.measureWindows?.[metricId];
-  const window = deviation
-    ? { ...normalizeWindow(deviation), inherited: false }
+// ── Scope ────────────────────────────────────────────────────────────────────
+// scope = undefined (all networks) | { network } | { network, profileIds }.
+
+export function scopeLabel(scope) {
+  if (!scope?.network) return "";
+  const network = NETWORK_LABEL[scope.network] || scope.network;
+  const n = scope.profileIds?.length || 0;
+  return n ? `${n} ${network} ${n > 1 ? "profiles" : "profile"}` : network;
+}
+
+// The baseline a scoped measure opens with. One network → its authored split
+// value (a connected network missing from the split derives a quarter of the
+// all-networks value — documented mock shortcut, not data). A profile subset
+// → the network value split evenly across that network's profiles (rates and
+// times don't split: a rate is scale-free).
+function networkProfileCount(network) {
+  return getConnectedProfiles().filter((p) => p.platform === network).length;
+}
+
+function scopedBaseline(metricId, contextId, scope) {
+  if (!scope?.network) return baselineFor(metricId, contextId);
+  const perContext = (NETWORK_BASELINES_BY_CONTEXT[contextId] || {})[metricId] || {};
+  const split = NETWORK_BASELINES[metricId] || {};
+  let networkValue = perContext[scope.network] || split[scope.network];
+  if (!networkValue) {
+    const all = baselineFor(metricId, contextId);
+    networkValue = METRICS[metricId]?.rate ? all : formatLike(all, (parseMetricValue(all) || 0) * 0.25) || all;
+  }
+  const picked = scope.profileIds?.length || 0;
+  if (!picked || METRICS[metricId]?.rate) return networkValue;
+  const total = Math.max(picked, networkProfileCount(scope.network) || picked);
+  const share = (parseMetricValue(networkValue) || 0) * (picked / total);
+  return formatLike(networkValue, share) || networkValue;
+}
+
+// ── Resolution ───────────────────────────────────────────────────────────────
+
+// One measure entry — { id, metricId, scope?, baseline?, target?, window? } —
+// resolved against its objective's window and the Playbook's mock figures.
+function resolveMeasureEntry(entry, contextId, objectiveWindow) {
+  const metricId = entry.metricId;
+  const scope = entry.scope?.network ? entry.scope : undefined;
+  const window = entry.window
+    ? { ...normalizeWindow(entry.window), inherited: false }
     : { ...normalizeWindow(objectiveWindow), inherited: true };
-  const baselineValue = ov.baselines?.[metricId] ?? baselineFor(metricId, contextId);
-  const target = ov.targets?.[metricId] ?? DEFAULT_TARGETS[metricId];
+  const suggested = scopedBaseline(metricId, contextId, scope);
+  const baselineValue = entry.baseline ?? suggested;
+  const target = entry.target ?? (scope ? proposeTarget(suggested) : DEFAULT_TARGETS[metricId]);
   return {
+    id: entry.id || metricId,
     metricId,
     metricLabel: metricLabel(metricId),
+    scope,
+    scopeLabel: scopeLabel(scope),
     baselineValue,
-    baselineNote: baselineNoteFor(metricId),
-    baseline: `${baselineValue} ${baselineNoteFor(metricId)}`,
+    baselineHint: baselineHint(metricId),
     target,
-    targetProposed: ov.targets?.[metricId] == null,
+    targetProposed: entry.target == null,
     progressPct: progressPctFor(metricId, baselineValue, target),
     window,
-    networks: networksFor(metricId, contextId),
   };
+}
+
+// Older drafts stored per-metric maps; fold them into entry form on read.
+function entriesFrom(override, defaultIds) {
+  if (Array.isArray(override?.measures)) return override.measures;
+  const ids = override?.metricIds?.length ? override.metricIds.filter((id) => METRICS[id]) : defaultIds;
+  return ids.map((metricId) => ({
+    id: metricId,
+    metricId,
+    baseline: override?.baselines?.[metricId],
+    target: override?.targets?.[metricId],
+    window: override?.measureWindows?.[metricId],
+  }));
+}
+
+// The editor materializes the override's measure list on the first structural
+// correction (duplicates make the list positional) — from the stored entries
+// when present, else the coupling's defaults as fresh sparse entries.
+export function materializeMeasureEntries(label, override) {
+  const canonical = findKeyInsensitive(COUPLINGS, label) || (ALIASES.find(([re]) => re.test(label)) || [])[1];
+  if (!canonical || !COUPLINGS[canonical]) return [];
+  return entriesFrom(override, COUPLINGS[canonical]).map((e) => ({ ...e, id: e.id || e.metricId }));
 }
 
 function resolveOne(label, contextId, override) {
@@ -332,35 +415,60 @@ function resolveOne(label, contextId, override) {
   const window = normalizeWindow(override?.window);
   const base = { label, window, windowLabel: windowLabel(window) };
   if (canonical && COUPLINGS[canonical]) {
-    // A user-chosen measure set replaces the coupling's defaults; unknown ids
-    // (a rename moved the override across categories) are dropped silently.
-    const chosen = (override?.metricIds || []).filter((id) => METRICS[id]);
-    const ids = chosen.length ? chosen : COUPLINGS[canonical];
+    const entries = entriesFrom(override, COUPLINGS[canonical]);
     return {
       ...base,
       status: "measured",
-      measures: ids.map((id) => measureFor(id, contextId, override, window)),
+      measures: entries.map((e) => resolveMeasureEntry(e, contextId, window)),
     };
   }
   const parked = (canonical && PARKED[canonical]) || GENERIC_PARKED;
-  const proxyId = override?.proxyId && METRICS[override.proxyId] ? override.proxyId : parked.proxy;
+  const proxyEntry = override?.proxy?.metricId && METRICS[override.proxy.metricId] ? override.proxy : null;
+  const entry = proxyEntry || {
+    metricId: override?.proxyId && METRICS[override.proxyId] ? override.proxyId : parked.proxy,
+  };
   return {
     ...base,
     status: "parked",
     soon: parked.soon,
-    proxy: measureFor(proxyId, contextId, override, window),
+    proxy: resolveMeasureEntry({ ...entry, id: "proxy" }, contextId, window),
   };
 }
 
 /** The one entry point: each objective label, resolved to a coupled object —
- *  measured (per measure: metric, baseline, target [proposed until edited],
- *  window [objective's unless deviated], progress %, per-network split) or
- *  parked (coming soon + avowed proxy, same measure shape). `contextId` may be
- *  undefined (onboarding draft): the account's social profiles already exist,
- *  so the default baselines stand in. `overrides` is the user's corrections
- *  map (`data.objectiveMeasures`), keyed by label. */
+ *  measured (per measure: metric, scope, baseline, target [proposed until
+ *  edited], window [objective's unless deviated], progress %) or parked
+ *  (coming soon + avowed proxy, same measure shape). `contextId` may be
+ *  undefined (onboarding draft). `overrides` is the user's corrections map
+ *  (`data.objectiveMeasures`), keyed by label. */
 export function resolveObjectives(labels, contextId, overrides = {}) {
   const list = Array.isArray(labels) ? labels.filter(Boolean) : [];
   const map = overrides && typeof overrides === "object" ? overrides : {};
   return list.map((label) => resolveOne(label, contextId, map[label]));
+}
+
+// ── The objective's verdict — a COUNT over its measures, never a score ──────
+// The PP's own definition ("2 of 3 on track"), and the platform prototype's
+// objectiveVerdict. A measure is on track when its progress clears the Watch
+// floor both prototypes share (60); all on track → On track, none → At risk,
+// in between → Watch. Derived on every render, never stored. No variation and
+// no window mention here: the objective carries no score of its own.
+export const MEASURE_TIER_FLOORS = { watch: 60, strong: 80 };
+
+export function measureTier(progressPct) {
+  if (progressPct == null) return null;
+  if (progressPct >= MEASURE_TIER_FLOORS.strong) return "strong";
+  if (progressPct >= MEASURE_TIER_FLOORS.watch) return "watch";
+  return "at-risk";
+}
+
+const VERDICT_LABELS = { strong: "On track", watch: "Watch", "at-risk": "At risk" };
+
+export function objectiveVerdict(resolved) {
+  const measures = resolved.status === "measured" ? resolved.measures : [resolved.proxy];
+  const readable = measures.filter((m) => m.progressPct != null);
+  const onTrack = readable.filter((m) => m.progressPct >= MEASURE_TIER_FLOORS.watch).length;
+  const total = readable.length;
+  const tier = total === 0 ? null : onTrack === total ? "strong" : onTrack === 0 ? "at-risk" : "watch";
+  return { onTrack, total, tier, label: tier ? VERDICT_LABELS[tier] : null };
 }
