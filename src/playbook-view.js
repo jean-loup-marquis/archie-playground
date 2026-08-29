@@ -23,7 +23,7 @@ import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=
 import { open as openConfirmModal } from "./components/confirm-modal.js?v=36";
 import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=15";
 import { resolveObjectives } from "./objective-measures.js?v=4";
-import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=2";
+import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=3";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -2113,9 +2113,9 @@ function renderCompetitorModal(data) {
         <div class="recap__cmpmodal-id">
           ${renderCompetitorLogo(c, 48)}
           ${
-            c.suggested
-              ? `<span class="ap-tag grey mini recap__cmp-badge"><i class="ap-icon-sparkles" aria-hidden="true"></i><span>Suggested — not added yet</span></span>`
-              : ""
+            // A system-generated status is a badge, not a tag (DS rule) — and
+            // tags only ever carry a close icon, so the sparkles went with it.
+            c.suggested ? `<span class="ap-badge blue">Suggested — not added yet</span>` : ""
           }
         </div>
         <div class="recap__cmpmodal-sec">

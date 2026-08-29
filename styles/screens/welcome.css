@@ -1385,12 +1385,6 @@
   color: var(--ref-color-grey-60);
 }
 
-/* Provenance chip — "Archie found this one". */
-.recap__cmp-badge {
-  flex-shrink: 0;
-  gap: var(--ref-spacing-xxxs);
-}
-
 .recap__cmpcard-remove {
   z-index: 1;
 }

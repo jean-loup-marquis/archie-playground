@@ -848,3 +848,17 @@ button.ap-link {
   align-items: center;
   justify-content: flex-start;
 }
+
+/* ── .ap-select `inline-dropdown` variant ─────────────────────────────────
+   Missing from the DS: a select whose open dropdown participates in the flow
+   instead of floating. Needed inside .ap-dialog, whose overflow:hidden clips
+   the DS's absolutely-positioned dropdown — with this variant the dialog
+   content scrolls and nothing clips. The popover shadow goes with the float:
+   an in-flow block casting one reads as a rendering glitch. Used by the
+   objective editor's measure picker; reusable by any select inside a dialog. */
+.ap-select.inline-dropdown .ap-select-dropdown {
+  position: static;
+  margin-top: var(--ref-spacing-xxxs);
+  box-shadow: none;
+  border: 1px solid var(--app-border-soft);
+}

@@ -705,8 +705,7 @@
 
 .insights-goals__adjust {
   margin-top: var(--ref-spacing-xs);
-  width: fit-content;
-  cursor: pointer;
+  align-self: flex-start;
 }
 
 /* ── Muted objectives ─────────────────────────────────────────────────────── */

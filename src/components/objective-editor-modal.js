@@ -162,15 +162,15 @@ function renderBody(o) {
   const parked = o.status === "parked";
   return `
     ${parked ? `<span class="ap-badge blue objed__soon-badge">Coming soon</span>` : ""}
-    <div class="objed__sec">
-      <span class="objed__flabel">Objective</span>
+    <div class="ap-form-field">
+      <label>Objective</label>
       <div class="ap-input-group">
-        <input type="text" data-objed-rename value="${esc(renameDraft != null ? renameDraft : label)}" placeholder="What this objective is called" aria-label="Objective name" />
+        <input type="text" data-objed-rename value="${esc(renameDraft != null ? renameDraft : label)}" placeholder="What this objective is called" />
       </div>
     </div>
-    <div class="objed__sec objed__sec--row">
-      <div class="objed__field">
-        <span class="objed__flabel">Window</span>
+    <div class="objed__sec--row">
+      <div class="ap-form-field objed__field">
+        <label>Window</label>
         <select class="ap-native-select" data-objed-window aria-label="Objective window">
           ${WINDOWS.map(
             (w) => `<option value="${w.id}"${o.window.type === w.id ? " selected" : ""}>${esc(w.label)}</option>`,
@@ -179,10 +179,13 @@ function renderBody(o) {
       </div>
       ${
         o.window.type === "fixed"
-          ? `<div class="objed__field">
-               <span class="objed__flabel">Ends on</span>
+          ? // Native date input, a documented deviation: the DS says .ap-datepicker
+            // for dates, but composing its full calendar buys nothing in a proto —
+            // the field keeps the DS form-field structure so the swap is local.
+            `<div class="ap-form-field objed__field">
+               <label>Ends on</label>
                <div class="ap-input-group">
-                 <input type="date" data-objed-date value="${esc(o.window.date || "")}" aria-label="End date" />
+                 <input type="date" data-objed-date value="${esc(o.window.date || "")}" />
                </div>
              </div>`
           : ""
@@ -195,7 +198,7 @@ function renderBody(o) {
 function renderMeasuredBlock(o) {
   return `
     <div class="objed__sec">
-      <span class="objed__flabel">Measures</span>
+      <span class="objed__seclabel">Measures</span>
       ${o.measures.map((m) => renderMeasure(m, o, { removable: o.measures.length > 1 })).join("")}
       ${renderMetricPicker(o)}
     </div>`;
@@ -204,7 +207,7 @@ function renderMeasuredBlock(o) {
 function renderParkedBlock(o) {
   return `
     <div class="objed__sec">
-      <span class="objed__flabel">Measure</span>
+      <span class="objed__seclabel">Measure</span>
       <p class="objed__note">${esc(o.soon)} Until it lands, the proxy below stands in.</p>
       ${renderMeasure(o.proxy, o, { proxy: true })}
       ${renderMetricPicker(o, { proxy: true })}
@@ -238,42 +241,49 @@ function renderMeasure(m, o, { removable = false, proxy = false } = {}) {
     <div class="objed__measure">
       <div class="objed__measure-head">
         <span class="objed__measure-name">${esc(m.metricLabel)}</span>
-        ${proxy ? `<span class="ap-tag grey mini">Proxy</span>` : ""}
+        ${proxy ? `<span class="ap-badge blue">Proxy</span>` : ""}
         ${
           removable
-            ? `<button type="button" class="objed__measure-remove" data-objed-measure-remove="${m.metricId}" aria-label="Remove ${esc(
+            ? `<button type="button" class="ap-icon-button transparent" data-objed-measure-remove="${m.metricId}" aria-label="Remove ${esc(
                 m.metricLabel,
               )}"><i class="ap-icon-close"></i></button>`
             : ""
         }
       </div>
       <div class="objed__bounds">
-        <label class="objed__bound">
-          <span class="objed__bound-label">From</span>
-          <div class="ap-input-group objed__bound-input">
+        <div class="ap-form-field objed__bound">
+          <label>From</label>
+          <div class="ap-input-group">
             <input type="text" data-objed-baseline="${m.metricId}" value="${esc(m.baselineValue)}" aria-label="Baseline" />
           </div>
           <span class="objed__bound-note">${esc(m.baselineNote)}</span>
-        </label>
-        <label class="objed__bound">
-          <span class="objed__bound-label">Target</span>
-          <div class="ap-input-group objed__bound-input">
+        </div>
+        <div class="ap-form-field objed__bound">
+          <label>Target</label>
+          <div class="ap-input-group">
             <input type="text" data-objed-target="${m.metricId}" value="${esc(m.target || "")}" aria-label="Target" />
           </div>
-          ${m.targetProposed ? `<span class="ap-tag grey mini">Suggested</span>` : ""}
-        </label>
+          ${m.targetProposed ? `<span class="ap-badge blue">Suggested</span>` : ""}
+        </div>
       </div>
       ${gauge}
       ${
         networks
-          ? `<details class="objed__net">
-               <summary>By network</summary>
-               <div class="objed__net-rows">${networks}</div>
-             </details>`
+          ? `<div class="ap-accordion collapsed objed__net" data-objed-net>
+               <div class="ap-accordion-header" data-objed-net-toggle>
+                 <span class="ap-accordion-title">By network</span>
+                 <button type="button" class="ap-icon-button ap-accordion-toggle" aria-label="Toggle networks">
+                   <i class="ap-icon-chevron-up"></i>
+                 </button>
+               </div>
+               <div class="ap-accordion-content">
+                 <div class="objed__net-rows">${networks}</div>
+               </div>
+             </div>`
           : ""
       }
-      <div class="objed__measure-window">
-        <span class="objed__bound-label">Window</span>
+      <div class="ap-form-field objed__bound objed__measure-window">
+        <label>Window</label>
         <select class="ap-native-select" data-objed-measure-window="${m.metricId}" aria-label="Measure window">
           <option value="inherit"${windowValue === "inherit" ? " selected" : ""}>Same as objective</option>
           ${WINDOWS.map(
@@ -282,7 +292,7 @@ function renderMeasure(m, o, { removable = false, proxy = false } = {}) {
         </select>
         ${
           !m.window.inherited && m.window.type === "fixed"
-            ? `<div class="ap-input-group objed__bound-input">
+            ? `<div class="ap-input-group">
                  <input type="date" data-objed-measure-date="${m.metricId}" value="${esc(m.window.date || "")}" aria-label="Measure end date" />
                </div>`
             : ""
@@ -294,8 +304,8 @@ function renderMeasure(m, o, { removable = false, proxy = false } = {}) {
 // The measure picker — a DS details/summary select grouped by catalogue
 // family, each option carrying the metric's default baseline as its caption.
 // Inside a .ap-dialog (overflow: hidden) the DS's absolute dropdown gets
-// clipped, so HERE the open dropdown flows in place (position: static, see the
-// component CSS) and the dialog content scrolls instead.
+// clipped, so the picker carries the `inline-dropdown` variant (ds-patches.css):
+// the open dropdown flows in place and the dialog content scrolls instead.
 function renderMetricPicker(o, { proxy = false } = {}) {
   const chosen = new Set(proxy ? [o.proxy.metricId] : o.measures.map((m) => m.metricId));
   const attr = proxy ? "data-objed-proxy-pick" : "data-objed-measure-add";
@@ -317,7 +327,7 @@ function renderMetricPicker(o, { proxy = false } = {}) {
         .join("")}</div>`,
   ).join("");
   return `
-    <details class="ap-select objed__picker" data-objed-picker>
+    <details class="ap-select inline-dropdown objed__picker" data-objed-picker>
       <summary class="ap-select-trigger">
         <span class="ap-select-value ap-select-placeholder">${proxy ? "Change the proxy metric…" : "Add a measure…"}</span>
         <i class="ap-icon-chevron-down ap-select-arrow" aria-hidden="true"></i>
@@ -334,6 +344,14 @@ function onClick(event) {
   if (!data) return;
   if (event.target.closest("[data-objed-close]")) {
     close();
+    return;
+  }
+
+  // The per-network accordion — the whole header toggles, per the DS anatomy
+  // (.collapsed hides the content and rotates the chevron).
+  const netToggle = event.target.closest("[data-objed-net-toggle]");
+  if (netToggle) {
+    netToggle.closest("[data-objed-net]")?.classList.toggle("collapsed");
     return;
   }
 

@@ -1,6 +1,6 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { getContexts, getContextById, updateContext } from "../../contexts-store.js?v=97";
-import { open as openObjectiveEditor } from "../../components/objective-editor-modal.js?v=2";
+import { open as openObjectiveEditor } from "../../components/objective-editor-modal.js?v=3";
 import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=116";
 import { navigate } from "../../router.js?v=54";
 import { showToast } from "../../components/toast.js?v=44";
@@ -205,10 +205,13 @@ function renderPanel(row, period) {
         // Opens the first objective's editor IN PLACE — adjusting an objective
         // must not require a trip to the Playbook (each group's name opens its
         // own). NOT data-insights-bridge, which toasts.
+        // A button, not .ap-link-on-a-button: the DS splits navigation (link —
+        // "Open the Playbook" above) from actions (button — this opens the
+        // editor in place). Ghost grey, the panel's own action treatment.
         firstObjectiveLabel
-          ? `<button type="button" class="ap-link standalone small insights-goals__adjust" data-insights-objective="${escapeAttr(
+          ? `<button type="button" class="ap-button ghost grey insights-goals__adjust" data-insights-objective="${escapeAttr(
               firstObjectiveLabel,
-            )}">Adjust objectives<i class="ap-icon-arrow-right" aria-hidden="true"></i></button>`
+            )}"><i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust objectives</span></button>`
           : ""
       }
       ${renderAlerts(row, objectives)}

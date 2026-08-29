@@ -1,7 +1,9 @@
 /* Per-objective editor modal — shared by the Playbook's Objectives section and
-   Insights (opened in place). DS .ap-dialog chrome; the content scrolls and the
-   measure picker's dropdown flows IN PLACE instead of floating, because
-   .ap-dialog is overflow:hidden and would clip an absolute dropdown. */
+   Insights (opened in place). DS .ap-dialog chrome; fields are DS
+   .ap-form-field structures (labels styled by the DS, not by hand); the
+   measure picker carries the `inline-dropdown` ap-select variant from
+   ds-patches.css so its dropdown flows in place instead of being clipped by
+   .ap-dialog's overflow:hidden — the dialog content scrolls instead. */
 
 .objed__backdrop {
   display: flex;
@@ -15,8 +17,9 @@
   display: none;
 }
 
+/* 528px is the DS dialog's documented reference width. */
 .objed.ap-dialog {
-  width: min(560px, 100%);
+  width: min(528px, 100%);
   max-height: 88vh;
   box-shadow: var(--app-shadow-popover-lg);
 }
@@ -38,25 +41,21 @@
   gap: var(--ref-spacing-xxs);
 }
 
+/* Section heading over the measure cards — a heading, not a field label. */
+.objed__seclabel {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+
 .objed__sec--row {
-  flex-direction: row;
+  display: flex;
   gap: var(--ref-spacing-sm);
 }
 
 .objed__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
   flex: 1;
   min-width: 0;
-}
-
-.objed__flabel {
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ref-color-grey-60);
 }
 
 .objed__note {
@@ -90,51 +89,29 @@
   margin-right: auto;
 }
 
-.objed__measure-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--app-radius-sm);
-  color: var(--ref-color-grey-60);
-  cursor: pointer;
-}
-
-.objed__measure-remove:hover {
-  color: var(--ref-color-grey-100);
-  background: var(--ref-color-grey-10);
-}
-
-.objed__measure-remove i {
-  font-size: var(--sys-icon-css-sm);
-}
-
-/* Bounds — editable baseline ("From") and target, side by side. */
+/* Bounds — two DS form-fields laid INLINE (label beside its input): the
+   layout override rides the app class, never the .ap-form-field selector. */
 .objed__bounds {
   display: flex;
   gap: var(--ref-spacing-sm);
 }
 
 .objed__bound {
-  display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--ref-spacing-xxs);
+  flex: 1;
   min-width: 0;
 }
 
-.objed__bound-label {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
-  white-space: nowrap;
+.objed__bound .ap-input-group {
+  flex: 1;
+  min-width: 0;
 }
 
-.objed__bound-input {
-  width: 96px;
-}
-
-.objed__bound-input input {
+.objed__bound .ap-input-group input {
   width: 100%;
+  min-width: 0;
 }
 
 .objed__bound-note {
@@ -171,30 +148,30 @@
   white-space: nowrap;
 }
 
-/* Per-network split — a native <details>, closed by default. */
-.objed__net summary {
-  cursor: pointer;
+/* Per-network split — a DS accordion, collapsed by default, slimmed to sit
+   inside the measure sub-card (the sizing rides the app class). */
+.objed__net .ap-accordion-title {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-60);
-  width: fit-content;
 }
 
-.objed__net[open] summary {
-  margin-bottom: var(--app-spacing-micro);
+.objed__net .ap-accordion-content {
+  padding: var(--ref-spacing-xxs) 0 0;
 }
 
+/* Icon / network / value — one grid so the values align across rows; each row
+   contributes its three cells via display:contents (no fixed column widths). */
 .objed__net-rows {
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-spacing-micro);
+  display: grid;
+  grid-template-columns: max-content max-content 1fr;
+  column-gap: var(--ref-spacing-xs);
+  row-gap: var(--app-spacing-micro);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-80);
 }
 
 .objed__net-row {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-80);
+  display: contents;
 }
 
 .objed__net-row i {
@@ -202,37 +179,16 @@
   color: var(--ref-color-grey-60);
 }
 
-.objed__net-name {
-  min-width: 72px;
-}
-
 .objed__net-baseline {
   color: var(--ref-color-grey-60);
 }
 
 /* The measure's own window (inherits the objective's by default). */
-.objed__measure-window {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-}
-
 .objed__measure-window .ap-native-select {
   flex: 1;
+  min-width: 0;
 }
 
-/* ── The measure picker ──────────────────────────────────────────────────
-   Inside .ap-dialog (overflow: hidden) the DS's absolute dropdown gets
-   clipped — the open dropdown flows in place instead and the dialog content
-   scrolls. Box-shadow dropped: an in-flow block casting a popover shadow
-   reads as a rendering glitch. */
 .objed__picker {
   width: 100%;
-}
-
-.objed__picker .ap-select-dropdown {
-  position: static;
-  margin-top: var(--ref-spacing-xxxs);
-  box-shadow: none;
-  border: 1px solid var(--app-border-soft);
 }
