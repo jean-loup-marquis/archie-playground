@@ -26,7 +26,6 @@ import {
   resolveObjectives,
   objectiveVerdict,
   measureTier,
-  measureState,
   materializeMeasureEntries,
   windowPhrase,
 } from "./objective-measures.js?v=7";
@@ -562,7 +561,7 @@ function renderChips(values) {
 // state (coming soon on a proxy), or its grace state (collecting, no verdict
 // yet). A living recap rather than a mute card: the status word sits on the
 // OBJECTIVE (counted roll-up of its measures — never weighted), each measure
-// line carries its own bar and its combined pace · trend chip, and the whole
+// line carries its own bar and bounds, and the whole
 // row opens the objective modal. Section edit (the pencil) turns the block
 // into the design's 2e: rename, remove a measure, add one from the catalog,
 // delete the objective — nothing persisted before Save (see the Cancel
@@ -590,9 +589,10 @@ function objectiveCountsLine(resolved) {
   return parts.join(" · ");
 }
 
-// One measure line: label (+ scope suffix) · bar · bounds · combined chip.
-// The chip tone follows the measure's contribution to the counted verdict
-// (on → green, soft → yellow, off → red).
+// One measure line: label (+ scope suffix) · bar · bounds. No pace/trend
+// chip here — the playbook block is the recap, and the only judgment it
+// prints is the objective's own status word; the per-measure verdicts live
+// on the Insights detail.
 function renderObjectiveMeasureLine(m, o, i, { edit = false, proxy = false, collecting = false } = {}) {
   const rate = m.metricType === "rate";
   const tier = collecting ? null : measureTier(m.progressPct);
@@ -604,13 +604,9 @@ function renderObjectiveMeasureLine(m, o, i, { edit = false, proxy = false, coll
   const bounds = rate
     ? `hold above ${esc(m.target || "—")} · currently ${esc(m.baselineValue)}`
     : `${esc(m.baselineValue)} → ${esc(m.target || "—")}`;
-  const state = measureState(m);
-  const chipTone = state === "on" ? "green" : state === "soft" ? "yellow" : "red";
   const tail = edit
     ? `<button type="button" class="ap-icon-button transparent" data-recap-measure-remove="${i}::${esc(m.id)}" aria-label="Remove ${esc(m.metricLabel)}"><i class="ap-icon-close"></i></button>`
-    : collecting
-      ? ""
-      : `<span class="ap-badge ${chipTone}">${esc(m.pace?.label || "")}${m.pace && m.trend ? " · " : ""}${esc(m.trend?.label || "")}</span>`;
+    : "";
   return `
     <span class="recap__objmeasure">
       <span class="recap__measure-metric">${esc(m.metricLabel)}${m.scopeLabel ? ` · ${esc(m.scopeLabel)}` : ""}${
