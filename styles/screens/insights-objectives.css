@@ -33,6 +33,11 @@
   min-width: 170px;
 }
 
+/* Icon-only view switch — same 36px height as its neighbours, narrower pads. */
+.objv__viewswitch .ap-segmented-control__segment {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+}
+
 .objv__group {
   white-space: nowrap;
 }

@@ -63,12 +63,13 @@ export function renderObjectivesTab() {
 // ── Toolbar ──────────────────────────────────────────────────────────────────
 
 function renderToolbar(prefs) {
+  // Icon-only: the view switch is a display preference, not navigation — it
+  // sits with the other reading controls (filter, sort) and stays quiet.
   const seg = (id, label, icon) => `
     <button type="button"
       class="ap-segmented-control__segment ${prefs.viewMode === id ? "ap-segmented-control__segment--selected" : ""}"
-      data-obj-view="${id}" aria-pressed="${prefs.viewMode === id}">
+      data-obj-view="${id}" aria-pressed="${prefs.viewMode === id}" aria-label="${label} view" title="${label}">
       <i class="${icon}" aria-hidden="true"></i>
-      <span class="ap-segmented-control__label">${label}</span>
     </button>`;
   const playbookOptions = [
     { value: "", label: "All playbooks" },
@@ -83,10 +84,6 @@ function renderToolbar(prefs) {
       : "";
   return `
     <div class="objv__toolbar">
-      <div class="ap-segmented-control" role="group" aria-label="Board or list">
-        ${seg("list", "List", "ap-icon-view-list")}
-        ${seg("board", "Board", "ap-icon-bar-graph")}
-      </div>
       <span class="objv__spacer"></span>
       ${renderToolbarSelect({
         value: prefs.playbookFilter,
@@ -101,6 +98,10 @@ function renderToolbar(prefs) {
         ariaLabel: "Sort objectives",
       })}
       ${groupToggle}
+      <div class="ap-segmented-control objv__viewswitch" role="group" aria-label="View as list or board">
+        ${seg("list", "List", "ap-icon-view-list")}
+        ${seg("board", "Board", "ap-icon-bar-graph")}
+      </div>
       <button type="button" class="ap-button primary blue" data-obj-new>
         <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
       </button>
