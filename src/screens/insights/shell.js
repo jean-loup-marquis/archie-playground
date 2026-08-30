@@ -157,11 +157,7 @@ function renderSoloHeader() {
   return `
     <header class="insights-view__solohead">
       <h1 class="insights-view__title">Insights and Objectives</h1>
-      <p class="insights-view__subtitle">
-        Where every objective across your Playbooks stands right now — Archie's verdict, the measures
-        behind it, and the move to make next. Check what's working, catch what's slipping, and act on
-        it without leaving the page.
-      </p>
+      <p class="insights-view__subtitle">Every objective across your Playbooks — Archie's verdict, the proof behind it, and the next move to make.</p>
     </header>`;
 }
 
