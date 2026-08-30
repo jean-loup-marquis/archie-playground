@@ -1,8 +1,8 @@
 import { navigate, route, setAfterRender, start } from "./router.js?v=54";
-import { renderInsights } from "./screens/insights/shell.js?v=30";
+import { renderInsights } from "./screens/insights/shell.js?v=31";
 import { isFlagOn } from "./feature-flags.js?v=44";
 import { initArchieLoader } from "./archie-loader.js?v=16";
-import { initTopbar, renderTopbar } from "./components/topbar.js?v=510";
+import { initTopbar, renderTopbar } from "./components/topbar.js?v=511";
 import { initSidebar, renderSidebar } from "./components/sidebar.js?v=478";
 import { init as initRightPanel } from "./components/right-panel.js?v=644";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=115";

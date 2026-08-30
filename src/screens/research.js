@@ -35,7 +35,7 @@
 
 import { html, raw, escapeAttr } from "../utils.js?v=45";
 import { navigate } from "../router.js?v=54";
-import { renderTopbar } from "../components/topbar.js?v=510";
+import { renderTopbar } from "../components/topbar.js?v=511";
 import { showToast } from "../components/toast.js?v=44";
 import { isFlagOn } from "../feature-flags.js?v=44";
 import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=97";

@@ -20,7 +20,7 @@
 
 import { html, raw, escapeAttr } from "../utils.js?v=45";
 import { navigate } from "../router.js?v=54";
-import { renderTopbar } from "../components/topbar.js?v=510";
+import { renderTopbar } from "../components/topbar.js?v=511";
 import { isFlagOn } from "../feature-flags.js?v=44";
 import { getContexts, getContextById } from "../contexts-store.js?v=97";
 import { getLaneById, getLanes, addLane, updateLane } from "../research-store.js?v=72";

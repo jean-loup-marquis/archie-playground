@@ -39,7 +39,7 @@ import { parseHashParams } from "../url-state.js?v=35";
 // The picker footer's "Create a Playbook" hands the context-builder its return route,
 // exactly as /contexts and the composer do.
 import { setHandoff } from "../handoff.js?v=34";
-import { renderTopbar, setTopbarActions, clearTopbarActions } from "../components/topbar.js?v=510";
+import { renderTopbar, setTopbarActions, clearTopbarActions } from "../components/topbar.js?v=511";
 import { isFlagOn } from "../feature-flags.js?v=44";
 import { renderBriefCard, renderUseButtons, briefBasis } from "../components/brief-card.js?v=96";
 import {

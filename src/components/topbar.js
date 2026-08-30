@@ -527,6 +527,10 @@ function backTargetFor(path) {
   // is not where someone who just went to manage their Playbooks was heading. The
   // label says which of the two it is.
   if (path === "/contexts") return { to: "/session/new", label: "Back to new chat" };
+  // Insights wears the library chrome now — the page names itself in its own H1
+  // and carries its own tab bar, so the topbar's one slot is the way out, same
+  // as /contexts: a fresh chat, not whatever conversation was last open.
+  if (path.startsWith("/insights")) return { to: "/session/new", label: "Back to new chat" };
   if (/^\/playbook\//.test(path)) return { to: "/contexts", label: "Back to Playbooks" };
   if (/^\/pillar\//.test(path)) return { to: "/content-strategy", label: "Back to Content strategy" };
   // A lane's own sub-pages — its SETTINGS and its ATTENTION page — go back to that
@@ -596,10 +600,8 @@ function currentTitle() {
   // bordered bar — that bar only existed because this map had no entry and the
   // topbar fell through to "Archie".
   if (path.startsWith("/topic-feeds")) return "Topic Feed";
-  // Same rule again, and it is what let the Insights page drop its in-page H1 and
-  // its tab bar: the topbar names the section, the segmented control beside it says
-  // which half of it you are reading.
-  if (path.startsWith("/insights")) return "Insights";
+  // /insights is absent on purpose: it leads with a back control (see
+  // backTargetFor) and draws its own H1 + tab bar in the page, library-style.
   // Same rule for Content strategy: the topbar names the SECTION, the pillar's
   // own header names the pillar.
   if (path.startsWith("/settings")) return "Settings";

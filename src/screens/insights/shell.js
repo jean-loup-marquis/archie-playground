@@ -1,5 +1,5 @@
 import { html, raw, escapeAttr } from "../../utils.js?v=45";
-import { renderTopbar, setTopbarActions, clearTopbarActions } from "../../components/topbar.js?v=510";
+import { renderTopbar } from "../../components/topbar.js?v=511";
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
 import { navigate, getPath } from "../../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";
@@ -16,18 +16,17 @@ import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=7";
 // Value is "is this worth its price". They were two, and the third question was
 // being answered by whichever of the two looked best that month.
 //
-// ── The page wears Archie's chrome ──────────────────────────────────────────
-// The topbar names the section and carries the switch in its LEAD slot as an
-// `.ap-segmented-control` — the Topic Feed's own idiom, the same component in the
-// same place. The page draws no header of its own.
+// ── The page wears the LIBRARY chrome, not the chat's ───────────────────────
+// Same shape as /contexts: the topbar leads with the way out (Back to new chat,
+// via backTargetFor), the page names itself in its own H1, and the switch is a
+// real `.ap-tabs` bar — tabs, because the three views are three readings of one
+// section, and the section header is the page's now, not the topbar's.
 //
-// ── The period lives here, not in the tabs ──────────────────────────────────
-// It is in the topbar's ACTIONS slot, which the previous pass deliberately left
-// empty on the argument that "the period belongs to each half, which states its
-// own". That held while the two halves measured different things over different
-// windows. It stopped holding the moment all three tabs became the same
-// master-detail over the same 7 / 30 / 60 window: three copies of one control, and
-// switching tabs silently changed the window you were reading.
+// ── The period lives on the tab bar ─────────────────────────────────────────
+// Right end of the `.ap-tabs-nav`, so one control rules whichever tab reads a
+// window. It survived the move from the topbar's actions slot for the same
+// reason it moved there: three copies of one control meant switching tabs
+// silently changed the window you were reading.
 //
 // A Playbook picker still has no business up there — this page compares every
 // Playbook, and the rail is how you choose one.
@@ -51,8 +50,8 @@ const DEFAULT_TAB = "objectives";
 
 let unsubscribe = null;
 let unbindTab = null;
-let boundTopbar = null;
-let onTopbarClick = null;
+let boundRoot = null;
+let onRootClick = null;
 
 export function renderInsights(params, target) {
   renderTopbar();
@@ -69,12 +68,15 @@ export function renderInsights(params, target) {
 
   teardown();
   const tab = TABS.find((t) => t.id === active);
-  setTopbarActions(tab.noPeriod ? "" : renderPeriodSelector(period), renderSegments(active));
 
   const paint = () => {
     target.innerHTML = html`<section class="screen insights-view">
       <div class="insights-view__page">
-        <div class="insights-view__panel">${raw(TABS.find((t) => t.id === active).render(period))}</div>
+        <header class="insights-view__head">
+          <h1 class="contexts-view__title">Insights</h1>
+        </header>
+        ${raw(renderTabsBar(active, tab.noPeriod ? null : period))}
+        <div class="insights-view__panel">${raw(tab.render(period))}</div>
       </div>
     </section>`;
     mountWidgetCharts(target);
@@ -96,32 +98,40 @@ function teardown() {
   }
   if (unbindTab) unbindTab();
   unbindTab = null;
-  clearTopbarActions();
-  if (boundTopbar && onTopbarClick) boundTopbar.removeEventListener("click", onTopbarClick);
-  boundTopbar = null;
-  onTopbarClick = null;
+  if (boundRoot && onRootClick) boundRoot.removeEventListener("click", onRootClick);
+  boundRoot = null;
+  onRootClick = null;
 }
 
-// Segments rather than a tab bar: tabs belong to a panel inside a page, and this is
-// a page-level switch that happens to change the whole body. They are BUTTONS, not
-// links, because the DS draws segments as buttons — deep links still work, each tab
-// is its own URL, and the back button still walks them; only the mechanism moved.
-function renderSegments(active) {
-  const seg = (t) => {
+// A real `.ap-tabs` bar — the DS's own answer for switching readings of one
+// section (the segmented control was a page-level switch idiom borrowed from
+// the Topic Feed's topbar; the page owns a header row now, so tabs belong).
+// BUTTONS, not links: deep links still work, each tab is its own URL, and the
+// back button still walks them — only the mechanism differs. The period
+// selector rides the right end of the same nav so the bar's border spans the
+// full row; a spacer keeps it a composition of unmodified DS pieces.
+function renderTabsBar(active, period) {
+  const one = (t) => {
     const on = t.id === active;
     return `
     <button
       type="button"
-      class="ap-segmented-control__segment ${on ? "ap-segmented-control__segment--selected" : ""}"
-      data-insights-segment="${escapeAttr(t.id)}"
-      aria-pressed="${on ? "true" : "false"}"
+      class="ap-tabs-tab${on ? " active" : ""}"
+      role="tab"
+      aria-selected="${on ? "true" : "false"}"
+      data-insights-tab="${escapeAttr(t.id)}"
     >
       <i class="${t.icon}" aria-hidden="true"></i>
-      <span class="ap-segmented-control__label">${t.label}</span>
+      <span>${t.label}</span>
     </button>`;
   };
-  return `<div class="ap-segmented-control insights-segments" role="group" aria-label="Which question Insights answers">
-      ${TABS.map(seg).join("")}
+  return `
+    <div class="ap-tabs insights-view__tabs">
+      <nav class="ap-tabs-nav" role="tablist" aria-label="Which question Insights answers">
+        ${TABS.map(one).join("")}
+        <span class="insights-view__tabspacer"></span>
+        ${period ? renderPeriodSelector(period) : ""}
+      </nav>
     </div>`;
 }
 
@@ -150,18 +160,16 @@ function renderPeriodSelector(active) {
   return `<div class="ap-segmented-control" role="group" aria-label="Window these figures cover">${items}</div>`;
 }
 
-// `#topbar` lives OUTSIDE `#app`, so a screen's delegated handler never reaches it:
-// the segments and the period need their own listener on that node, and the screen
-// owns the teardown. Same contract the Topic Feed's segmented control runs under.
+// The tab bar and the period live INSIDE #app now, so one delegated listener on
+// the root covers both. `root` is the router's #app node, reused across every
+// navigation — the teardown removes this listener before the next screen binds.
 function bind(root, active, period) {
   unbindTab = TABS.find((t) => t.id === active)?.bind?.(root, period) || null;
 
-  const topbar = document.getElementById("topbar");
-  if (!topbar) return;
-  onTopbarClick = (event) => {
-    const seg = event.target.closest("[data-insights-segment]");
-    if (seg) {
-      const id = seg.dataset.insightsSegment;
+  onRootClick = (event) => {
+    const tabBtn = event.target.closest("[data-insights-tab]");
+    if (tabBtn) {
+      const id = tabBtn.dataset.insightsTab;
       // The window survives the tab change: it is the reader's question about time,
       // and re-asking it on every tab is what made three copies of this control.
       if (id !== active) setHashQuery(`/insights/${id}`, period === DEFAULT_PERIOD ? {} : { period });
@@ -173,6 +181,6 @@ function bind(root, active, period) {
       if (id !== period) setHashQuery(getPath(), id === DEFAULT_PERIOD ? {} : { period: id });
     }
   };
-  topbar.addEventListener("click", onTopbarClick);
-  boundTopbar = topbar;
+  root.addEventListener("click", onRootClick);
+  boundRoot = root;
 }
