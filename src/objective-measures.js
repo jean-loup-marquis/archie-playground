@@ -37,6 +37,16 @@
 // cards "via proxy" by resolving the label here — one story, two surfaces.
 
 import { NETWORK_LABEL, getConnectedProfiles } from "./social-profiles.js?v=85";
+import { getContextById } from "./contexts-store.js?v=97";
+
+// The connected profiles are GLOBAL (one demo account), but an objective
+// belongs to a brand — a Noba Fashion objective read on tiles named
+// "Northwind Studio" broke every demo. The tile carries the Playbook's own
+// brand name; the global profile still supplies id and network.
+function profileNameFor(p, contextId) {
+  const ctx = contextId ? getContextById(contextId) : null;
+  return ctx?.brandName || ctx?.name || p.name || p.handle;
+}
 
 // The metric catalogue. Each metric names a concept, not a per-network field.
 // `type` — volume | rate | counter. A rate is scale-free (never split by
@@ -700,7 +710,7 @@ export function profileSplit(measure, contextId) {
       const p = inScope.find((x) => x.platform === entry.network) || inScope[0] || {};
       return {
         profileId: p.id,
-        name: p.name || p.handle,
+        name: profileNameFor(p, contextId),
         network: entry.network,
         value: rate ? measure.baselineValue : formatLike(measure.baselineValue, (total || 0) * entry.share),
         trendPct: entry.trendPct,
@@ -714,7 +724,7 @@ export function profileSplit(measure, contextId) {
       value = formatLike(measure.baselineValue, (total / inScope.length) * PROFILE_JITTER[i % PROFILE_JITTER.length]);
       trendPct = Math.round(trend.pct * PROFILE_JITTER[(i + 1) % PROFILE_JITTER.length]);
     }
-    return { profileId: p.id, name: p.name || p.handle, network: p.platform, value, trendPct };
+    return { profileId: p.id, name: profileNameFor(p, contextId), network: p.platform, value, trendPct };
   });
 }
 

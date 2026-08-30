@@ -27,11 +27,12 @@ const SHELL = `
 <div class="app-modal-backdrop blurred objdm__backdrop" id="objdmBackdrop" hidden>
   <aside class="ap-dialog objdm" id="objdmModal" role="dialog" aria-modal="true" aria-label="Objective detail" tabindex="-1">
     <div class="objdm__controls">
+      <span class="objdm__pos" aria-live="polite"></span>
       <button type="button" class="ap-icon-button stroked grey" data-objdm-prev aria-label="Previous objective"><i class="ap-icon-chevron-up"></i></button>
       <button type="button" class="ap-icon-button stroked grey" data-objdm-next aria-label="Next objective"><i class="ap-icon-chevron-down"></i></button>
       <button type="button" class="ap-icon-button stroked grey" data-objdm-close aria-label="Close"><i class="ap-icon-close"></i></button>
     </div>
-    <div class="ap-dialog-content objdm__content"></div>
+    <div class="ap-dialog-content objdm__content" tabindex="0"></div>
   </aside>
 </div>`;
 
@@ -50,9 +51,28 @@ export function init() {
   });
   document.addEventListener("keydown", (e) => {
     if (!backdrop || backdrop.hidden) return;
-    if (e.key === "Escape") close();
-    if (e.key === "ArrowUp") step(-1);
-    if (e.key === "ArrowDown") step(1);
+    if (e.key === "Escape") {
+      close();
+      return;
+    }
+    if (e.key === "Tab") {
+      trapTab(e);
+      return;
+    }
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+    // Arrows read first, navigate second: while the content can still scroll
+    // in that direction the key scrolls it (the content div holds focus), and
+    // only at the boundary does the same key move to the next objective —
+    // both at once threw away the reading position mid-scroll.
+    const atTop = bodyEl.scrollTop <= 0;
+    const atBottom = bodyEl.scrollTop + bodyEl.clientHeight >= bodyEl.scrollHeight - 1;
+    if (e.key === "ArrowUp" && atTop) {
+      e.preventDefault();
+      step(-1);
+    } else if (e.key === "ArrowDown" && atBottom) {
+      e.preventDefault();
+      step(1);
+    }
   });
   window.addEventListener("hashchange", close);
   initialized = true;
@@ -70,7 +90,27 @@ export function open(opts) {
   panel.classList.remove("objdm--in");
   // Force a frame so the scale-in transition runs from its initial state.
   window.requestAnimationFrame(() => panel.classList.add("objdm--in"));
-  panel.focus?.();
+  // The content holds focus so arrow keys scroll the reading natively.
+  bodyEl.focus?.();
+}
+
+// Tab stays inside the dialog while it is open — the board behind is blurred
+// but its buttons were still one Tab away.
+function trapTab(e) {
+  const focusables = panel.querySelectorAll("button, a[href], [tabindex='0']");
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (!panel.contains(document.activeElement)) {
+    e.preventDefault();
+    first.focus();
+  } else if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
 }
 
 export function close() {
@@ -88,6 +128,7 @@ function step(delta) {
   index = (index + delta + entries.length) % entries.length;
   expandedId = null;
   paint();
+  bodyEl.scrollTop = 0;
 }
 
 function paint() {
@@ -96,6 +137,8 @@ function paint() {
     close();
     return;
   }
+  const pos = panel.querySelector(".objdm__pos");
+  if (pos) pos.textContent = entries.length > 1 ? `${index + 1} / ${entries.length}` : "";
   bodyEl.innerHTML = renderObjectiveDetail(entry, {
     expandedId,
     host: "modal",

@@ -162,14 +162,17 @@ function renderExpandedMeasure(m, entry, parked) {
       </div>`,
     )
     .join("");
-  const outTiles = outOfScopeNetworks(m)
-    .map(
-      (n) => `
-      <div class="objd__tile objd__tile--out">
-        <span>${esc(NETWORK_LABEL[n] || n)} isn't in this measure's scope</span>
-      </div>`,
-    )
-    .join("");
+  // One line for every absent network — a dashed tile per network said the
+  // same sentence three times and out-shouted the tiles that carry data.
+  const outNames = outOfScopeNetworks(m).map((n) => NETWORK_LABEL[n] || n);
+  const outList =
+    outNames.length > 1 ? `${outNames.slice(0, -1).join(", ")} and ${outNames[outNames.length - 1]}` : outNames[0];
+  const outTiles = outNames.length
+    ? `
+      <div class="objd__tile objd__tile--out objd__tile--outline">
+        <span>${esc(outList)} ${outNames.length > 1 ? "aren't" : "isn't"} in this measure's scope</span>
+      </div>`
+    : "";
   const counter = rate
     ? `<span class="objd__big">${esc(m.baselineValue)}</span><span class="objd__of">vs ${esc(m.target || "—")}</span>`
     : `<span class="objd__big">${esc(m.baselineValue)}</span><span class="objd__of">/ ${esc(m.target || "—")}</span>`;
@@ -190,7 +193,7 @@ function renderExpandedMeasure(m, entry, parked) {
       <div class="objd__figures">
         <div class="objd__pacecol">
           <div class="objd__counter">${counter}<span class="objd__spacer"></span>${pct}</div>
-          <span class="objd__bigtrack"><span class="objd__bigfill objd__bigfill--${tone}" style="width: ${m.progressPct ?? 0}%"></span></span>
+          <span class="objd__bigtrack" aria-hidden="true"><span class="objd__bigfill objd__bigfill--${tone}" style="width: ${m.progressPct ?? 0}%"></span></span>
           <span class="objd__caption">${esc(paceCaption(m))}</span>
         </div>
         <div class="objd__trendcol">
@@ -220,7 +223,7 @@ function renderCollapsedMeasure(m, entry) {
       ${verdictChips(m)}
       <span class="objd__spacer"></span>
       <span class="objd__mscope">${esc(scopePhrase(m, entry))}</span>
-      <span class="objd__minitrack"><span class="objd__bigfill objd__bigfill--${tone}" style="width: ${m.progressPct ?? 0}%"></span></span>
+      <span class="objd__minitrack" aria-hidden="true"><span class="objd__bigfill objd__bigfill--${tone}" style="width: ${m.progressPct ?? 0}%"></span></span>
       <span class="objd__mvalue">${value}</span>
     </section>`;
 }

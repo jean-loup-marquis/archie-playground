@@ -17,6 +17,7 @@
 /* ── Toolbar ────────────────────────────────────────────────────────────── */
 .objv__toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--ref-spacing-sm);
   min-height: 64px;
@@ -706,6 +707,7 @@
 
 .objd__tiles {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--ref-spacing-sm);
 }
 
@@ -725,6 +727,22 @@
   justify-content: center;
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-60);
+}
+
+/* The one absent-networks line takes the row's full width — it is a sentence,
+   not a tile competing with the tiles that carry data. */
+.objd__tile--outline {
+  flex: 1 1 100%;
+}
+
+/* In the List panel the head is narrower than in the modal — the scope meta
+   wraps under the chips there rather than truncating its tail ("windo…"). */
+.objv__detailcard .objd__mhead {
+  flex-wrap: wrap;
+}
+
+.objv__detailcard .objd__mscope {
+  white-space: normal;
 }
 
 .objd__tile-label {
@@ -856,10 +874,53 @@
   top: var(--ref-spacing-sm);
   right: var(--ref-spacing-sm);
   display: flex;
+  align-items: center;
   gap: var(--ref-spacing-xxs);
   z-index: 1;
 }
 
+/* Where the ↑↓ walk stands in the board's order — "3 / 14". */
+.objdm__pos {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+  font-variant-numeric: tabular-nums;
+  margin-right: var(--app-spacing-micro);
+}
+
 .objdm__content {
   overflow-y: auto;
+}
+
+/* The content div is the keyboard scroller (tabindex=0) — its focus is real
+   but a ring around the whole reading surface reads as a giant text box. */
+.objdm__content:focus {
+  outline: none;
+}
+
+/* ── Keyboard focus — the rows, cards and fold toggles are plain buttons and
+   get the app's ring rather than the UA default. ─────────────────────────── */
+.objv__rowitem:focus-visible,
+.objv__card:focus-visible,
+.objv__newrow:focus-visible,
+.objd__mtoggle:focus-visible,
+.objv__lanetoggle:focus-visible,
+.objv__collectrail:focus-visible,
+.objv__colhead--btn:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
+}
+
+/* ── The filter found nothing — say so where the rail would be. ──────────── */
+.objv__emptyrail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xl) var(--ref-spacing-lg);
+}
+
+.objv__emptyrail p {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  color: var(--ref-color-grey-60);
 }

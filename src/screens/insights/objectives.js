@@ -101,6 +101,9 @@ function renderToolbar(prefs) {
         ariaLabel: "Sort objectives",
       })}
       ${groupToggle}
+      <button type="button" class="ap-button primary blue" data-obj-new>
+        <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
+      </button>
     </div>`;
 }
 
@@ -183,7 +186,7 @@ function renderCard(entry, { eyebrow = true } = {}) {
     <button type="button" class="ap-card objv__card" data-obj-card="${escapeAttr(entry.key)}" aria-label="Open ${esc(entry.label)}">
       ${top}
       ${measures.map((m) => renderCardMeasureRow(m, { proxy: parked })).join("")}
-      ${hidden > 0 ? `<span class="objv__cardmore"><span class="ap-badge grey">+${hidden}</span>more ${hidden === 1 ? "measure" : "measures"} in the detail</span>` : ""}
+      ${hidden > 0 ? `<span class="objv__cardmore"><span class="ap-badge grey">+${hidden}</span>more ${hidden === 1 ? "measure" : "measures"}</span>` : ""}
       ${note}
     </button>`;
 }
@@ -309,20 +312,31 @@ function renderLanes(entries, prefs) {
 // ── List (5c) ────────────────────────────────────────────────────────────────
 
 function renderList(entries, prefs) {
-  const sort = prefs.sort === "playbook" ? "risk" : prefs.sort;
+  // The list honours every sort the trigger offers — it used to coerce
+  // "by playbook" to "risk" while the select still claimed playbook order.
   const active = sortEntries(
     entries.filter((e) => !e.collecting),
-    sort,
+    prefs.sort,
   );
   const collecting = entries.filter((e) => e.collecting);
   const rows = [...active, ...collecting];
   flatOrder = rows;
   const selected = rows.find((e) => e.key === selectedKey) || rows[0];
+  if (!rows.length) {
+    return `
+      <div class="objv__emptyrail">
+        <p>No objectives in this Playbook yet.</p>
+        <button type="button" class="ap-button primary blue" data-obj-new>
+          <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
+        </button>
+      </div>`;
+  }
   const items = rows
     .map((e) => {
+      const on = selected && e.key === selected.key;
       const status = verdictWord(e);
       return `
-        <button type="button" class="objv__rowitem${selected && e.key === selected.key ? " is-selected" : ""}" data-obj-row="${escapeAttr(e.key)}">
+        <button type="button" class="objv__rowitem${on ? " is-selected" : ""}" data-obj-row="${escapeAttr(e.key)}"${on ? ` aria-current="true"` : ""}>
           <span class="objv__rowline"><span class="objv__rowname">${esc(e.label)}</span><span class="objv__spacer"></span>${status}</span>
           <span class="objv__rowsummary">${esc(listSummary(e))}</span>
         </button>`;
@@ -336,7 +350,7 @@ function renderList(entries, prefs) {
     : "";
   return `
     <div class="objv__split">
-      <div class="objv__raillist">
+      <div class="objv__raillist" aria-label="Objectives, most at risk first">
         ${items}
         <span class="objv__spacer"></span>
         <button type="button" class="objv__newrow" data-obj-new><span>+ New objective</span></button>
