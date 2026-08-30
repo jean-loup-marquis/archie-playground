@@ -248,7 +248,7 @@
 }
 
 .objc__row:hover {
-  background: var(--app-surface-active, var(--ref-color-electric-blue-10));
+  background: var(--ref-color-electric-blue-10);
   border-color: var(--ref-color-electric-blue-40, var(--app-border));
 }
 

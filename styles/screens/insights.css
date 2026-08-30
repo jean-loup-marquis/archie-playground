@@ -655,10 +655,10 @@
 }
 
 .insights-bar__fill--2 {
-  background: #ff9170;
+  background: var(--app-archie-orange-60);
 }
 .insights-bar__fill--3 {
-  background: #ffbba4;
+  background: var(--app-archie-orange-30);
 }
 
 .insights-bar__value {

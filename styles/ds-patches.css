@@ -218,7 +218,7 @@
 }
 
 .ap-button.stroked.danger:hover {
-  background: var(--ref-color-red-05, rgba(220, 38, 38, 0.05));
+  background: var(--ref-color-red-10);
 }
 
 /* Feature-lock (purple) infobox variant. The DS ships info/warning/error/

@@ -34,6 +34,8 @@
      a different hue from Archie's #FF3C00, and it ships no warm paper and no
      peach. Those are below. */
   --app-archie-orange: #ff3c00; /* brand, trending, accent bars */
+  --app-archie-orange-60: #ff9170; /* rank-2 bar in an archie-orange ramp */
+  --app-archie-orange-30: #ffbba4; /* rank-3 bar in an archie-orange ramp */
   --app-archie-orange-deep: #db3100; /* orange text on peach (contrast) */
   --app-peach: #fff1ec; /* trending surfaces, brand-soft fills */
   --app-peach-border: #ffddd1; /* the border that pairs with peach */

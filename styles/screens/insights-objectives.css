@@ -517,7 +517,7 @@
 
 .objd__headline {
   margin: 0;
-  font-size: 21px;
+  font-size: var(--ref-font-size-xl);
   line-height: 1.35;
   font-weight: var(--app-font-weight-semibold);
   color: var(--ref-color-grey-100);
@@ -606,7 +606,7 @@
 }
 
 .objd__big {
-  font-size: 26px;
+  font-size: var(--ref-font-size-xxl);
   font-weight: var(--app-font-weight-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-100);
@@ -700,7 +700,7 @@
 }
 
 .objd__tile-label {
-  font-size: 10.5px;
+  font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-caption-bold-weight);
   letter-spacing: 0.05em;
   color: var(--ref-color-grey-60);
@@ -710,7 +710,7 @@
 }
 
 .objd__tile-value {
-  font-size: 17px;
+  font-size: var(--ref-font-size-md);
   font-weight: var(--app-font-weight-semibold);
   font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-100);

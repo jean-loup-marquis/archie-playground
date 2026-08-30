@@ -714,7 +714,7 @@
 }
 
 .recap__objproxy-mark {
-  font-size: 10px;
+  font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-caption-bold-weight);
   text-transform: uppercase;
   color: var(--ref-color-yellow-150);
