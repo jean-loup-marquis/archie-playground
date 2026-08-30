@@ -1,5 +1,5 @@
 import { html, raw, escapeAttr } from "../../utils.js?v=45";
-import { renderTopbar } from "../../components/topbar.js?v=512";
+import { renderTopbar } from "../../components/topbar.js?v=513";
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
 import { navigate, getPath } from "../../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";

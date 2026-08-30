@@ -778,26 +778,26 @@
   height: 44px;
 }
 
+/* Borderless stat strip — the per-profile split reads as columns of figures,
+   grouped by whitespace, not boxed. */
 .objd__tiles {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ref-spacing-sm);
+  gap: var(--ref-spacing-md) var(--ref-spacing-lg);
 }
 
 .objd__tile {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 auto;
+  min-width: 120px;
   display: flex;
   flex-direction: column;
   gap: var(--app-spacing-micro);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-md);
+  padding: 0;
+  border: none;
+  border-radius: 0;
 }
 
 .objd__tile--out {
-  border-style: dashed;
-  justify-content: center;
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-60);
 }
@@ -1086,12 +1086,16 @@
 }
 
 /* ── The proof — the expanded measure is a soft card, the rest are rows. ──── */
+/* No card-in-a-card: the expanded measure is plain, on the detail card's own
+   surface. Whitespace between its sub-blocks (head · figures · tiles · posts)
+   and a single hairline below separate it from the next measure. */
 .objd__proof .objd__measure {
   border-top: none;
-  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
-  background: var(--app-surface-subtle);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-card);
+  border-bottom: 1px solid var(--app-border-soft);
+  border-radius: 0;
+  background: none;
+  padding: 0 0 var(--ref-spacing-md);
+  gap: var(--ref-spacing-md);
 }
 
 .objd__proof .objd__mrow {

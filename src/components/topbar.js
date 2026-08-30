@@ -531,11 +531,10 @@ function backTargetFor(path) {
   // is not where someone who just went to manage their Playbooks was heading. The
   // label says which of the two it is.
   if (path === "/contexts") return { to: "/session/new", label: "Back to new chat" };
-  // Insights leads with the way out AND its name: back first (the leftmost
-  // slot is the back's everywhere in the app), then the title — the page's own
-  // H1 cost a full header band of air above the tab bar. `title` is what asks
-  // for that composition; the other backs keep replacing the title.
-  if (path.startsWith("/insights")) return { to: "/session/new", label: "Back to new chat", title: "Insights" };
+  // Insights carries no topbar title — the page owns its own "Insights and
+  // Objectives" H1 now, so a second "Insights" in the topbar was a duplicate.
+  // Just the way out.
+  if (path.startsWith("/insights")) return { to: "/session/new", label: "Back to new chat" };
   if (/^\/playbook\//.test(path)) return { to: "/contexts", label: "Back to Playbooks" };
   if (/^\/pillar\//.test(path)) return { to: "/content-strategy", label: "Back to Content strategy" };
   // A lane's own sub-pages — its SETTINGS and its ATTENTION page — go back to that

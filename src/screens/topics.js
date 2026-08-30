@@ -21,7 +21,7 @@
 import { html, raw, escapeAttr } from "../utils.js?v=45";
 import { navigate } from "../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=35";
-import { renderTopbar } from "../components/topbar.js?v=512";
+import { renderTopbar } from "../components/topbar.js?v=513";
 import { showToast } from "../components/toast.js?v=44";
 import { renderEmptyState } from "../components/empty-state.js?v=26";
 import { renderTopicCard } from "../components/topic-card.js?v=50";
