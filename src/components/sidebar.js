@@ -16,7 +16,7 @@ import {
   togglePillar as togglePillarSession,
   subscribe as subscribeSessions,
 } from "../sessions-store.js?v=60";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 import { isNewUser } from "../user-mode.js?v=36";
 import { clearSession as clearLibrarySession } from "../library.js?v=113";
 import { getContexts, getContextById, subscribe as subscribeContexts } from "../contexts-store.js?v=97";

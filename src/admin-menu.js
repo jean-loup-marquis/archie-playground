@@ -7,8 +7,8 @@
 // change reloads the app so the stores re-seed under the new mode / flag.
 
 import { html, raw, escapeHtml } from "./utils.js?v=45";
-import { FLAGS } from "./ff-catalog.js?v=41";
-import { getFlags, setFlag } from "./feature-flags.js?v=44";
+import { FLAGS } from "./ff-catalog.js?v=42";
+import { getFlags, setFlag } from "./feature-flags.js?v=45";
 import { getUserMode, setUserMode } from "./user-mode.js?v=36";
 
 const ADMIN_MODE_OPTIONS = [

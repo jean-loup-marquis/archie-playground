@@ -23,7 +23,7 @@ import { URL_SERVICES, detectUrlService } from "../url-services.js?v=15";
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=35";
 import { navigate } from "../router.js?v=54";
 import { renderConnectorLogo } from "../connectors-view.js?v=63";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 import { showToast } from "./toast.js?v=44";
 import { dropzoneHTML } from "./dropzone.js?v=15";
 

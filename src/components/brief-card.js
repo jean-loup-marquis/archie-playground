@@ -53,7 +53,7 @@ import { html, raw, escapeAttr } from "../utils.js?v=45";
 import { findReviewStatus } from "../research-catalog.js?v=40";
 // One title per topic — the article's, not the scan's headline. See briefs-store.
 import { briefTitle } from "../briefs-store.js?v=88";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 import { pillarForBrief } from "../pillars-store.js?v=30";
 
 // No full stop — it is a caption on a menu row, not a sentence. This started as a

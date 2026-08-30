@@ -29,7 +29,7 @@ import { open as openAnalyzeProfilesModal } from "../components/analyze-profiles
 import { open as openFillDocumentModal } from "../components/fill-document-modal.js?v=19";
 import { analyzeWebsite, analyzeDocument, analyzeSocialProfiles } from "../context-mock-analysis.js?v=39";
 import { sectionPatchFromAnalysis } from "../context-builder.js?v=477";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 
 const AUTOFILL_MS = 1500;
 

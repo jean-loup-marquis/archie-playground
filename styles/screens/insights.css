@@ -56,6 +56,32 @@
   flex: 1 1 auto;
 }
 
+/* ── The single-view header (Usage & Value behind the insightsUsageValue flag).
+   Takes the tab bar's place at the top of the page: same horizontal rhythm and
+   the same bottom rule, so the Objectives toolbar below reads as separated. */
+.insights-view__solohead {
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
+  border-bottom: 1px solid var(--app-border-soft);
+  background: var(--app-surface);
+}
+
+.insights-view__title {
+  margin: 0;
+  font-family: var(--sys-text-style-h1-font-family);
+  font-size: var(--sys-text-style-h1-size);
+  line-height: var(--sys-text-style-h1-line-height);
+  font-weight: var(--sys-text-style-h1-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.insights-view__subtitle {
+  margin: var(--ref-spacing-xxs) 0 0;
+  max-width: 70ch;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-80);
+}
+
 .insights-view__panel {
   display: flex;
   flex-direction: column;

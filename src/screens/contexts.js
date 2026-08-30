@@ -10,7 +10,7 @@ import { navigate } from "../router.js?v=54";
 import { setHandoff } from "../handoff.js?v=34";
 import { open as openConfirmModal } from "../components/confirm-modal.js?v=36";
 import { renderEmptyState } from "../components/empty-state.js?v=26";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 
 // Contexts library — standalone page (handoff §2.4).
 // Header → search → grid of ContextCards. Each card surfaces brand /

@@ -8,19 +8,23 @@ import { renderUsageTab, bindUsageTab } from "./usage.js?v=65";
 import { renderValueTab, bindValueTab } from "./value.js?v=13";
 import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=26";
 import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=7";
+import { isFlagOn } from "../../feature-flags.js?v=45";
 
-// Insights — one page, three tabs, one panel that changes job.
+// Insights — one page, one panel that changes job.
 //
-// The three answer three different questions and that is the whole reason there
-// are three: Performance is "where do I stand", Usage is "what did Archie make",
-// Value is "is this worth its price". They were two, and the third question was
-// being answered by whichever of the two looked best that month.
+// It can answer three different questions: Objectives is "where do I stand",
+// Usage is "what did Archie make", Value is "is this worth its price". Usage and
+// Value ride the `insightsUsageValue` flag: while it is OFF (the default) the
+// page IS Objectives — no tab bar, an "Insights and Objectives" header instead.
+// Turn the flag ON and the three-tab bar returns, each tab a reading of one
+// section.
 //
-// ── The chrome: back + title in the topbar, tabs first in the page ──────────
+// ── The chrome: back + title in the topbar, tabs (or the header) first in the
+//    page ──────────────────────────────────────────────────────────────────
 // The topbar leads with the way out (Back to new chat, via backTargetFor) and
-// then names the section — an in-page H1 was tried and cost a full header band
-// of air above the tab bar. The switch is a real `.ap-tabs` bar, first thing in
-// the page: tabs, because the three views are three readings of one section.
+// then names the section. When all three tabs are live the page opens on a real
+// `.ap-tabs` bar — the DS's answer for switching readings of one section; when
+// only Objectives is live it opens on the H1 header instead (renderSoloHeader).
 //
 // ── The period lives on the tab bar ─────────────────────────────────────────
 // Right end of the `.ap-tabs-nav`, so one control rules whichever tab reads a
@@ -48,6 +52,14 @@ const TABS = [
 
 const DEFAULT_TAB = "objectives";
 
+// Usage and Value ride the `insightsUsageValue` flag. While it is OFF (default)
+// the page IS Objectives — the whole tab bar disappears and a single "Insights
+// and Objectives" header takes its place; there is no second reading to switch
+// to, so a one-tab bar would be a control with nothing to control.
+function availableTabs() {
+  return isFlagOn("insightsUsageValue") ? TABS : TABS.filter((t) => t.id === "objectives");
+}
+
 let unsubscribe = null;
 let unbindTab = null;
 let boundRoot = null;
@@ -55,7 +67,11 @@ let onRootClick = null;
 
 export function renderInsights(params, target) {
   renderTopbar();
-  const active = TABS.some((t) => t.id === params.tab) ? params.tab : DEFAULT_TAB;
+  const tabs = availableTabs();
+  const showTabs = tabs.length > 1;
+  // An unavailable tab (a stale /insights/usage while the flag is off, or a bad
+  // id) falls back to Objectives — same redirect the router already relied on.
+  const active = tabs.some((t) => t.id === params.tab) ? params.tab : DEFAULT_TAB;
   if (active !== params.tab) {
     navigate(`/insights/${DEFAULT_TAB}`);
     return () => {};
@@ -70,9 +86,10 @@ export function renderInsights(params, target) {
   const tab = TABS.find((t) => t.id === active);
 
   const paint = () => {
+    const header = showTabs ? renderTabsBar(active, tab.noPeriod ? null : period) : renderSoloHeader();
     target.innerHTML = html`<section class="screen insights-view">
       <div class="insights-view__page">
-        ${raw(renderTabsBar(active, tab.noPeriod ? null : period))}
+        ${raw(header)}
         <div class="insights-view__panel">${raw(tab.render(period))}</div>
       </div>
     </section>`;
@@ -130,6 +147,22 @@ function renderTabsBar(active, period) {
         ${period ? renderPeriodSelector(period) : ""}
       </nav>
     </div>`;
+}
+
+// The single-view header (Usage & Value behind the flag). With one reading, a
+// tab bar would switch between one thing, so the page leads with its name and a
+// line saying what it holds — the in-page H1 the tab bar had replaced, brought
+// back now that there is nothing to tab between.
+function renderSoloHeader() {
+  return `
+    <header class="insights-view__solohead">
+      <h1 class="insights-view__title">Insights and Objectives</h1>
+      <p class="insights-view__subtitle">
+        Where every objective across your Playbooks stands right now — Archie's verdict, the measures
+        behind it, and the move to make next. Check what's working, catch what's slipping, and act on
+        it without leaving the page.
+      </p>
+    </header>`;
 }
 
 // 7 / 30 / 60, and 60 is the last one on purpose: it is where Archie's memory ends,

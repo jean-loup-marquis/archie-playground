@@ -27,7 +27,7 @@ import {
 import { getSessionById, updateSession, subscribe as subscribeSessions } from "../sessions-store.js?v=60";
 import { open as openRenameModal } from "./rename-modal.js?v=16";
 import { subscribe as subscribeContexts } from "../contexts-store.js?v=97";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 import {
   getPickerState as getTopPostsState,
   subscribePicker as subscribeTopPosts,

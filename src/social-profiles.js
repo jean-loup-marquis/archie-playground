@@ -9,7 +9,7 @@
 
 import { socialAccounts, demoManyProfiles } from "./mocks.js?v=118";
 import { escapeHtml } from "./utils.js?v=45";
-import { isFlagOn } from "./feature-flags.js?v=44";
+import { isFlagOn } from "./feature-flags.js?v=45";
 
 // Map our mock's `platform` slug to the DS's official full-color network
 // icon used by the .ap-avatar-network corner badge.

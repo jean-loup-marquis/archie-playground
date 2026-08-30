@@ -1,6 +1,6 @@
 import { navigate, route, setAfterRender, start } from "./router.js?v=54";
-import { renderInsights } from "./screens/insights/shell.js?v=34";
-import { isFlagOn } from "./feature-flags.js?v=44";
+import { renderInsights } from "./screens/insights/shell.js?v=35";
+import { isFlagOn } from "./feature-flags.js?v=45";
 import { initArchieLoader } from "./archie-loader.js?v=16";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=512";
 import { initSidebar, renderSidebar } from "./components/sidebar.js?v=478";

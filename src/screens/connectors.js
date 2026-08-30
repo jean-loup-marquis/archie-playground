@@ -18,7 +18,7 @@ import { setHandoff } from "../handoff.js?v=34";
 import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=81";
 import { renderGalleryBody } from "../connectors-view.js?v=63";
 import { open as openConnectorsModal } from "../components/connectors-modal.js?v=65";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 
 // Local view state (search + category filter).
 let view = { query: "", category: "all" };

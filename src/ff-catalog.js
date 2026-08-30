@@ -220,4 +220,16 @@ export const FLAGS = Object.freeze([
       "never coloured CTA. ON is a customer: a plain 'Add to a report' callout, " +
       "because the deeper history is already theirs.",
   },
+  {
+    id: "insightsUsageValue",
+    label: "Insights: Usage & Value tabs",
+    default: false,
+    hides:
+      "When OFF (default), the Insights page is Objectives only: the Usage and " +
+      "Value tabs are hidden and the whole .ap-tabs bar disappears. In its place " +
+      "the page leads with an 'Insights and Objectives' H1 + a subtitle. Stale " +
+      "/insights/usage and /insights/value deep links bounce to Objectives. ON " +
+      "restores the three-tab bar (Objectives · Usage · Value) with the period " +
+      "selector, and the H1 band goes away.",
+  },
 ]);

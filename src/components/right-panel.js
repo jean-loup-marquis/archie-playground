@@ -1,6 +1,6 @@
 import { html, raw, escapeText, escapeAttr } from "../utils.js?v=45";
 import { getThread, subscribe as subscribeThread } from "../assistant.js?v=119";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 import { ideas as MOCK_IDEAS } from "../mocks.js?v=118";
 import { isNewUser } from "../user-mode.js?v=36";
 import { getPath } from "../router.js?v=54";

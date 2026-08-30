@@ -32,7 +32,7 @@ import { getIdeas, subscribe as subscribeLibrary } from "../library.js?v=113";
 import { getPosts, subscribe as subscribePosts } from "../posts-store.js?v=89";
 import { subscribe as subscribeSessions } from "../sessions-store.js?v=60";
 import { addMention } from "../composer-mentions.js?v=87";
-import { isFlagOn } from "../feature-flags.js?v=44";
+import { isFlagOn } from "../feature-flags.js?v=45";
 
 // Two-level structure:
 //   .conversation-status-column   — fills grid column 3 with white bg
