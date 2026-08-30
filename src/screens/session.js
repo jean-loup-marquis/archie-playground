@@ -1,7 +1,7 @@
 import { html, raw, escapeHtml, escapeAttr as escapeHtmlAttr } from "../utils.js?v=45";
 import { navigate } from "../router.js?v=54";
 import { renderTopbar } from "../components/topbar.js?v=512";
-import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=117";
+import { socialAccounts, chatStarters, connectorDocs } from "../mocks.js?v=118";
 import {
   getConnectedProfiles,
   buildConnectedProfileItems,
@@ -131,7 +131,7 @@ import { showToast } from "../components/toast.js?v=44";
 // gives the picked topic's source its icon, matching the card it came from.
 import { openIdeaArticle, openIdeaPicker, openPillarPicker } from "../components/research-modals.js?v=197";
 import { findResearchSource } from "../research-catalog.js?v=40";
-import { objectiveCardsFor } from "../mocks.js?v=117";
+import { objectiveCardsFor } from "../mocks.js?v=118";
 import { objectiveTier, TIER_LABELS, TIER_STATUS_CLASS, TIER_ORDER } from "../objective-scoring.js?v=25";
 import {
   isOpen as isObjectiveAlertOpen,
@@ -151,6 +151,7 @@ import {
 } from "../components/right-panel.js?v=644";
 import { setHandoff, consumeHandoff, hasHandoff } from "../handoff.js?v=34";
 import { startTopicChat, TOPIC_CHAT_HANDOFF } from "../topic-flow.js?v=59";
+import { startObjectiveChat, OBJECTIVE_CHAT_HANDOFF } from "../objective-flow.js?v=1";
 import { parseHashParams, setHashQuery } from "../url-state.js?v=35";
 import { updateLoadingWatchdog, stopThinkingTimer } from "./session/thinking-chip.js?v=77";
 import { startIntakeLifecycle } from "./session/intake-lifecycle.js?v=85";
@@ -4360,6 +4361,13 @@ function wireAssistantPanel(root, session, attachedContext) {
   const pendingTopic = consumeHandoff(TOPIC_CHAT_HANDOFF);
   if (pendingTopic?.topicId) {
     setTimeout(() => startTopicChat(session.id, pendingTopic.topicId), 150);
+  }
+
+  // Hand-off from an objective's Next move (Insights detail, either host) —
+  // Archie opens on the diagnosis, then the angles picker. The loop's exit.
+  const pendingObjective = consumeHandoff(OBJECTIVE_CHAT_HANDOFF);
+  if (pendingObjective?.ctxId) {
+    setTimeout(() => startObjectiveChat(session.id, pendingObjective), 150);
   }
 
   // Hand-off from a Topic feed topic — the new-chat starter card or the

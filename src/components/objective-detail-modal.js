@@ -9,7 +9,8 @@
 // scale-in keeps the timing contract without per-card geometry.
 
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=35";
-import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=2";
+import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=3";
+import { openObjectiveInChat } from "../objective-flow.js?v=1";
 
 const MODAL_ID = "objectiveDetail";
 
@@ -171,6 +172,15 @@ function onClick(event) {
     const cb = onAdjustCb;
     close();
     cb?.(entry);
+    return;
+  }
+  // The Next move's door — close, then open the pre-loaded chat (the
+  // navigation would close the modal anyway; doing it first keeps the
+  // coordinator's books straight).
+  if (event.target.closest("[data-objd-next-chat]")) {
+    const entry = entries[index];
+    close();
+    if (entry) openObjectiveInChat(entry);
     return;
   }
   if (event.target.closest("[data-objd-ga]")) {

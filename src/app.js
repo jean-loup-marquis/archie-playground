@@ -1,5 +1,5 @@
 import { navigate, route, setAfterRender, start } from "./router.js?v=54";
-import { renderInsights } from "./screens/insights/shell.js?v=33";
+import { renderInsights } from "./screens/insights/shell.js?v=34";
 import { isFlagOn } from "./feature-flags.js?v=44";
 import { initArchieLoader } from "./archie-loader.js?v=16";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=512";
@@ -37,7 +37,7 @@ import {
   render as renderConversationStatusCard,
 } from "./components/conversation-status-card.js?v=437";
 import { renderDashboard } from "./screens/dashboard.js?v=112";
-import { renderSession } from "./screens/session.js?v=742";
+import { renderSession } from "./screens/session.js?v=743";
 import { renderContexts } from "./screens/contexts.js?v=471";
 import { renderConnectors } from "./screens/connectors.js?v=410";
 import { renderTopics } from "./screens/topics.js?v=279";

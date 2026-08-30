@@ -698,15 +698,9 @@
   color: var(--ref-color-grey-60);
 }
 
-.objd__caption--red {
-  color: var(--ref-color-red-150);
-}
-.objd__caption--yellow {
-  color: var(--ref-color-yellow-150);
-}
-.objd__caption--green {
-  color: var(--ref-color-green-150);
-}
+/* The caption tone variants left with the de-noising pass: captions are meta
+   (they explain where a verdict comes from), and meta reads grey — red is
+   reserved for the verdict and the failing figure. */
 
 .objd__spark {
   width: 200px;
@@ -770,18 +764,11 @@
   color: var(--ref-color-grey-100);
 }
 
+/* Deltas read grey on purpose — four red −9% under an already-red measure was
+   the Christmas tree; the per-profile split is detail, not verdict. */
 .objd__tile-delta {
   font-size: var(--sys-text-style-caption-size);
   margin-left: var(--ref-spacing-xxs);
-}
-
-.objd__tile-delta--up {
-  color: var(--ref-color-green-150);
-}
-.objd__tile-delta--down {
-  color: var(--ref-color-red-150);
-}
-.objd__tile-delta--flat {
   color: var(--ref-color-grey-60);
 }
 
@@ -826,6 +813,33 @@
 
 .objd__post-figure strong {
   color: var(--ref-color-green-150);
+}
+
+/* ── Next move — the loop's exit, and the card's one primary action. ─────── */
+.objd__nextmove {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--app-peach-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-peach);
+}
+
+.objd__nextmove .objd__seclabel {
+  flex: 0 0 auto;
+}
+
+.objd__nextpitch {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  color: var(--ref-color-grey-100);
+}
+
+.objd__nextmove .ap-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .objd__proxybanner {

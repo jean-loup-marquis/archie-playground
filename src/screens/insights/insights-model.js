@@ -6,7 +6,7 @@ import {
   insightsPortfolio,
   draftingHoursSaved,
   wordsDrafted,
-} from "../../mocks.js?v=117";
+} from "../../mocks.js?v=118";
 import { objectiveTier, playbookScore, TIER_LABELS, TIER_ORDER } from "../../objective-scoring.js?v=25";
 import { resolveObjectives } from "../../objective-measures.js?v=7";
 

@@ -22,6 +22,7 @@ import {
 } from "../../objective-measures.js?v=7";
 import { NETWORK_LABEL } from "../../social-profiles.js?v=85";
 import { readingFor, weakestMeasure, paceCaption, trendCaption, sparklinePoints } from "./objectives-model.js?v=1";
+import { nextMoveFor } from "../../objective-flow.js?v=1";
 
 const STATE_TONE = { on: "green", soft: "yellow", off: "red" };
 const STATUS_CLASS = {
@@ -112,6 +113,21 @@ export function renderObjectiveDetail(entry, { expandedId = null, host = "panel"
     </div>`
     : "";
 
+  // The loop's exit (PP key flow 4): one recommendation, evidence-citing, and
+  // the card's ONE primary action — everything above it is reading, this is
+  // the door. Archie talks here, so first person.
+  const move = nextMoveFor(entry);
+  const nextMove = move
+    ? `
+    <div class="objd__nextmove">
+      <span class="objd__seclabel">Next move</span>
+      <p class="objd__nextpitch">${esc(move.pitch)}</p>
+      <button type="button" class="ap-button primary orange" data-objd-next-chat>
+        <span>${esc(move.cta)}</span>
+      </button>
+    </div>`
+    : "";
+
   const proxyBanner = parked
     ? `
     <div class="objd__proxybanner">
@@ -141,6 +157,7 @@ export function renderObjectiveDetail(entry, { expandedId = null, host = "panel"
       ${sections}
       ${postsBlock}
       ${proxyBanner}
+      ${nextMove}
     </div>`;
 }
 
@@ -155,9 +172,7 @@ function renderExpandedMeasure(m, entry, parked) {
       <div class="objd__tile">
         <span class="objd__tile-label">${esc((p.name || "").toUpperCase())} · ${esc((NETWORK_LABEL[p.network] || p.network).toUpperCase())}</span>
         <span class="objd__tile-value">${esc(p.value)}
-          <span class="objd__tile-delta objd__tile-delta--${p.trendPct > 0 ? "up" : p.trendPct < 0 ? "down" : "flat"}">${
-            p.trendPct > 0 ? "+" : p.trendPct < 0 ? "−" : ""
-          }${Math.abs(p.trendPct)}%</span>
+          <span class="objd__tile-delta">${p.trendPct > 0 ? "+" : p.trendPct < 0 ? "−" : ""}${Math.abs(p.trendPct)}%</span>
         </span>
       </div>`,
     )
@@ -201,7 +216,7 @@ function renderExpandedMeasure(m, entry, parked) {
           <svg class="objd__spark objd__spark--${trendTone(m)}" viewBox="0 0 200 44" aria-hidden="true">
             <polyline points="${sparklinePoints(m.trend?.pct ?? 0)}"></polyline>
           </svg>
-          <span class="objd__caption objd__caption--${trendTone(m)}">${esc(trendCaption(m))}</span>
+          <span class="objd__caption">${esc(trendCaption(m))}</span>
         </div>
       </div>
       <div class="objd__tiles">${tiles}${outTiles}</div>
@@ -220,7 +235,6 @@ function renderCollapsedMeasure(m, entry) {
         <i class="ap-icon-chevron-down" aria-hidden="true"></i>
       </button>
       <span class="objd__mname">${esc(m.metricLabel)}</span>
-      ${verdictChips(m)}
       <span class="objd__spacer"></span>
       <span class="objd__mscope">${esc(scopePhrase(m, entry))}</span>
       <span class="objd__minitrack" aria-hidden="true"><span class="objd__bigfill objd__bigfill--${tone}" style="width: ${m.progressPct ?? 0}%"></span></span>

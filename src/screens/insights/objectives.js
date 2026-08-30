@@ -23,8 +23,9 @@ import {
   listSummary,
   sparklinePoints,
 } from "./objectives-model.js?v=1";
-import { renderObjectiveDetail } from "./objective-detail.js?v=2";
-import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=1";
+import { renderObjectiveDetail } from "./objective-detail.js?v=3";
+import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=2";
+import { openObjectiveInChat } from "../../objective-flow.js?v=1";
 import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2";
 import { renderFirstRun } from "./parts.js?v=18";
 
@@ -448,6 +449,13 @@ export function bindObjectivesTab(root, period) {
       const key = event.target.closest("[data-objd-key]")?.dataset.objdKey;
       const entry = key && entryByKey(key);
       if (entry) adjustEntry(entry);
+      return;
+    }
+    // The Next move's door — a chat pre-loaded with this objective.
+    if (event.target.closest("[data-objd-next-chat]") && event.target.closest(".objv__detailcard")) {
+      const key = event.target.closest("[data-objd-key]")?.dataset.objdKey;
+      const entry = key && entryByKey(key);
+      if (entry) openObjectiveInChat(entry);
       return;
     }
     if (event.target.closest("[data-objd-ga]") && event.target.closest(".objv__detailcard")) {

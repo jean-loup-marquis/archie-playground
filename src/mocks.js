@@ -3221,6 +3221,56 @@ const OBJECTIVE_METRICS_BY_CONTEXT = {
   },
 };
 
+// ---- Objective next moves (the loop's exit — PP key flow 4) ----------------
+//
+// The Insights detail ends on ONE recommendation per objective — the door back
+// into creation. Authored here, deterministic, the same discipline as the mock
+// crawl: a demo recommendation must be credible and replayable, never generated.
+// Keyed `${contextId}::${objective label}`; anything un-authored falls back to
+// a generic move derived from the objective's state (objective-flow.js).
+//
+// `pitch` is the card's sentence — Archie talking, so first person, and it must
+// CITE ITS EVIDENCE (a naked "post more" is what this feature exists to avoid).
+// `opening` is Archie's first turn in the pre-loaded chat; `angles` seed the
+// question picker, phrased as things the user could have typed anyway.
+export const objectiveNextMoves = {
+  "ctx-noba::Sales": {
+    pitch:
+      "4 of your 41 posts carry a product and a price — and they drive every click counted here. Let's draft three more from your two winners.",
+    cta: "Fix this in a chat",
+    opening:
+      "We're here about Sales — link clicks are at 42% of target, behind pace and slowing. The pattern is clear though: only 4 of your 41 posts carry a product and a price, and those 4 drive every click. Your jacket post did 2.4× your median. I'd start there.",
+    angles: [
+      { value: "Draft three product posts from my two winning posts.", label: "Draft 3 from my winners" },
+      { value: "Why do so few of my posts carry a link?", label: "Why so few link posts?" },
+      { value: "What should next week's product post be?", label: "Plan next week's product post" },
+    ],
+  },
+  "ctx-acme::Brand awareness": {
+    pitch:
+      "Reach is on pace but sliding — the same slide your feed flagged three weeks ago. Let's counter it before the pace verdict flips.",
+    cta: "Fix this in a chat",
+    opening:
+      "Brand awareness is holding at 74% of target, but reach is down 8% on the window — the same three-week slide your feed already flagged on your own posts. Holding pace on a falling trend means the flip is a matter of weeks. Let's get ahead of it.",
+    angles: [
+      { value: "What changed in my posts over the last three weeks?", label: "What changed in my posts?" },
+      { value: "Draft two reach-first posts for this week.", label: "Draft 2 reach-first posts" },
+      { value: "Which formats are carrying my reach right now?", label: "Which formats carry reach?" },
+    ],
+  },
+  "ctx-acme::Lead generation": {
+    pitch: "Link clicks run at 84% and climbing — whatever you changed is working. Let's make more of exactly that.",
+    cta: "Double down in a chat",
+    opening:
+      "Lead generation is the one to copy from: link clicks at 84% of target, ahead of pace and climbing. Something in what you publish is working — let's name it and make more of it while it compounds.",
+    angles: [
+      { value: "What's driving my link clicks up?", label: "What's driving the climb?" },
+      { value: "Draft two more posts like my best click drivers.", label: "Draft 2 more like the best" },
+      { value: "Can we push the target higher?", label: "Raise the target?" },
+    ],
+  },
+};
+
 // The measured cards for one Playbook, in the order it declares its goals. A goal
 // with no metric behind it is skipped rather than faked.
 export function objectiveCardsFor(context) {
