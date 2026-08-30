@@ -60,7 +60,10 @@
    Takes the tab bar's place at the top of the page: same horizontal rhythm and
    the same bottom rule, so the Objectives toolbar below reads as separated. */
 .insights-view__solohead {
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-lg);
   border-bottom: 1px solid var(--app-border-soft);
   background: var(--app-surface);
 }
@@ -75,8 +78,8 @@
 }
 
 .insights-view__subtitle {
-  margin: var(--ref-spacing-xxs) 0 0;
-  max-width: 70ch;
+  margin: 0;
+  max-width: 80ch;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-80);
