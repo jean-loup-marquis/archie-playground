@@ -1,5 +1,5 @@
 import { navigate, route, setAfterRender, start } from "./router.js?v=54";
-import { renderInsights } from "./screens/insights/shell.js?v=41";
+import { renderInsights } from "./screens/insights/shell.js?v=42";
 import { isFlagOn } from "./feature-flags.js?v=45";
 import { initArchieLoader } from "./archie-loader.js?v=16";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=513";
@@ -22,7 +22,7 @@ import { init as initResearchModals } from "./components/research-modals.js?v=19
 import { init as initAddPlaybookEntryModal } from "./components/add-playbook-entry-modal.js?v=15";
 import { init as initObjectiveModal } from "./components/objective-modal.js?v=4";
 import { init as initObjectiveCatalogPanel } from "./components/objective-catalog-panel.js?v=1";
-import { init as initObjectiveDetailModal } from "./components/objective-detail-modal.js?v=5";
+import { init as initObjectiveDetailModal } from "./components/objective-detail-modal.js?v=6";
 import { init as initPillarModal } from "./components/pillar-modal.js?v=97";
 import { init as initPillarHistoryModal } from "./components/pillar-history-modal.js?v=33";
 import { init as initPillarPickerModal } from "./components/pillar-picker-modal.js?v=89";

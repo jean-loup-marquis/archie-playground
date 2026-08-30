@@ -9,7 +9,7 @@
 // scale-in keeps the timing contract without per-card geometry.
 
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=35";
-import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=7";
+import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=8";
 import { openObjectiveInChat } from "../objective-flow.js?v=1";
 
 const MODAL_ID = "objectiveDetail";

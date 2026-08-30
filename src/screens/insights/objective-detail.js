@@ -256,7 +256,7 @@ function renderProxyBanner(entry, parked) {
 function renderTopicCard(t) {
   // The whole card is the affordance — one click opens the chat with the topic.
   return `
-    <button type="button" class="objd__topic" data-objd-feed-chat>
+    <button type="button" class="objd__topic" data-objd-feed-chat aria-label="Start a chat about ${escapeAttr(t.title)}">
       <span class="ap-badge ${FEED_BADGE_TONE[t.badge.tone] || "grey"} objd__topicbadge">${esc(t.badge.text)}</span>
       <span class="objd__topictitle">${esc(t.title)}</span>
       <span class="objd__topicblurb">${esc(t.blurb)}</span>

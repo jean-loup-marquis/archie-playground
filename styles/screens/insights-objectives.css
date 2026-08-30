@@ -618,9 +618,12 @@
   font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
+/* Explanatory caption text uses the DS SECONDARY role (grey-80, AA 4.9:1) not
+   the tertiary role (grey-60, ~3.3:1) — it must be read, so it clears WCAG AA
+   for small text. Glanceable navigation meta stays tertiary. */
 .objd__ontrack {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 .objd__headline {
@@ -680,7 +683,7 @@
 
 .objd__mscope {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -791,7 +794,7 @@
 
 .objd__caption {
   font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
+  color: var(--ref-color-grey-80);
 }
 
 /* The caption tone variants left with the de-noising pass: captions are meta
@@ -1054,10 +1057,11 @@
   flex-wrap: wrap;
 }
 
+/* A quiet hint, not a control — regular weight and secondary text so it reads
+   as a note next to the CTA rather than a second clickable thing. */
 .objd__archiehint {
   font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--app-archie-mark);
+  color: var(--ref-color-grey-80);
 }
 
 /* ── The proof — the expanded measure is a soft card, the rest are rows. ──── */
