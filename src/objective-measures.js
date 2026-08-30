@@ -76,6 +76,18 @@ function isRate(metricId) {
   return METRICS[metricId]?.type === "rate";
 }
 
+export function isRateMetric(metricId) {
+  return isRate(metricId);
+}
+
+export function isAdditiveMetric(metricId) {
+  return !!METRICS[metricId]?.additive;
+}
+
+export function metricType(metricId) {
+  return METRICS[metricId]?.type || "volume";
+}
+
 // The 8 catalogue families, for the measure picker and the catalog panel —
 // every metric above appears in exactly one family.
 export const FAMILIES = [
@@ -468,6 +480,17 @@ export function measureState(measure) {
   }
   if (pace.id === "behind") return "off";
   return trend.dir === "down" ? "soft" : "on";
+}
+
+// The configurator (catalog panel) reads these two directly: the baseline a
+// scope would open with, and the target Archie would suggest for it.
+export function scopedBaselineFor(metricId, contextId, scope) {
+  return scopedBaseline(metricId, contextId, scope?.network ? scope : undefined);
+}
+
+export function proposeTargetFrom(metricId, baseline, contextId, scope) {
+  if (scope?.network) return proposeTarget(baseline);
+  return (TARGETS_BY_CONTEXT[contextId] || {})[metricId] || DEFAULT_TARGETS[metricId] || proposeTarget(baseline);
 }
 
 // ── Resolution ───────────────────────────────────────────────────────────────

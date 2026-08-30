@@ -23,7 +23,7 @@ import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=
 import { open as openConfirmModal } from "./components/confirm-modal.js?v=36";
 import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=15";
 import { resolveObjectives } from "./objective-measures.js?v=6";
-import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=4";
+import { open as openObjectiveModal } from "./components/objective-modal.js?v=1";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -638,15 +638,15 @@ function renderObjectivesPanel(data, edit) {
   `;
 }
 
-// Opens the shared per-objective editor (components/objective-editor-modal) on
-// one of this view's objectives. The editor mutates the live data object and
-// notifies on each correction: outside a section edit that commits right away
-// (like accepting a competitor suggestion), inside one the section's Save owns
-// the commit. The repaint re-derives the cards from the mutated data.
+// Opens the shared objective modal (components/objective-modal, the sentence
+// form) on one of this view's objectives. The modal stages its edits and
+// applies them in one write on Save; outside a section edit that write
+// commits right away, inside one the section's Save owns the commit.
 function openObjectiveEditorFor(label) {
-  openObjectiveEditor({
+  openObjectiveModal({
     data: cfg.getData(),
     label,
+    mode: "adjust",
     onChange: () => {
       if (!editScope) cfg.commit?.();
       repaintPreservingScroll();

@@ -1,6 +1,6 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { getContexts, getContextById, updateContext } from "../../contexts-store.js?v=97";
-import { open as openObjectiveEditor } from "../../components/objective-editor-modal.js?v=4";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=1";
 import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=117";
 import { navigate } from "../../router.js?v=54";
 import { showToast } from "../../components/toast.js?v=44";
@@ -352,7 +352,7 @@ export function bindPerformanceTab(root, period) {
     }
     // A goal group's name, a parked row, or "Adjust objectives" — opens the
     // shared per-objective editor IN PLACE. The editor mutates the live ctx
-    // (see objective-editor-modal); updateContext only notifies, which repaints
+    // (see objective-modal); updateContext only notifies, which repaints
     // this tab through the shell's contexts subscription. The body-level modal
     // survives that repaint — it lives outside the tab's root.
     // "Add objective" — creates a fresh objective on the read Playbook and
@@ -366,9 +366,10 @@ export function bindPerformanceTab(root, period) {
       while (labels.some((l) => l.toLowerCase() === name.toLowerCase())) name = `New objective ${n++}`;
       labels.push(name);
       updateContext(ctx.id, { objective: labels.slice(), updatedAt: "just now" });
-      openObjectiveEditor({
+      openObjectiveModal({
         data: ctx,
         label: name,
+        mode: "adjust",
         onChange: () => updateContext(ctx.id, { updatedAt: "just now" }),
       });
       return;
@@ -379,9 +380,10 @@ export function bindPerformanceTab(root, period) {
       const ctx = getContextById(resolveSelection(performanceRows(), selected));
       const label = objectiveBtn.dataset.insightsObjective;
       if (ctx && label) {
-        openObjectiveEditor({
+        openObjectiveModal({
           data: ctx,
           label,
+          mode: "adjust",
           onChange: () => updateContext(ctx.id, { updatedAt: "just now" }),
         });
       }
