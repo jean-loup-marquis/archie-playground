@@ -418,11 +418,16 @@
 }
 
 /* ── List (5c) ──────────────────────────────────────────────────────────── */
+/* Two floating cards on the page canvas: the rail and the detail. Both start at
+   the same top edge (align-items:flex-start + the split's own top padding), the
+   rail's left edge lines up with the header title (the split's left padding =
+   the header's), and a gap sits between the two cards. The block is inset from
+   the sidebar so the rail reads as a floating element, not a flush column. */
 .objv__split {
   display: flex;
-  align-items: stretch;
-  flex: 1;
-  min-height: 0;
+  align-items: flex-start;
+  gap: var(--ref-spacing-lg);
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xxl);
 }
 
 .objv__raillist {
@@ -433,7 +438,8 @@
   gap: var(--ref-spacing-xxs);
   padding: var(--ref-spacing-sm);
   background: var(--app-surface);
-  border-right: 1px solid var(--app-border-soft);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card-lg, var(--app-radius-lg));
 }
 
 .objv__rowitem {
@@ -504,8 +510,6 @@
 .objv__detail {
   flex: 1;
   min-width: 0;
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-xxl);
-  overflow-y: auto;
 }
 
 .objv__detailcard {
