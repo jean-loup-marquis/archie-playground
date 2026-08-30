@@ -23,7 +23,7 @@ import {
   listSummary,
   sparklinePoints,
 } from "./objectives-model.js?v=1";
-import { renderObjectiveDetail, defaultExpandedId } from "./objective-detail.js?v=1";
+import { renderObjectiveDetail } from "./objective-detail.js?v=2";
 import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=1";
 import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2";
 import { renderFirstRun } from "./parts.js?v=18";
@@ -156,10 +156,27 @@ function renderCardMeasureRow(m, { proxy = false } = {}) {
     </span>`;
 }
 
+function initialOf(name) {
+  return String(name || "?")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
+}
+
+// The verdict, as a word — the same word the List rows print, so a card and a
+// row can never disagree on what a tier is called.
+function verdictWord(entry) {
+  if (entry.collecting) return `<span class="insights-verdict objv__status--collecting">Collecting</span>`;
+  if (!entry.verdict?.tier) return "";
+  return `<span class="insights-verdict ${VERDICT_WORD_CLASS[entry.verdict.tier] || ""}">${esc(entry.verdict.label || "")}</span>`;
+}
+
 function renderCard(entry, { eyebrow = true } = {}) {
   const r = entry.resolved;
   const parked = r.status === "parked";
-  const measures = parked ? [r.proxy] : r.measures.slice(0, 2);
+  const all = parked ? [r.proxy] : r.measures;
+  const measures = all.slice(0, 3);
+  const hidden = all.length - measures.length;
   const weak = weakestMeasure(entry);
   const chips = entry.collecting
     ? `<span class="objv__cardnote">day ${r.grace.day} of ${r.grace.of} · no verdict</span>`
@@ -170,9 +187,14 @@ function renderCard(entry, { eyebrow = true } = {}) {
       : "";
   return `
     <button type="button" class="ap-card objv__card" data-obj-card="${escapeAttr(entry.key)}" aria-label="Open ${esc(entry.label)}">
-      ${eyebrow ? `<span class="objv__cardeyebrow">${esc(entry.playbookName)}</span>` : ""}
-      <span class="objv__cardname">${esc(entry.label)}</span>
+      ${
+        eyebrow
+          ? `<span class="objv__cardeyebrow"><span class="objv__cardmark" aria-hidden="true">${esc(initialOf(entry.playbookName))}</span>${esc(entry.playbookName)}</span>`
+          : ""
+      }
+      <span class="objv__cardline"><span class="objv__cardname">${esc(entry.label)}</span><span class="objv__spacer"></span>${verdictWord(entry)}</span>
       ${measures.map((m) => renderCardMeasureRow(m, { proxy: parked })).join("")}
+      ${hidden > 0 ? `<span class="objv__cardmore"><span class="ap-badge grey">+${hidden}</span>more ${hidden === 1 ? "measure" : "measures"} in the detail</span>` : ""}
       <span class="objv__cardchips">${chips}</span>
     </button>`;
 }
@@ -309,9 +331,7 @@ function renderList(entries, prefs) {
   const selected = rows.find((e) => e.key === selectedKey) || rows[0];
   const items = rows
     .map((e) => {
-      const status = e.collecting
-        ? `<span class="insights-verdict objv__status--collecting">Collecting</span>`
-        : `<span class="insights-verdict ${VERDICT_WORD_CLASS[e.verdict.tier] || ""}">${esc(e.verdict.label || "")}</span>`;
+      const status = verdictWord(e);
       return `
         <button type="button" class="objv__rowitem${selected && e.key === selected.key ? " is-selected" : ""}" data-obj-row="${escapeAttr(e.key)}">
           <span class="objv__rowline"><span class="objv__rowname">${esc(e.label)}</span><span class="objv__spacer"></span>${status}</span>
@@ -321,7 +341,7 @@ function renderList(entries, prefs) {
     .join("");
   const panel = selected
     ? `<div class="objv__detailcard">${renderObjectiveDetail(selected, {
-        expandedId: listExpandedId || defaultExpandedId(selected),
+        expandedId: listExpandedId,
         host: "panel",
       })}</div>`
     : "";
@@ -414,7 +434,9 @@ export function bindObjectivesTab(root, period) {
     // The list panel's own detail interactions (the modal handles its own).
     const toggle = event.target.closest("[data-objd-measure-toggle]");
     if (toggle && event.target.closest(".objv__detailcard")) {
-      listExpandedId = toggle.dataset.objdMeasureToggle;
+      // Clicking the open measure folds it — "none" collapses everything,
+      // where null would fall back to the weakest-measure default.
+      listExpandedId = toggle.getAttribute("aria-expanded") === "true" ? "none" : toggle.dataset.objdMeasureToggle;
       repaint();
       return;
     }

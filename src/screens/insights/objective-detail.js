@@ -76,7 +76,9 @@ export function renderObjectiveDetail(entry, { expandedId = null, host = "panel"
   const parked = r.status === "parked";
   const v = entry.verdict;
   const reading = readingFor(entry);
-  const expanded = expandedId || defaultExpandedId(entry);
+  // null → the weakest measure opens (the default read); "none" → everything
+  // folded, which is what a host passes when the reader closes the open one.
+  const expanded = expandedId === "none" ? null : expandedId || defaultExpandedId(entry);
   const measures = detailMeasures(entry);
   const status = entry.collecting
     ? `<span class="insights-verdict objd__status--collecting">Collecting</span>`

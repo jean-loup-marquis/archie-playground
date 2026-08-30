@@ -9,7 +9,7 @@
 // scale-in keeps the timing contract without per-card geometry.
 
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=35";
-import { renderObjectiveDetail, defaultExpandedId } from "../screens/insights/objective-detail.js?v=1";
+import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=2";
 
 const MODAL_ID = "objectiveDetail";
 
@@ -97,7 +97,7 @@ function paint() {
     return;
   }
   bodyEl.innerHTML = renderObjectiveDetail(entry, {
-    expandedId: expandedId || defaultExpandedId(entry),
+    expandedId,
     host: "modal",
   });
 }
@@ -117,7 +117,9 @@ function onClick(event) {
   }
   const toggle = event.target.closest("[data-objd-measure-toggle]");
   if (toggle) {
-    expandedId = toggle.dataset.objdMeasureToggle;
+    // Clicking the open measure folds it — "none" collapses everything,
+    // where null would fall back to the weakest-measure default.
+    expandedId = toggle.getAttribute("aria-expanded") === "true" ? "none" : toggle.dataset.objdMeasureToggle;
     paint();
     return;
   }

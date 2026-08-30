@@ -128,8 +128,35 @@
 }
 
 .objv__cardeyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-60);
+}
+
+/* The brand monogram — the sidebar switcher's .app-scope__mark idiom, sized
+   for an eyebrow. Same mark everywhere a Playbook is named without its page. */
+.objv__cardmark {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-archie-mark);
+  color: var(--ref-color-white);
+  font-size: var(--sys-text-style-caption-bold-size);
+  font-weight: var(--ref-font-weight-extra-bold);
+}
+
+/* Name + verdict word on one line — the List rows' .objv__rowline shape, so
+   the status reads before any measure does. */
+.objv__cardline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  width: 100%;
 }
 
 .objv__cardname {
@@ -248,6 +275,16 @@
   display: flex;
   gap: var(--ref-spacing-xxs);
   margin-top: var(--app-spacing-micro);
+}
+
+/* The overflow pastille — the card shows three measures at most, and this row
+   is the affordance that the detail holds the rest. */
+.objv__cardmore {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
 }
 
 .objv__cardnote {
@@ -814,7 +851,11 @@
     opacity 240ms var(--app-ease-out);
 }
 
-.objdm--in {
+/* Two classes on purpose: the resting state above is `.objdm.ap-dialog`
+   (specificity 0,2,0), so a bare `.objdm--in` (0,1,0) never wins and the
+   modal stays at 60% opacity forever — the board bleeding through the open
+   dialog was exactly that. */
+.objdm.ap-dialog.objdm--in {
   transform: scale(1);
   opacity: 1;
 }
