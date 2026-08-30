@@ -22,8 +22,8 @@ import {
   weakestMeasure,
   sparklinePoints,
 } from "./objectives-model.js?v=1";
-import { renderObjectiveDetail } from "./objective-detail.js?v=4";
-import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=2";
+import { renderObjectiveDetail } from "./objective-detail.js?v=5";
+import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=3";
 import { openObjectiveInChat } from "../../objective-flow.js?v=1";
 import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2";
 import { renderFirstRun } from "./parts.js?v=18";
@@ -441,12 +441,6 @@ export function bindObjectivesTab(root, period) {
     const inSelect = event.target.closest("[data-obj-select]");
     root.querySelectorAll("[data-obj-select][open]").forEach((d) => {
       if (d !== inSelect) d.removeAttribute("open");
-    });
-
-    // One open ⋯ menu at a time — close on any click outside the open menu.
-    const inMenu = event.target.closest("[data-objd-menu]");
-    root.querySelectorAll("[data-objd-menu][open]").forEach((d) => {
-      if (d !== inMenu) d.removeAttribute("open");
     });
 
     const view = event.target.closest("[data-obj-view]");

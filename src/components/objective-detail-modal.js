@@ -9,7 +9,7 @@
 // scale-in keeps the timing contract without per-card geometry.
 
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=35";
-import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=4";
+import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=5";
 import { openObjectiveInChat } from "../objective-flow.js?v=1";
 
 const MODAL_ID = "objectiveDetail";
@@ -155,11 +155,6 @@ function paint() {
 }
 
 function onClick(event) {
-  // One open ⋯ menu at a time — close on any click outside the open menu.
-  const inMenu = event.target.closest("[data-objd-menu]");
-  panel.querySelectorAll("[data-objd-menu][open]").forEach((d) => {
-    if (d !== inMenu) d.removeAttribute("open");
-  });
   if (event.target.closest("[data-objdm-close]")) {
     close();
     return;

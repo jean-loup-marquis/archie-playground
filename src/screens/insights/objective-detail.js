@@ -38,6 +38,16 @@ import {
   FEED_BADGE_TONE,
   HISTORY_DOT_CLASS,
 } from "./objective-feed.js?v=1";
+import { installMoreMenu } from "../../components/more-menu.js?v=15";
+
+// The ⋯ menu is the shared kebab (Action Dropdown + more-menu): one document
+// listener pair for open / click-outside / Escape, driven by the trigger's
+// aria-controls. Installed once at import, like the cards do.
+installMoreMenu({
+  menuSelector: ".objd__more-menu",
+  triggerSelector: "[data-objd-more]",
+  closeAfterSelectors: ["[data-objd-adjust]", "[data-objd-history]"],
+});
 
 const STATE_TONE = { on: "green", soft: "yellow", off: "red" };
 const STATUS_CLASS = {
@@ -87,11 +97,28 @@ export function defaultExpandedId(entry) {
   return weakestMeasure(entry)?.id || detailMeasures(entry)[0]?.id || null;
 }
 
+// One Action Dropdown row (Adjust / View history) — the DS item anatomy, with
+// the data-attr the host's delegated handler listens for.
+function menuItem({ attr, icon, label }) {
+  return `
+    <button type="button" class="ap-action-dropdown-item" role="menuitem" ${attr}>
+      <i class="${icon}" aria-hidden="true"></i>
+      <div class="ap-action-dropdown-item-text">
+        <div class="ap-action-dropdown-item-label-container">
+          <span class="ap-action-dropdown-item-label">${esc(label)}</span>
+        </div>
+      </div>
+    </button>`;
+}
+
 // ── The header — shared by the reading and the history views ─────────────────
 function renderHead(entry, host) {
   const r = entry.resolved;
   const v = entry.verdict;
   const eyebrow = [entry.playbookName, windowPhrase(r.window)].filter(Boolean).join(" · ");
+  // Unique per objective — the trigger's aria-controls points at it. The key
+  // carries "::" and spaces, neither id-safe, so collapse to a hyphen run.
+  const menuId = `objd-more-${entry.key.replace(/[^a-zA-Z0-9]+/g, "-")}`;
   const titleTail = entry.collecting
     ? `<span class="ap-badge grey objd__collectingtag">Collecting</span>`
     : v.tier
@@ -107,20 +134,31 @@ function renderHead(entry, host) {
       </span>
       <span class="objd__spacer"></span>
       <span class="objd__tag">Objective</span>
-      <details class="objd__menu" data-objd-menu>
-        <summary class="objd__menutrigger" aria-label="Objective actions" title="Objective actions">⋯</summary>
-        <div class="objd__menupop" role="menu">
-          <button type="button" class="objd__menuitem" role="menuitem" data-objd-adjust>
-            <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust</span>
-          </button>
-          <a class="objd__menuitem" role="menuitem" href="#/playbook/${escapeAttr(entry.ctxId)}?section=objectives">
-            <i class="ap-icon-target" aria-hidden="true"></i><span>Open the Playbook</span>
+      <div class="objd__more-wrap">
+        <button
+          type="button"
+          class="ap-icon-button transparent objd__more"
+          data-objd-more
+          aria-controls="${menuId}"
+          aria-haspopup="menu"
+          aria-expanded="false"
+          aria-label="Objective actions"
+        >
+          <i class="ap-icon-more" aria-hidden="true"></i>
+        </button>
+        <div class="ap-action-dropdown objd__more-menu" id="${menuId}" role="menu" hidden>
+          ${menuItem({ attr: "data-objd-adjust", icon: "ap-icon-pen", label: "Adjust" })}
+          <a class="ap-action-dropdown-item" role="menuitem" href="#/playbook/${escapeAttr(entry.ctxId)}?section=objectives">
+            <i class="ap-icon-target" aria-hidden="true"></i>
+            <div class="ap-action-dropdown-item-text">
+              <div class="ap-action-dropdown-item-label-container">
+                <span class="ap-action-dropdown-item-label">Open the Playbook</span>
+              </div>
+            </div>
           </a>
-          <button type="button" class="objd__menuitem" role="menuitem" data-objd-history>
-            <i class="ap-icon-clock" aria-hidden="true"></i><span>View history</span>
-          </button>
+          ${menuItem({ attr: "data-objd-history", icon: "ap-icon-clock", label: "View history" })}
         </div>
-      </details>
+      </div>
     </header>
     <div class="objd__titleline">
       <h2 class="objd__title">${esc(entry.label)}</h2>
@@ -229,7 +267,7 @@ function renderTopicCard(t) {
       <span class="objd__topictitle">${esc(t.title)}</span>
       <span class="objd__topicblurb">${esc(t.blurb)}</span>
       <span class="objd__topicmomentum">${esc(t.momentum)}</span>
-      <button type="button" class="objd__topicstart" data-objd-feed-chat>Start a chat →</button>
+      <button type="button" class="ap-link standalone small objd__topicstart" data-objd-feed-chat>Start a chat →</button>
     </div>`;
 }
 
@@ -247,7 +285,7 @@ function renderMeasurePosts(m, entry) {
             <span class="objd__post-meta">${esc(p.network)} · ${esc(p.date)}</span>
             <span class="objd__post-excerpt">${esc(p.excerpt)}</span>
             <span class="objd__post-figure">${esc(p.figure)} · <strong>${esc(p.multiple)}</strong></span>
-            <button type="button" class="objd__repurpose" data-objd-repurpose="${escapeAttr(p.excerpt)}">Repurpose</button>
+            <button type="button" class="ap-button stroked grey objd__repurpose" data-objd-repurpose="${escapeAttr(p.excerpt)}">Repurpose</button>
           </div>`,
         )
         .join("")}
@@ -358,7 +396,7 @@ function renderHistoryView(entry, host, filter) {
   const chips = historyFilters()
     .map(
       (f) => `
-      <button type="button" class="objd__histchip${f.id === filter ? " is-on" : ""}" data-objd-history-filter="${f.id}" aria-pressed="${f.id === filter}">${esc(
+      <button type="button" class="ap-filter-chip" data-objd-history-filter="${f.id}" aria-pressed="${f.id === filter}">${esc(
         f.label,
       )}</button>`,
     )
@@ -379,7 +417,9 @@ function renderHistoryView(entry, host, filter) {
               ${ev.tag ? `<span class="ap-badge ${ev.tag.tone || "grey"} objd__tltag">${esc(ev.tag.text)}</span>` : ""}
             </span>
             <span class="objd__tltext">${esc(ev.body)}${
-              ev.link ? ` <a class="objd__tllink" href="#" data-objd-feed-chat>${esc(ev.link.label)}</a>` : ""
+              ev.link
+                ? ` <button type="button" class="ap-link small objd__tllink" data-objd-feed-chat>${esc(ev.link.label)}</button>`
+                : ""
             }</span>
           </span>
         </div>`,
@@ -390,7 +430,7 @@ function renderHistoryView(entry, host, filter) {
     <div class="objd" data-objd-key="${escapeAttr(entry.key)}">
       ${renderHead(entry, host)}
       <div class="objd__histbar">
-        <button type="button" class="objd__histback" data-objd-history-back>
+        <button type="button" class="ap-link standalone small objd__histback" data-objd-history-back>
           <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to today</span>
         </button>
         <span class="objd__seclabel">History${since ? ` · since ${esc(since)}` : ""}</span>

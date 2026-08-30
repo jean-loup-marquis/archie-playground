@@ -561,74 +561,25 @@
   padding: var(--app-spacing-micro) var(--ref-spacing-xxs);
 }
 
-.objd__menu {
+/* The ⋯ menu is the DS Action Dropdown (surface, shadow, item layout, hover
+   and focus all come from .ap-action-dropdown). We only anchor it under the
+   kebab — the same override every card's more-menu makes. */
+.objd__more-wrap {
   position: relative;
   flex: 0 0 auto;
 }
 
-.objd__menutrigger {
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-button-sm);
-  color: var(--ref-color-grey-60);
-  font-weight: var(--ref-font-weight-bold);
-  letter-spacing: 1px;
-  cursor: pointer;
-}
-
-.objd__menutrigger::-webkit-details-marker {
-  display: none;
-}
-
-.objd__menu[open] .objd__menutrigger {
-  background: var(--app-surface-subtle);
-  color: var(--ref-color-grey-100);
-}
-
-.objd__menupop {
+.ap-action-dropdown.objd__more-menu {
   position: absolute;
-  top: calc(100% + var(--ref-spacing-xxs));
+  top: calc(100% + var(--ref-spacing-xxxs));
   right: 0;
-  z-index: 5;
-  min-width: 190px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-spacing-micro);
-  padding: var(--app-spacing-micro);
-  background: var(--app-surface);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-md);
-  box-shadow: var(--app-shadow-popover-lg);
+  min-width: 200px;
+  width: auto;
+  z-index: var(--app-z-content);
 }
 
-.objd__menuitem {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: none;
-  background: none;
-  border-radius: var(--app-radius-sm);
-  font: inherit;
-  font-size: var(--sys-text-style-body-size);
-  color: var(--ref-color-grey-100);
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.objd__menuitem:hover {
-  background: var(--app-surface-subtle);
-}
-
-.objd__menuitem i {
-  font-size: var(--sys-icon-css-sm);
-  color: var(--ref-color-grey-60);
+.ap-action-dropdown.objd__more-menu[hidden] {
+  display: none;
 }
 
 .objd__titleline {
@@ -1175,23 +1126,10 @@
   align-items: center;
 }
 
+/* Repurpose is a DS .ap-button (stroked grey); it only needs to not stretch in
+   the post row. */
 .objd__repurpose {
   flex: 0 0 auto;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-button-sm);
-  background: var(--app-surface);
-  font: inherit;
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.objd__repurpose:hover {
-  border-color: var(--ref-color-electric-blue-100);
-  color: var(--ref-color-electric-blue-100);
 }
 
 /* ── From your feed — the outside topics, tied to the objective. ──────────── */
@@ -1248,20 +1186,10 @@
   color: var(--ref-color-grey-60);
 }
 
+/* Start a chat is a DS .ap-link (standalone small); it only needs the top gap
+   from the momentum line above it. */
 .objd__topicstart {
   margin-top: var(--ref-spacing-xxs);
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-electric-blue-100);
-  cursor: pointer;
-}
-
-.objd__topicstart:hover {
-  text-decoration: underline;
 }
 
 /* ── View history (1e) — the timeline that swaps in for the three bands. ──── */
@@ -1272,45 +1200,11 @@
   flex-wrap: wrap;
 }
 
-.objd__histback {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxs);
-  border: none;
-  background: none;
-  padding: 0;
-  font: inherit;
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-electric-blue-100);
-  cursor: pointer;
-}
-
-.objd__histback i {
-  font-size: var(--sys-icon-css-xs);
-}
-
+/* Back to today is a DS .ap-link (standalone small); the filter row is DS
+   .ap-filter-chip (aria-pressed). Only the chip row's own gap is ours. */
 .objd__histchips {
   display: flex;
   gap: var(--ref-spacing-xxs);
-}
-
-.objd__histchip {
-  padding: var(--app-spacing-micro) var(--ref-spacing-sm);
-  border: 1px solid var(--app-border-soft);
-  border-radius: var(--app-radius-pill);
-  background: none;
-  font: inherit;
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-60);
-  cursor: pointer;
-}
-
-.objd__histchip.is-on {
-  border-color: transparent;
-  background: var(--app-surface-subtle);
-  color: var(--ref-color-grey-100);
 }
 
 .objd__timeline {
