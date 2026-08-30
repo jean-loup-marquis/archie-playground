@@ -1,7 +1,7 @@
 import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { getContexts, getContextById, updateContext } from "../../contexts-store.js?v=97";
 import { open as openObjectiveEditor } from "../../components/objective-editor-modal.js?v=4";
-import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=116";
+import { insightsPanelFor, playbookReportFor } from "../../mocks.js?v=117";
 import { navigate } from "../../router.js?v=54";
 import { showToast } from "../../components/toast.js?v=44";
 import { alertState, mutedUntilLabel, reopen, subscribe as subscribeAlerts } from "../../objective-alerts-store.js?v=6";

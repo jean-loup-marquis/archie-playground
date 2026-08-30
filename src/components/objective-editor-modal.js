@@ -31,7 +31,7 @@ import {
   baselineFor,
   FAMILIES,
   WINDOWS,
-} from "../objective-measures.js?v=5";
+} from "../objective-measures.js?v=6";
 
 const MODAL_ID = "objectiveEditor";
 

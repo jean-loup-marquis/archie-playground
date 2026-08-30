@@ -22,7 +22,7 @@ import { isFlagOn } from "./feature-flags.js?v=44";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=85";
 import { open as openConfirmModal } from "./components/confirm-modal.js?v=36";
 import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=15";
-import { resolveObjectives } from "./objective-measures.js?v=5";
+import { resolveObjectives } from "./objective-measures.js?v=6";
 import { open as openObjectiveEditor } from "./components/objective-editor-modal.js?v=4";
 
 // Audience & goals — chip fields (multi-value), in display order.

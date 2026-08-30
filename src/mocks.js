@@ -1738,7 +1738,7 @@ export const contexts = [
         "No CTAs, no links, no product mentions. No hashtags. The byline is the brand — the audience follows the human, not a logo.",
     },
     contentStyle: ["Direct and actionable"],
-    objective: ["Build personal brand", "Brand awareness"],
+    objective: ["Build personal brand", "Brand awareness", "Thought leadership"],
     contentAction: ["Read more on the blog"],
     signatureHooks: [
       "Unpopular opinion:",

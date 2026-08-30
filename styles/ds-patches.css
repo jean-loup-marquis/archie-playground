@@ -862,3 +862,35 @@ button.ap-link {
   box-shadow: none;
   border: 1px solid var(--app-border-soft);
 }
+
+/* ── .ap-badge semantic variants ──────────────────────────────────────────
+   The DS ships blue and orange only. The objectives surfaces need the status
+   families as badges — verdict chips (pace/trend), ADDS UP, COMING SOON,
+   metric-type labels — so the four variants below extend the component with
+   the same tint-on-family recipe as blue (light family bg, dark family text).
+   En route to the DS, same status as .ap-filter-chip. */
+.ap-badge.green {
+  background-color: var(--ref-color-green-10);
+  color: var(--ref-color-green-150);
+}
+.ap-badge.yellow {
+  background-color: var(--ref-color-yellow-10);
+  color: var(--ref-color-yellow-150);
+}
+.ap-badge.red {
+  background-color: var(--ref-color-red-10);
+  color: var(--ref-color-red-150);
+}
+.ap-badge.grey {
+  background-color: var(--ref-color-grey-10);
+  color: var(--ref-color-grey-80);
+}
+
+/* ── Blurred modal backdrop ───────────────────────────────────────────────
+   The objective detail modal opens OVER the board and keeps it legible-but-
+   quiet behind (the handoff's 3px blur + scrim). A variant, not a change to
+   .app-modal-backdrop: every other modal keeps the flat scrim. */
+.app-modal-backdrop.blurred {
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}

@@ -5,7 +5,7 @@ import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
 import { TIER_LABELS } from "../../objective-scoring.js?v=25";
 import { formatGroupedNumber } from "../../report-widgets/number-formatting.js?v=25";
 import { periodLabel, isAtCap } from "./insights-model.js?v=7";
-import { objectiveVerdict, measureTier } from "../../objective-measures.js?v=5";
+import { objectiveVerdict, measureTier } from "../../objective-measures.js?v=6";
 
 // The pieces both master-detail tabs draw, in one place so Performance and Usage
 // cannot drift into two versions of the same rail.
