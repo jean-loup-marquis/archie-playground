@@ -156,13 +156,6 @@ function renderCardMeasureRow(m, { proxy = false } = {}) {
     </span>`;
 }
 
-function initialOf(name) {
-  return String(name || "?")
-    .trim()
-    .charAt(0)
-    .toUpperCase();
-}
-
 // The verdict, as a word — the same word the List rows print, so a card and a
 // row can never disagree on what a tier is called.
 function verdictWord(entry) {
@@ -177,25 +170,21 @@ function renderCard(entry, { eyebrow = true } = {}) {
   const all = parked ? [r.proxy] : r.measures;
   const measures = all.slice(0, 3);
   const hidden = all.length - measures.length;
-  const weak = weakestMeasure(entry);
-  const chips = entry.collecting
+  // Pace/trend stay on the measures (and in the detail) — the card's one
+  // judgment is the objective verdict, top right, on the playbook row.
+  const note = entry.collecting
     ? `<span class="objv__cardnote">day ${r.grace.day} of ${r.grace.of} · no verdict</span>`
-    : weak
-      ? `${weak.pace ? `<span class="ap-badge ${weak.pace.tone}">${esc(weak.pace.label)}</span>` : ""}${
-          weak.trend ? `<span class="ap-badge ${weak.trend.tone}">${esc(weak.trend.label)}</span>` : ""
-        }`
-      : "";
+    : "";
+  const top = eyebrow
+    ? `<span class="objv__cardeyebrow"><i class="ap-icon-target objv__cardmark" aria-hidden="true"></i>${esc(entry.playbookName)}<span class="objv__spacer"></span>${verdictWord(entry)}</span>
+       <span class="objv__cardname">${esc(entry.label)}</span>`
+    : `<span class="objv__cardline"><span class="objv__cardname">${esc(entry.label)}</span><span class="objv__spacer"></span>${verdictWord(entry)}</span>`;
   return `
     <button type="button" class="ap-card objv__card" data-obj-card="${escapeAttr(entry.key)}" aria-label="Open ${esc(entry.label)}">
-      ${
-        eyebrow
-          ? `<span class="objv__cardeyebrow"><span class="objv__cardmark" aria-hidden="true">${esc(initialOf(entry.playbookName))}</span>${esc(entry.playbookName)}</span>`
-          : ""
-      }
-      <span class="objv__cardline"><span class="objv__cardname">${esc(entry.label)}</span><span class="objv__spacer"></span>${verdictWord(entry)}</span>
+      ${top}
       ${measures.map((m) => renderCardMeasureRow(m, { proxy: parked })).join("")}
       ${hidden > 0 ? `<span class="objv__cardmore"><span class="ap-badge grey">+${hidden}</span>more ${hidden === 1 ? "measure" : "measures"} in the detail</span>` : ""}
-      <span class="objv__cardchips">${chips}</span>
+      ${note}
     </button>`;
 }
 

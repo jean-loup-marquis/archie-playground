@@ -135,19 +135,16 @@
   color: var(--ref-color-grey-60);
 }
 
-/* The brand monogram — the sidebar switcher's .app-scope__mark idiom, sized
-   for an eyebrow. Same mark everywhere a Playbook is named without its page. */
+/* The Playbook glyph — ap-icon-target, the same glyph the nav row and the
+   feed cards use, quiet: it inherits the eyebrow's grey and its type size. */
 .objv__cardmark {
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
   flex: 0 0 auto;
-  border-radius: var(--app-radius-sm);
-  background: var(--app-archie-mark);
-  color: var(--ref-color-white);
-  font-size: var(--sys-text-style-caption-bold-size);
-  font-weight: var(--ref-font-weight-extra-bold);
+  font-size: var(--sys-icon-css-xs);
+}
+
+/* A long brand name wraps; the verdict word never does. */
+.objv__cardeyebrow .insights-verdict {
+  white-space: nowrap;
 }
 
 /* Name + verdict word on one line — the List rows' .objv__rowline shape, so
@@ -269,12 +266,6 @@
 }
 .objv__cardvalue--green {
   color: var(--ref-color-green-150);
-}
-
-.objv__cardchips {
-  display: flex;
-  gap: var(--ref-spacing-xxs);
-  margin-top: var(--app-spacing-micro);
 }
 
 /* The overflow pastille — the card shows three measures at most, and this row
