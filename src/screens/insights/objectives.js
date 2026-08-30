@@ -20,14 +20,18 @@ import {
   sortEntries,
   SORTS,
   weakestMeasure,
-  listSummary,
   sparklinePoints,
 } from "./objectives-model.js?v=1";
-import { renderObjectiveDetail } from "./objective-detail.js?v=3";
+import { renderObjectiveDetail } from "./objective-detail.js?v=4";
 import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=2";
 import { openObjectiveInChat } from "../../objective-flow.js?v=1";
 import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2";
 import { renderFirstRun } from "./parts.js?v=18";
+import { consumeHandoff } from "../../handoff.js?v=34";
+
+// The Playbook → Insights bridge (handoff 3b's "Open in Insights"): a single-use
+// sessionStorage key carrying the objective key to pre-select in the List view.
+export const FOCUS_OBJECTIVE_HANDOFF = "focusObjective";
 
 const STATE_TONE = { on: "green", soft: "yellow", off: "red" };
 const VERDICT_WORD_CLASS = {
@@ -43,11 +47,26 @@ let collapsedLanes = new Set();
 let collectingOpen = false;
 let selectedKey = null;
 let listExpandedId = null;
+// The List detail's "View history" (1e) — open flag + active kind filter. Like
+// listExpandedId, transient view state, reset when the selected row changes.
+let listHistoryOpen = false;
+let listHistoryFilter = "all";
 // The flattened order of the last paint — the modal's ↑↓ walks it.
 let flatOrder = [];
 
 export function renderObjectivesTab() {
   const prefs = loadPrefs();
+  // A deep link from the Playbook's "Open in Insights" lands here: force the
+  // List view and pre-select the objective (single-use handoff, like the app's
+  // other cross-screen jumps).
+  const focus = consumeHandoff(FOCUS_OBJECTIVE_HANDOFF);
+  if (focus) {
+    savePrefs({ viewMode: "list" });
+    prefs.viewMode = "list";
+    selectedKey = focus;
+    listHistoryOpen = false;
+    listExpandedId = null;
+  }
   if (getContexts().length === 0) return renderFirstRun("objectives");
   const entries = boardEntries({ playbookFilter: prefs.playbookFilter });
   let view;
@@ -313,15 +332,35 @@ function renderLanes(entries, prefs) {
 
 // ── List (5c) ────────────────────────────────────────────────────────────────
 
+// The rail groups by state (handoff 2d): the verdict leaves the row and becomes
+// the GROUP — "Needs attention" answers "which one needs me", and each row is
+// pure navigation (name + playbook · measures). Ordering runs worst-first
+// through the same columns() the board uses, then the grace group.
+const RAIL_GROUPS = [
+  { id: "at-risk", label: "Needs attention", tone: "red" },
+  { id: "watch", label: "Watching", tone: "yellow" },
+  { id: "strong", label: "On track", tone: "green" },
+  { id: "collecting", label: "Collecting", tone: "grey" },
+];
+
+function railRowSummary(e) {
+  const n = e.resolved.status === "parked" ? 1 : (e.resolved.measures?.length ?? 0);
+  const measures = `${n} measure${n === 1 ? "" : "s"}`;
+  if (e.collecting) {
+    const g = e.resolved.grace;
+    const left = g ? Math.max(0, g.of - g.day) : null;
+    return `${e.playbookName} · ${measures}${left != null ? ` · verdict in ${left} day${left === 1 ? "" : "s"}` : ""}`;
+  }
+  return `${e.playbookName} · ${measures}`;
+}
+
 function renderList(entries, prefs) {
-  // The list honours every sort the trigger offers — it used to coerce
-  // "by playbook" to "risk" while the select still claimed playbook order.
-  const active = sortEntries(
-    entries.filter((e) => !e.collecting),
-    prefs.sort,
+  const cols = columns(entries);
+  // Inside each group, the selected sort still orders the rows.
+  const ordered = RAIL_GROUPS.map((g) => ({ ...g, rows: sortEntries(cols[g.id] || [], prefs.sort) })).filter(
+    (g) => g.rows.length,
   );
-  const collecting = entries.filter((e) => e.collecting);
-  const rows = [...active, ...collecting];
+  const rows = ordered.flatMap((g) => g.rows);
   flatOrder = rows;
   const selected = rows.find((e) => e.key === selectedKey) || rows[0];
   if (!rows.length) {
@@ -333,28 +372,41 @@ function renderList(entries, prefs) {
         </button>
       </div>`;
   }
-  const items = rows
-    .map((e) => {
-      const on = selected && e.key === selected.key;
-      const status = verdictWord(e);
+  const groups = ordered
+    .map((g) => {
+      const items = g.rows
+        .map((e) => {
+          const on = selected && e.key === selected.key;
+          return `
+            <button type="button" class="objv__railrow${on ? " is-selected" : ""}" data-obj-row="${escapeAttr(e.key)}"${on ? ` aria-current="true"` : ""}>
+              <span class="objv__railname">${esc(e.label)}</span>
+              <span class="objv__railsub">${esc(railRowSummary(e))}</span>
+            </button>`;
+        })
+        .join("");
       return `
-        <button type="button" class="objv__rowitem${on ? " is-selected" : ""}" data-obj-row="${escapeAttr(e.key)}"${on ? ` aria-current="true"` : ""}>
-          <span class="objv__rowline"><span class="objv__rowname">${esc(e.label)}</span><span class="objv__spacer"></span>${status}</span>
-          <span class="objv__rowsummary">${esc(listSummary(e))}</span>
-        </button>`;
+        <div class="objv__railgroup">
+          <span class="objv__grouphead">
+            <span class="objv__dot objv__dot--${g.tone}"></span>
+            <span class="objv__groupname">${esc(g.label)}</span>
+            <span class="objv__groupcount">${g.rows.length}</span>
+          </span>
+          ${items}
+        </div>`;
     })
     .join("");
   const panel = selected
     ? `<div class="objv__detailcard">${renderObjectiveDetail(selected, {
         expandedId: listExpandedId,
         host: "panel",
+        historyView: listHistoryOpen,
+        historyFilter: listHistoryFilter,
       })}</div>`
     : "";
   return `
     <div class="objv__split">
-      <div class="objv__raillist" aria-label="Objectives, most at risk first">
-        ${items}
-        <span class="objv__spacer"></span>
+      <div class="objv__raillist" aria-label="Objectives, grouped by state">
+        ${groups}
         <button type="button" class="objv__newrow" data-obj-new><span>+ New objective</span></button>
       </div>
       <div class="objv__detail">${panel}</div>
@@ -389,6 +441,12 @@ export function bindObjectivesTab(root, period) {
     const inSelect = event.target.closest("[data-obj-select]");
     root.querySelectorAll("[data-obj-select][open]").forEach((d) => {
       if (d !== inSelect) d.removeAttribute("open");
+    });
+
+    // One open ⋯ menu at a time — close on any click outside the open menu.
+    const inMenu = event.target.closest("[data-objd-menu]");
+    root.querySelectorAll("[data-objd-menu][open]").forEach((d) => {
+      if (d !== inMenu) d.removeAttribute("open");
     });
 
     const view = event.target.closest("[data-obj-view]");
@@ -433,6 +491,8 @@ export function bindObjectivesTab(root, period) {
     if (row) {
       selectedKey = row.dataset.objRow;
       listExpandedId = null;
+      listHistoryOpen = false;
+      listHistoryFilter = "all";
       repaint();
       return;
     }
@@ -461,6 +521,38 @@ export function bindObjectivesTab(root, period) {
     if (event.target.closest("[data-objd-ga]") && event.target.closest(".objv__detailcard")) {
       import("../../components/toast.js?v=44").then(({ showToast }) =>
         showToast("Google Analytics isn't wired up in this prototype"),
+      );
+      return;
+    }
+    // View history (1e) — toggle the card body without leaving the card.
+    if (event.target.closest("[data-objd-history]") && event.target.closest(".objv__detailcard")) {
+      listHistoryOpen = true;
+      listHistoryFilter = "all";
+      repaint();
+      return;
+    }
+    if (event.target.closest("[data-objd-history-back]") && event.target.closest(".objv__detailcard")) {
+      listHistoryOpen = false;
+      repaint();
+      return;
+    }
+    const histFilter = event.target.closest("[data-objd-history-filter]");
+    if (histFilter && event.target.closest(".objv__detailcard")) {
+      listHistoryFilter = histFilter.dataset.objdHistoryFilter;
+      repaint();
+      return;
+    }
+    // A feed topic's / history move's door — a chat pre-loaded with this objective.
+    if (event.target.closest("[data-objd-feed-chat]") && event.target.closest(".objv__detailcard")) {
+      event.preventDefault();
+      const key = event.target.closest("[data-objd-key]")?.dataset.objdKey;
+      const entry = key && entryByKey(key);
+      if (entry) openObjectiveInChat(entry);
+      return;
+    }
+    if (event.target.closest("[data-objd-repurpose]") && event.target.closest(".objv__detailcard")) {
+      import("../../components/toast.js?v=44").then(({ showToast }) =>
+        showToast("Repurpose isn't wired up in this prototype"),
       );
       return;
     }

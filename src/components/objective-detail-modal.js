@@ -9,7 +9,7 @@
 // scale-in keeps the timing contract without per-card geometry.
 
 import { requestOpen, notifyClose } from "../modal-coordinator.js?v=35";
-import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=3";
+import { renderObjectiveDetail } from "../screens/insights/objective-detail.js?v=4";
 import { openObjectiveInChat } from "../objective-flow.js?v=1";
 
 const MODAL_ID = "objectiveDetail";
@@ -22,6 +22,8 @@ let initialized = false;
 let entries = [];
 let index = 0;
 let expandedId = null;
+let historyOpen = false;
+let historyFilter = "all";
 let onAdjustCb = null;
 
 const SHELL = `
@@ -86,6 +88,8 @@ export function open(opts) {
   index = Math.max(0, Math.min(entries.length - 1, opts.index || 0));
   onAdjustCb = opts.onAdjust || null;
   expandedId = null;
+  historyOpen = false;
+  historyFilter = "all";
   paint();
   backdrop.hidden = false;
   panel.classList.remove("objdm--in");
@@ -128,6 +132,8 @@ function step(delta) {
   if (!entries.length) return;
   index = (index + delta + entries.length) % entries.length;
   expandedId = null;
+  historyOpen = false;
+  historyFilter = "all";
   paint();
   bodyEl.scrollTop = 0;
 }
@@ -143,10 +149,17 @@ function paint() {
   bodyEl.innerHTML = renderObjectiveDetail(entry, {
     expandedId,
     host: "modal",
+    historyView: historyOpen,
+    historyFilter,
   });
 }
 
 function onClick(event) {
+  // One open ⋯ menu at a time — close on any click outside the open menu.
+  const inMenu = event.target.closest("[data-objd-menu]");
+  panel.querySelectorAll("[data-objd-menu][open]").forEach((d) => {
+    if (d !== inMenu) d.removeAttribute("open");
+  });
   if (event.target.closest("[data-objdm-close]")) {
     close();
     return;
@@ -165,6 +178,37 @@ function onClick(event) {
     // where null would fall back to the weakest-measure default.
     expandedId = toggle.getAttribute("aria-expanded") === "true" ? "none" : toggle.dataset.objdMeasureToggle;
     paint();
+    return;
+  }
+  // View history (1e) — the body swaps, the modal chrome stays.
+  if (event.target.closest("[data-objd-history]")) {
+    historyOpen = true;
+    historyFilter = "all";
+    paint();
+    bodyEl.scrollTop = 0;
+    return;
+  }
+  if (event.target.closest("[data-objd-history-back]")) {
+    historyOpen = false;
+    paint();
+    return;
+  }
+  const histFilter = event.target.closest("[data-objd-history-filter]");
+  if (histFilter) {
+    historyFilter = histFilter.dataset.objdHistoryFilter;
+    paint();
+    return;
+  }
+  // A feed topic's / history move's door — close, then open the pre-loaded chat.
+  if (event.target.closest("[data-objd-feed-chat]")) {
+    event.preventDefault();
+    const entry = entries[index];
+    close();
+    if (entry) openObjectiveInChat(entry);
+    return;
+  }
+  if (event.target.closest("[data-objd-repurpose]")) {
+    import("./toast.js?v=44").then(({ showToast }) => showToast("Repurpose isn't wired up in this prototype"));
     return;
   }
   if (event.target.closest("[data-objd-adjust]")) {

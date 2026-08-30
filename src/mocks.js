@@ -3281,6 +3281,124 @@ export function objectiveCardsFor(context) {
     .map((label) => ({ objective: label, ...OBJECTIVE_METRICS[label], ...overrides[label] }));
 }
 
+// ---- Objective feed topics & history (the Insights card, handoff 1a–1e) ------
+//
+// Two authored tables keyed by an objective's `<ctxId>::<label>` key, the same
+// key `objectiveNextMoves` uses. Both have generic derivations in
+// screens/insights/objective-feed.js, so an un-authored objective still renders
+// a full card — these overrides only sharpen the demo's hero objectives.
+//
+// A feed topic = what's happening OUTSIDE, tied to the objective: a badge (its
+// relation to the verdict — `explains` a slip, `drives` a run, or a plain
+// `angle`), a claim, a one-line read, and a momentum line. It is the card's
+// "From your feed" strip — fuel for the Next move, never a measure.
+export const objectiveFeedTopics = {
+  "ctx-customer::Brand awareness": [
+    {
+      badge: { text: "Explains reach ↘", tone: "explains" },
+      title: "A competitor's reach is spiking",
+      blurb: "TechRival's LinkedIn reach is up 3.1× — your drop tracks their surge.",
+      momentum: "trending · 32 posts this week",
+    },
+    {
+      badge: { text: "Angle · customer stories", tone: "angle" },
+      title: "Scheduling burnout is a live debate",
+      blurb: "Your best post already rides it — the conversation is still climbing.",
+      momentum: "rising · 18 posts this week",
+    },
+    {
+      badge: { text: "Angle · reach", tone: "angle" },
+      title: "Platform pricing change, week 2",
+      blurb: "Quoted takes are out-reaching originals 2 to 1 — a fast lane this week.",
+      momentum: "peaking · 54 posts this week",
+    },
+  ],
+  "ctx-acme::Lead generation": [
+    {
+      badge: { text: "Drives link clicks ↗", tone: "drives" },
+      title: "Platform pricing change, week 2",
+      blurb: "Your take rides the biggest conversation of the month — still climbing.",
+      momentum: "peaking · 54 posts this week",
+    },
+    {
+      badge: { text: "Angle · lead gen", tone: "angle" },
+      title: "Buyers ask for migration guides",
+      blurb: 'Three threads this week ask "how do I switch" — a natural click magnet.',
+      momentum: "rising · 12 posts this week",
+    },
+  ],
+};
+
+// The objective's timeline (handoff 1e): the memory of "what did we do and what
+// did it do". Three families, told apart by the dot — `verdict` (a state change
+// and its cause, dot = the new tier's colour), `change` (config: target,
+// measure, creation — grey), `move` (an action taken and its outcome — orange).
+// Newest first. `dot` is a verdict-tone token; `tag` is an optional outcome
+// badge. Derived minimally (creation + current verdict) for un-authored ones.
+export const objectiveHistory = {
+  "ctx-customer::Brand awareness": [
+    {
+      date: "Jun 28",
+      kind: "verdict",
+      dot: "red",
+      title: "Watch → At risk",
+      body: "Reach fell behind pace (52% of target) while trending down — 0 of 2 measures on track.",
+    },
+    {
+      date: "Jun 22",
+      kind: "move",
+      dot: "orange",
+      title: "Next move — chat: drafted 3 customer-story posts",
+      tag: { text: "2 published", tone: "green" },
+      body: 'From "Fix this in a chat" — the LinkedIn one is now the top post on this measure.',
+      link: { label: "Open the chat →" },
+    },
+    {
+      date: "Jun 14",
+      kind: "verdict",
+      dot: "yellow",
+      title: "On track → Watch",
+      body: "Reach trend turned down; pace still holding.",
+    },
+    {
+      date: "Jun 12",
+      kind: "move",
+      dot: "orange",
+      title: 'Repurposed "scheduling" post to Instagram',
+      tag: { text: "1.4× median", tone: "green" },
+      body: 'From the posts list on Reach — published Jun 11 as "A week of posts, one honest retro."',
+    },
+    {
+      date: "Jun 10",
+      kind: "change",
+      dot: "grey",
+      title: "Target raised: Reach 15,000 → 20,000",
+      body: "Adjusted after May beat the original target three weeks early.",
+    },
+    {
+      date: "May 18",
+      kind: "change",
+      dot: "grey",
+      title: "Measure added: Brand mentions",
+      body: "On all networks, 48 → 60 on the window — suggested by Archie after the baseline.",
+    },
+    {
+      date: "May 18",
+      kind: "verdict",
+      dot: "green",
+      title: "Collecting ended → On track",
+      body: "Baseline set at 8,200 reach / 30 days — verdicts start.",
+    },
+    {
+      date: "May 4",
+      kind: "change",
+      dot: "grey",
+      title: "Objective created from the Customer stories playbook",
+      body: "Proposed by Archie · from your website — 1 measure (Reach), rolling 30-day window.",
+    },
+  ],
+};
+
 // ---- Topics (the dossiers Agorapulse listening produced) -------------------
 //
 // One topic = a claim Archie can defend: a headline, a written analysis, and the

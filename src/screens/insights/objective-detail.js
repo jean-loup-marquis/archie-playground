@@ -1,15 +1,22 @@
-// The objective detail (handoff 6a) — everything the compact card summarizes,
-// unfolded: the narrative reading, then ONE SECTION PER MEASURE — the weakest
-// arrives expanded (both verdicts pace + trend with the caption naming which
-// figure feeds which, the real scope, the per-profile breakdown with the
-// out-of-scope networks as dashed tiles), the others as compact collapsed
-// rows. Then the posts that carry the expanded measure, and the proxy banner
-// when the objective lives on one.
+// The objective detail — the Insights card (handoff 1a–1e), the loop's reading
+// surface. Three named bands under one header:
+//   • THE VERDICT — the headline read + Archie's one Next move (orange box, the
+//     card's single primary action). Archie talks here, so first person.
+//   • THE PROOF · N MEASURES — the weakest measure arrives expanded (pace +
+//     trend charts, per-profile tiles, and the posts that carry it with a
+//     Repurpose door); the rest are compact rows. Collecting objectives show
+//     baseline-pending rows and no verdict.
+//   • FROM YOUR FEED · N TOPICS — what's happening outside, tied to the
+//     objective: a cause-badged card and creation angles.
+// The ⋯ menu carries Adjust · Open the Playbook · View history; View history
+// swaps the three bands for the objective's timeline (1e) without leaving the
+// card.
 //
 // ONE component, two hosts: the List view renders it in place as the detail
 // panel; the board opens it in the detail modal (which adds the ↑↓/✕ chrome).
 // Hosts own the interactivity: data-objd-* clicks are handled by whoever
-// rendered it.
+// rendered it, and hosts pass the transient view state (expandedId,
+// historyView, historyFilter).
 
 import { escapeHtml as esc, escapeAttr } from "../../utils.js?v=45";
 import {
@@ -23,6 +30,14 @@ import {
 import { NETWORK_LABEL } from "../../social-profiles.js?v=85";
 import { readingFor, weakestMeasure, paceCaption, trendCaption, sparklinePoints } from "./objectives-model.js?v=1";
 import { nextMoveFor } from "../../objective-flow.js?v=1";
+import {
+  feedTopicsFor,
+  feedCaption,
+  historyFor,
+  historyFilters,
+  FEED_BADGE_TONE,
+  HISTORY_DOT_CLASS,
+} from "./objective-feed.js?v=1";
 
 const STATE_TONE = { on: "green", soft: "yellow", off: "red" };
 const STATUS_CLASS = {
@@ -72,34 +87,159 @@ export function defaultExpandedId(entry) {
   return weakestMeasure(entry)?.id || detailMeasures(entry)[0]?.id || null;
 }
 
-export function renderObjectiveDetail(entry, { expandedId = null, host = "panel" } = {}) {
+// ── The header — shared by the reading and the history views ─────────────────
+function renderHead(entry, host) {
+  const r = entry.resolved;
+  const v = entry.verdict;
+  const eyebrow = [entry.playbookName, windowPhrase(r.window)].filter(Boolean).join(" · ");
+  const titleTail = entry.collecting
+    ? `<span class="ap-badge grey objd__collectingtag">Collecting</span>`
+    : v.tier
+      ? `<span class="insights-verdict ${STATUS_CLASS[v.tier]}">${esc(v.label)}</span>${
+          v.phrase ? `<span class="objd__ontrack">${esc(v.phrase)}</span>` : ""
+        }`
+      : "";
+  return `
+    <header class="objd__head${host === "modal" ? " objd__head--modal" : ""}">
+      <span class="objd__eyebrow">
+        <i class="ap-icon-target objd__eyebrowmark" aria-hidden="true"></i>
+        <span class="objd__eyebrowtext">${esc(eyebrow)}</span>
+      </span>
+      <span class="objd__spacer"></span>
+      <span class="objd__tag">Objective</span>
+      <details class="objd__menu" data-objd-menu>
+        <summary class="objd__menutrigger" aria-label="Objective actions" title="Objective actions">⋯</summary>
+        <div class="objd__menupop" role="menu">
+          <button type="button" class="objd__menuitem" role="menuitem" data-objd-adjust>
+            <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust</span>
+          </button>
+          <a class="objd__menuitem" role="menuitem" href="#/playbook/${escapeAttr(entry.ctxId)}?section=objectives">
+            <i class="ap-icon-target" aria-hidden="true"></i><span>Open the Playbook</span>
+          </a>
+          <button type="button" class="objd__menuitem" role="menuitem" data-objd-history>
+            <i class="ap-icon-clock" aria-hidden="true"></i><span>View history</span>
+          </button>
+        </div>
+      </details>
+    </header>
+    <div class="objd__titleline">
+      <h2 class="objd__title">${esc(entry.label)}</h2>
+      ${titleTail}
+    </div>`;
+}
+
+export function renderObjectiveDetail(
+  entry,
+  { expandedId = null, host = "panel", historyView = false, historyFilter = "all" } = {},
+) {
+  if (historyView) return renderHistoryView(entry, host, historyFilter);
+
   const r = entry.resolved;
   const parked = r.status === "parked";
-  const v = entry.verdict;
   const reading = readingFor(entry);
   // null → the weakest measure opens (the default read); "none" → everything
   // folded, which is what a host passes when the reader closes the open one.
   const expanded = expandedId === "none" ? null : expandedId || defaultExpandedId(entry);
   const measures = detailMeasures(entry);
-  const status = entry.collecting
-    ? `<span class="insights-verdict objd__status--collecting">Collecting</span>`
-    : v.tier
-      ? `<span class="insights-verdict ${STATUS_CLASS[v.tier]}">${esc(v.label)}</span>`
-      : "";
-  const subtitle = [entry.playbookName, windowPhrase(r.window), entry.collecting ? v.phrase : v.phrase]
-    .filter(Boolean)
-    .join(" · ");
 
   const sections = measures
-    .map((m) => (m.id === expanded ? renderExpandedMeasure(m, entry, parked) : renderCollapsedMeasure(m, entry)))
+    .map((m) => {
+      if (entry.collecting) return renderCollectingMeasure(m, entry);
+      return m.id === expanded ? renderExpandedMeasure(m, entry, parked) : renderCollapsedMeasure(m, entry);
+    })
     .join("");
 
-  const expandedMeasure = measures.find((m) => m.id === expanded);
-  const posts = expandedMeasure ? measurePosts(expandedMeasure.metricId, entry.ctxId) : [];
-  const postsBlock = posts.length
-    ? `
-    <div class="objd__section">
-      <span class="objd__seclabel">The posts that carry this measure</span>
+  // The loop's exit (PP key flow 4): one recommendation, evidence-citing, and
+  // the card's ONE primary action.
+  const move = nextMoveFor(entry);
+  const topics = feedTopicsFor(entry);
+  const secondary =
+    !entry.collecting && topics.length
+      ? `<span class="objd__archiehint">Chat with the ${topics.length} feed topic${topics.length > 1 ? "s" : ""} attached ↓</span>`
+      : "";
+  const collectingNote =
+    entry.collecting && reading.body ? `<p class="objd__verdictnote">${esc(reading.body)}</p>` : "";
+  const verdictBand = `
+    <section class="objd__band objd__verdict">
+      <span class="objd__seclabel">The verdict</span>
+      <p class="objd__headline">${esc(reading.headline)}</p>
+      ${collectingNote}
+      ${
+        move
+          ? `<div class="objd__archie">
+        <img class="objd__archiemark" src="assets/logos/archie-mark-orange.svg" width="24" height="24" alt="Archie" />
+        <div class="objd__archiebody">
+          <p class="objd__archiepitch">${esc(move.pitch)}</p>
+          <div class="objd__archieactions">
+            <button type="button" class="ap-button primary orange" data-objd-next-chat>
+              <span>${esc(move.cta)}</span>
+            </button>
+            ${secondary}
+          </div>
+        </div>
+      </div>`
+          : ""
+      }
+    </section>`;
+
+  const proofLabel = entry.collecting
+    ? `The proof · ${measures.length} measure${measures.length > 1 ? "s" : ""} · baseline pending`
+    : `The proof · ${measures.length} measure${measures.length > 1 ? "s" : ""}`;
+  const proofBand = `
+    <section class="objd__band objd__proof">
+      <span class="objd__seclabel">${esc(proofLabel)}</span>
+      ${sections}
+      ${renderProxyBanner(entry, parked)}
+    </section>`;
+
+  const feedBand = `
+    <section class="objd__band objd__feed">
+      <span class="objd__feedhead"><span class="objd__seclabel">From your feed · ${topics.length} topic${
+        topics.length > 1 ? "s" : ""
+      }</span><span class="objd__feedcaption">${esc(feedCaption(entry))}</span></span>
+      <div class="objd__topics">${topics.map(renderTopicCard).join("")}</div>
+    </section>`;
+
+  return `
+    <div class="objd" data-objd-key="${escapeAttr(entry.key)}">
+      ${renderHead(entry, host)}
+      ${verdictBand}
+      ${proofBand}
+      ${topics.length ? feedBand : ""}
+    </div>`;
+}
+
+function renderProxyBanner(entry, parked) {
+  if (!parked) return "";
+  const r = entry.resolved;
+  return `
+    <div class="objd__proxybanner">
+      <span>This objective is measured on a proxy — connect Google Analytics and it upgrades to <strong>${esc(
+        r.soon.toLowerCase().includes("revenue") ? "attributed revenue" : "the real metric",
+      )}</strong>, targets carried over.</span>
+      <button type="button" class="ap-link standalone small objd__ga" data-objd-ga>Connect GA →</button>
+    </div>`;
+}
+
+// ── From your feed ───────────────────────────────────────────────────────────
+function renderTopicCard(t) {
+  return `
+    <div class="objd__topic">
+      <span class="ap-badge ${FEED_BADGE_TONE[t.badge.tone] || "grey"} objd__topicbadge">${esc(t.badge.text)}</span>
+      <span class="objd__topictitle">${esc(t.title)}</span>
+      <span class="objd__topicblurb">${esc(t.blurb)}</span>
+      <span class="objd__topicmomentum">${esc(t.momentum)}</span>
+      <button type="button" class="objd__topicstart" data-objd-feed-chat>Start a chat →</button>
+    </div>`;
+}
+
+// ── The posts that carry a measure — inside the expanded measure box ──────────
+function renderMeasurePosts(m, entry) {
+  const posts = measurePosts(m.metricId, entry.ctxId);
+  if (!posts.length) return "";
+  return `
+    <div class="objd__posts">
+      <span class="objd__postslabel">The posts that carry this measure</span>
       ${posts
         .map(
           (p) => `
@@ -107,57 +247,10 @@ export function renderObjectiveDetail(entry, { expandedId = null, host = "panel"
             <span class="objd__post-meta">${esc(p.network)} · ${esc(p.date)}</span>
             <span class="objd__post-excerpt">${esc(p.excerpt)}</span>
             <span class="objd__post-figure">${esc(p.figure)} · <strong>${esc(p.multiple)}</strong></span>
+            <button type="button" class="objd__repurpose" data-objd-repurpose="${escapeAttr(p.excerpt)}">Repurpose</button>
           </div>`,
         )
         .join("")}
-    </div>`
-    : "";
-
-  // The loop's exit (PP key flow 4): one recommendation, evidence-citing, and
-  // the card's ONE primary action — everything above it is reading, this is
-  // the door. Archie talks here, so first person.
-  const move = nextMoveFor(entry);
-  const nextMove = move
-    ? `
-    <div class="objd__nextmove">
-      <span class="objd__seclabel">Next move</span>
-      <p class="objd__nextpitch">${esc(move.pitch)}</p>
-      <button type="button" class="ap-button primary orange" data-objd-next-chat>
-        <span>${esc(move.cta)}</span>
-      </button>
-    </div>`
-    : "";
-
-  const proxyBanner = parked
-    ? `
-    <div class="objd__proxybanner">
-      <span>This objective is measured on a proxy — connect Google Analytics and it upgrades to <strong>${esc(
-        r.soon.toLowerCase().includes("revenue") ? "attributed revenue" : "the real metric",
-      )}</strong>, targets carried over.</span>
-      <button type="button" class="ap-link standalone small objd__ga" data-objd-ga>Connect GA →</button>
-    </div>`
-    : "";
-
-  return `
-    <div class="objd" data-objd-key="${escapeAttr(entry.key)}">
-      <header class="objd__head${host === "modal" ? " objd__head--modal" : ""}">
-        <div class="objd__id">
-          <h2 class="objd__title">${esc(entry.label)} ${status}</h2>
-          <p class="objd__subtitle">${esc(subtitle)}</p>
-        </div>
-        <button type="button" class="ap-button ghost grey objd__adjust" data-objd-adjust>
-          <i class="ap-icon-pen" aria-hidden="true"></i><span>Adjust</span>
-        </button>
-        <a class="ap-link standalone small" href="#/playbook/${escapeAttr(entry.ctxId)}?section=objectives">
-          Open the Playbook<i class="ap-icon-arrow-right" aria-hidden="true"></i>
-        </a>
-      </header>
-      <p class="objd__headline">${esc(reading.headline)}</p>
-      ${reading.body ? `<p class="objd__body">${esc(reading.body)}</p>` : ""}
-      ${sections}
-      ${postsBlock}
-      ${proxyBanner}
-      ${nextMove}
     </div>`;
 }
 
@@ -177,8 +270,6 @@ function renderExpandedMeasure(m, entry, parked) {
       </div>`,
     )
     .join("");
-  // One line for every absent network — a dashed tile per network said the
-  // same sentence three times and out-shouted the tiles that carry data.
   const outNames = outOfScopeNetworks(m).map((n) => NETWORK_LABEL[n] || n);
   const outList =
     outNames.length > 1 ? `${outNames.slice(0, -1).join(", ")} and ${outNames[outNames.length - 1]}` : outNames[0];
@@ -220,6 +311,7 @@ function renderExpandedMeasure(m, entry, parked) {
         </div>
       </div>
       <div class="objd__tiles">${tiles}${outTiles}</div>
+      ${renderMeasurePosts(m, entry)}
     </section>`;
 }
 
@@ -235,9 +327,76 @@ function renderCollapsedMeasure(m, entry) {
         <i class="ap-icon-chevron-down" aria-hidden="true"></i>
       </button>
       <span class="objd__mname">${esc(m.metricLabel)}</span>
+      ${verdictChips(m)}
       <span class="objd__spacer"></span>
-      <span class="objd__mscope">${esc(scopePhrase(m, entry))}</span>
       <span class="objd__minitrack" aria-hidden="true"><span class="objd__bigfill objd__bigfill--${tone}" style="width: ${m.progressPct ?? 0}%"></span></span>
       <span class="objd__mvalue">${value}</span>
     </section>`;
+}
+
+// A measure still in its grace window — no verdict, a striped track, and the
+// day counter in place of a value (handoff 1d).
+function renderCollectingMeasure(m, entry) {
+  const g = entry.resolved.grace;
+  const dayChip = g ? `<span class="ap-badge grey">COLLECTING · DAY ${g.day} OF ${g.of}</span>` : "";
+  return `
+    <section class="objd__section objd__mrow objd__mrow--collecting">
+      <span class="objd__mname">${esc(m.metricLabel)}</span>
+      ${dayChip}
+      <span class="objd__spacer"></span>
+      <span class="objd__mscope">${esc(scopePhrase(m, entry))}</span>
+      <span class="objd__minitrack objd__minitrack--collecting" aria-hidden="true"></span>
+      <span class="objd__mvalue objd__mvalue--pending">baseline pending</span>
+    </section>`;
+}
+
+// ── View history (1e) — the body swaps, the header stays ──────────────────────
+function renderHistoryView(entry, host, filter) {
+  const events = historyFor(entry);
+  const shown = filter && filter !== "all" ? events.filter((e) => e.kind === filter) : events;
+  const since = events.length ? events[events.length - 1].date : "";
+  const chips = historyFilters()
+    .map(
+      (f) => `
+      <button type="button" class="objd__histchip${f.id === filter ? " is-on" : ""}" data-objd-history-filter="${f.id}" aria-pressed="${f.id === filter}">${esc(
+        f.label,
+      )}</button>`,
+    )
+    .join("");
+  const rows = shown.length
+    ? shown
+        .map(
+          (ev, i) => `
+        <div class="objd__tlrow">
+          <span class="objd__tlgutter">
+            <span class="objd__tldot ${HISTORY_DOT_CLASS[ev.dot] || HISTORY_DOT_CLASS.grey}"></span>
+            ${i < shown.length - 1 ? `<span class="objd__tlline"></span>` : ""}
+          </span>
+          <span class="objd__tlbody">
+            <span class="objd__tlhead">
+              <span class="objd__tldate">${esc(ev.date)}</span>
+              <span class="objd__tltitle">${esc(ev.title)}</span>
+              ${ev.tag ? `<span class="ap-badge ${ev.tag.tone || "grey"} objd__tltag">${esc(ev.tag.text)}</span>` : ""}
+            </span>
+            <span class="objd__tltext">${esc(ev.body)}${
+              ev.link ? ` <a class="objd__tllink" href="#" data-objd-feed-chat>${esc(ev.link.label)}</a>` : ""
+            }</span>
+          </span>
+        </div>`,
+        )
+        .join("")
+    : `<p class="objd__tlempty">Nothing of that kind yet.</p>`;
+  return `
+    <div class="objd" data-objd-key="${escapeAttr(entry.key)}">
+      ${renderHead(entry, host)}
+      <div class="objd__histbar">
+        <button type="button" class="objd__histback" data-objd-history-back>
+          <i class="ap-icon-arrow-left" aria-hidden="true"></i><span>Back to today</span>
+        </button>
+        <span class="objd__seclabel">History${since ? ` · since ${esc(since)}` : ""}</span>
+        <span class="objd__spacer"></span>
+        <span class="objd__histchips">${chips}</span>
+      </div>
+      <div class="objd__timeline">${rows}</div>
+    </div>`;
 }

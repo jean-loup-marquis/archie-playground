@@ -515,19 +515,127 @@
   flex: 1;
 }
 
+/* The header (1a–1e): a quiet eyebrow (playbook · window), the OBJECTIVE tag,
+   and the ⋯ menu — Adjust · Open the Playbook · View history. */
 .objd__head {
   display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-sm);
+  align-items: center;
+  gap: var(--ref-spacing-xs);
 }
 
 .objd__head--modal {
   padding-right: 110px;
 }
 
-.objd__id {
-  flex: 1;
+.objd__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
   min-width: 0;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+}
+
+.objd__eyebrowmark {
+  flex: 0 0 auto;
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-60);
+}
+
+.objd__eyebrowtext {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.objd__tag {
+  flex: 0 0 auto;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ref-color-grey-60);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-sm);
+  padding: var(--app-spacing-micro) var(--ref-spacing-xxs);
+}
+
+.objd__menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.objd__menutrigger {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-button-sm);
+  color: var(--ref-color-grey-60);
+  font-weight: var(--ref-font-weight-bold);
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+
+.objd__menutrigger::-webkit-details-marker {
+  display: none;
+}
+
+.objd__menu[open] .objd__menutrigger {
+  background: var(--app-surface-subtle);
+  color: var(--ref-color-grey-100);
+}
+
+.objd__menupop {
+  position: absolute;
+  top: calc(100% + var(--ref-spacing-xxs));
+  right: 0;
+  z-index: 5;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-micro);
+  padding: var(--app-spacing-micro);
+  background: var(--app-surface);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-md);
+  box-shadow: var(--app-shadow-popover-lg);
+}
+
+.objd__menuitem {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: none;
+  background: none;
+  border-radius: var(--app-radius-sm);
+  font: inherit;
+  font-size: var(--sys-text-style-body-size);
+  color: var(--ref-color-grey-100);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.objd__menuitem:hover {
+  background: var(--app-surface-subtle);
+}
+
+.objd__menuitem i {
+  font-size: var(--sys-icon-css-sm);
+  color: var(--ref-color-grey-60);
+}
+
+.objd__titleline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  flex-wrap: wrap;
 }
 
 .objd__title {
@@ -537,19 +645,14 @@
   color: var(--ref-color-grey-100);
 }
 
-.objd__title .insights-verdict {
+.objd__titleline .insights-verdict {
   font-size: var(--sys-text-style-caption-size);
-  margin-left: var(--ref-spacing-xxs);
+  font-weight: var(--sys-text-style-caption-bold-weight);
 }
 
-.objd__subtitle {
-  margin: var(--app-spacing-micro) 0 0;
+.objd__ontrack {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-60);
-}
-
-.objd__adjust {
-  white-space: nowrap;
 }
 
 .objd__headline {
@@ -945,4 +1048,429 @@
   margin: 0;
   font-size: var(--sys-text-style-body-size);
   color: var(--ref-color-grey-60);
+}
+
+/* ═══ The Insights card, redesigned (handoff 1a–1e) ═══════════════════════════
+   Three named bands under the header: THE VERDICT (headline + Archie's Next
+   move), THE PROOF (the measures), FROM YOUR FEED (the outside topics). */
+
+.objd__band {
+  border-top: 1px solid var(--app-border-soft);
+  padding-top: var(--ref-spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+/* ── The verdict — the headline read, then Archie's one move (orange box). ── */
+.objd__verdict .objd__headline {
+  margin-top: var(--app-spacing-micro);
+}
+
+.objd__verdictnote {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  color: var(--ref-color-grey-60);
+}
+
+.objd__archie {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  border: 1px solid var(--app-peach-border);
+  border-radius: var(--app-radius-card);
+  background: var(--app-peach);
+}
+
+.objd__archiemark {
+  flex: 0 0 auto;
+  margin-top: var(--app-spacing-micro);
+}
+
+.objd__archiebody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.objd__archiepitch {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  line-height: var(--sys-text-style-body-line-height);
+  color: var(--ref-color-grey-100);
+}
+
+.objd__archieactions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.objd__archiehint {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--app-archie-mark);
+}
+
+/* ── The proof — the expanded measure is a soft card, the rest are rows. ──── */
+.objd__proof .objd__measure {
+  border-top: none;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-md);
+  background: var(--app-surface-subtle);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+}
+
+.objd__proof .objd__mrow {
+  border-top: none;
+  border-bottom: 1px solid var(--app-border-soft);
+  padding: var(--ref-spacing-xs) 0;
+}
+
+.objd__proof .objd__mrow:last-of-type {
+  border-bottom: none;
+}
+
+.objd__mrow--collecting .objd__mname {
+  color: var(--ref-color-grey-100);
+}
+
+.objd__minitrack--collecting {
+  width: 110px;
+  flex-shrink: 0;
+  height: 6px;
+  border-radius: var(--app-radius-pill);
+  background: repeating-linear-gradient(90deg, var(--app-border) 0 6px, var(--ref-color-grey-10) 6px 12px);
+}
+
+.objd__mvalue--pending {
+  color: var(--ref-color-grey-60);
+}
+
+/* The posts that carry a measure — inside the measure card, each with a
+   Repurpose door. */
+.objd__posts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+  border-top: 1px solid var(--app-border-soft);
+  margin-top: var(--ref-spacing-xs);
+  padding-top: var(--ref-spacing-sm);
+}
+
+.objd__postslabel {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ref-color-grey-60);
+}
+
+.objd__posts .objd__post {
+  align-items: center;
+}
+
+.objd__repurpose {
+  flex: 0 0 auto;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-button-sm);
+  background: var(--app-surface);
+  font: inherit;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-80);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.objd__repurpose:hover {
+  border-color: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-electric-blue-100);
+}
+
+/* ── From your feed — the outside topics, tied to the objective. ──────────── */
+.objd__feedhead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  flex-wrap: wrap;
+}
+
+.objd__feedcaption {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+}
+
+.objd__topics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--ref-spacing-sm);
+  margin-top: var(--app-spacing-micro);
+}
+
+.objd__topic {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--app-spacing-micro);
+  padding: var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-card);
+}
+
+.objd__topicbadge {
+  letter-spacing: 0.04em;
+}
+
+.objd__topictitle {
+  margin-top: var(--ref-spacing-xxs);
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.objd__topicblurb {
+  font-size: var(--sys-text-style-caption-size);
+  line-height: 1.45;
+  color: var(--ref-color-grey-80);
+}
+
+.objd__topicmomentum {
+  margin-top: var(--ref-spacing-xxs);
+  font-family: var(--app-font-mono, monospace);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+}
+
+.objd__topicstart {
+  margin-top: var(--ref-spacing-xxs);
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-electric-blue-100);
+  cursor: pointer;
+}
+
+.objd__topicstart:hover {
+  text-decoration: underline;
+}
+
+/* ── View history (1e) — the timeline that swaps in for the three bands. ──── */
+.objd__histbar {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.objd__histback {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-electric-blue-100);
+  cursor: pointer;
+}
+
+.objd__histback i {
+  font-size: var(--sys-icon-css-xs);
+}
+
+.objd__histchips {
+  display: flex;
+  gap: var(--ref-spacing-xxs);
+}
+
+.objd__histchip {
+  padding: var(--app-spacing-micro) var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-pill);
+  background: none;
+  font: inherit;
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  color: var(--ref-color-grey-60);
+  cursor: pointer;
+}
+
+.objd__histchip.is-on {
+  border-color: transparent;
+  background: var(--app-surface-subtle);
+  color: var(--ref-color-grey-100);
+}
+
+.objd__timeline {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--ref-spacing-sm);
+}
+
+.objd__tlrow {
+  display: flex;
+  gap: var(--ref-spacing-sm);
+}
+
+.objd__tlgutter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.objd__tldot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: var(--ref-spacing-xxs);
+  flex-shrink: 0;
+}
+
+.objd__tldot--red {
+  background: var(--ref-color-red-150);
+}
+.objd__tldot--yellow {
+  background: var(--ref-color-yellow-150);
+}
+.objd__tldot--green {
+  background: var(--ref-color-green-150);
+}
+.objd__tldot--grey {
+  background: var(--app-border);
+}
+.objd__tldot--orange {
+  background: var(--app-archie-mark);
+}
+
+.objd__tlline {
+  flex: 1;
+  width: 2px;
+  background: var(--app-border-soft);
+}
+
+.objd__tlbody {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: var(--ref-spacing-md);
+}
+
+.objd__tlhead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ref-spacing-xs);
+  flex-wrap: wrap;
+}
+
+.objd__tldate {
+  font-family: var(--app-font-mono, monospace);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+}
+
+.objd__tltitle {
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.objd__tltext {
+  display: block;
+  margin-top: var(--app-spacing-micro);
+  font-size: var(--sys-text-style-caption-size);
+  line-height: 1.45;
+  color: var(--ref-color-grey-80);
+}
+
+.objd__tlempty {
+  margin: 0;
+  font-size: var(--sys-text-style-body-size);
+  color: var(--ref-color-grey-60);
+}
+
+/* ═══ The rail, grouped by state (handoff 2d) ════════════════════════════════
+   The verdict leaves the row and becomes the group; each row is pure
+   navigation — name + playbook · measures. */
+.objv__railgroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-micro);
+  margin-bottom: var(--ref-spacing-sm);
+}
+
+.objv__grouphead {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm) var(--app-spacing-micro);
+}
+
+.objv__dot--grey {
+  background: var(--ref-color-grey-40, var(--app-border));
+}
+
+.objv__groupname {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ref-color-grey-80);
+}
+
+.objv__groupcount {
+  font-size: var(--sys-text-style-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--ref-color-grey-60);
+}
+
+.objv__railrow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--app-spacing-micro);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1.5px solid transparent;
+  border-radius: var(--app-radius-md);
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.objv__railrow:hover {
+  background: var(--app-surface-subtle);
+}
+
+.objv__railrow.is-selected {
+  border-color: var(--ref-color-electric-blue-100);
+  background: var(--app-surface);
+  box-shadow: var(--app-shadow-card);
+}
+
+.objv__railname {
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.objv__railsub {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+}
+
+.objv__railrow:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
 }
