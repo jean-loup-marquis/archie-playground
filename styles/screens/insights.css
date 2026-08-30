@@ -66,16 +66,18 @@
   justify-content: space-between;
   gap: var(--ref-spacing-md);
   flex-wrap: wrap;
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-sm);
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) 0;
 }
 
 .insights-view__head-text {
   display: flex;
   flex-direction: column;
   gap: var(--app-spacing-micro);
-  /* Grow to fill, but hold a real basis so the lede keeps its two-line width
-     instead of collapsing to its widest word when the controls are wide. */
-  flex: 1 1 340px;
+  /* Don't grow — the lede's own max-width sets the column width, so
+     space-between can push the controls to the right edge (level with the
+     detail card). The lede stays two lines; when the row is too narrow for both,
+     the controls wrap below rather than squeezing it. */
+  flex: 0 1 auto;
   min-width: 0;
 }
 

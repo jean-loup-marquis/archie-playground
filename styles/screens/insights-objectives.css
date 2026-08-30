@@ -517,7 +517,8 @@
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card-lg, var(--app-radius-lg));
   padding: var(--ref-spacing-lg);
-  max-width: 960px;
+  /* No cap: the card fills the detail column, so its right edge lands on the
+     split's right padding — the same edge as the header's New objective button. */
 }
 
 /* ── The objective detail (6a — shared by List panel and modal) ─────────── */
