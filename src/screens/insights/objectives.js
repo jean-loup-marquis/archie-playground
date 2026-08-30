@@ -28,6 +28,7 @@ import { openObjectiveInChat } from "../../objective-flow.js?v=1";
 import { open as openObjectiveModal } from "../../components/objective-modal.js?v=2";
 import { renderFirstRun } from "./parts.js?v=18";
 import { consumeHandoff } from "../../handoff.js?v=34";
+import { isFlagOn } from "../../feature-flags.js?v=45";
 
 // The Playbook → Insights bridge (handoff 3b's "Open in Insights"): a single-use
 // sessionStorage key carrying the objective key to pre-select in the List view.
@@ -73,16 +74,49 @@ export function renderObjectivesTab() {
   if (prefs.viewMode === "list") view = renderList(entries, prefs);
   else if (prefs.groupByPlaybook) view = renderLanes(entries, prefs);
   else view = renderBoard(entries, prefs);
+  // Solo (Usage & Value behind the flag): the page has one reading, so the H1 +
+  // the reading controls share one row — the Playbooks-page header shape. With
+  // the tabs live the shell owns the tab bar above and the controls keep their
+  // own band. Computed here (not passed) so the bind-time repaint stays correct.
+  const solo = !isFlagOn("insightsUsageValue");
   return `
-    <div class="objv">
-      ${renderToolbar(prefs)}
+    <div class="objv${solo ? " objv--solo" : ""}">
+      ${solo ? renderComboHeader(prefs) : renderToolbar(prefs)}
       ${view}
     </div>`;
 }
 
-// ── Toolbar ──────────────────────────────────────────────────────────────────
+// ── Header / toolbar ──────────────────────────────────────────────────────────
+
+// The page name + a two-line lede on the left, the reading controls on the
+// right — one row, on the page canvas, the way the Playbooks header reads.
+const SOLO_SUBTITLE =
+  "Every objective across your Playbooks — Archie's verdict, the proof behind it, and the next move to make.";
+
+function renderComboHeader(prefs) {
+  return `
+    <header class="insights-view__solohead objv__solohead">
+      <div class="insights-view__head-text">
+        <h1 class="insights-view__title">Insights and Objectives</h1>
+        <p class="insights-view__subtitle">${SOLO_SUBTITLE}</p>
+      </div>
+      <div class="objv__head-actions">
+        ${renderToolbarControls(prefs)}
+      </div>
+    </header>`;
+}
 
 function renderToolbar(prefs) {
+  return `
+    <div class="objv__toolbar">
+      <span class="objv__spacer"></span>
+      ${renderToolbarControls(prefs)}
+    </div>`;
+}
+
+// The reading controls, shared by the solo header and the tabs-mode toolbar:
+// Playbook filter · sort · (board-only) group toggle · list/board switch · New.
+function renderToolbarControls(prefs) {
   // Icon-only: the view switch is a display preference, not navigation — it
   // sits with the other reading controls (filter, sort) and stays quiet.
   const seg = (id, label, icon) => `
@@ -103,29 +137,26 @@ function renderToolbar(prefs) {
          </label>`
       : "";
   return `
-    <div class="objv__toolbar">
-      <span class="objv__spacer"></span>
-      ${renderToolbarSelect({
-        value: prefs.playbookFilter,
-        options: playbookOptions,
-        attr: "data-obj-filter-pick",
-        ariaLabel: "Filter by Playbook",
-      })}
-      ${renderToolbarSelect({
-        value: prefs.sort,
-        options: SORTS.map((s) => ({ value: s.id, label: s.label })),
-        attr: "data-obj-sort-pick",
-        ariaLabel: "Sort objectives",
-      })}
-      ${groupToggle}
-      <div class="ap-segmented-control objv__viewswitch" role="group" aria-label="View as list or board">
-        ${seg("list", "List", "ap-icon-view-list")}
-        ${seg("board", "Board", "ap-icon-bar-graph")}
-      </div>
-      <button type="button" class="ap-button primary blue" data-obj-new>
-        <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
-      </button>
-    </div>`;
+    ${renderToolbarSelect({
+      value: prefs.playbookFilter,
+      options: playbookOptions,
+      attr: "data-obj-filter-pick",
+      ariaLabel: "Filter by Playbook",
+    })}
+    ${renderToolbarSelect({
+      value: prefs.sort,
+      options: SORTS.map((s) => ({ value: s.id, label: s.label })),
+      attr: "data-obj-sort-pick",
+      ariaLabel: "Sort objectives",
+    })}
+    ${groupToggle}
+    <div class="ap-segmented-control objv__viewswitch" role="group" aria-label="View as list or board">
+      ${seg("list", "List", "ap-icon-view-list")}
+      ${seg("board", "Board", "ap-icon-bar-graph")}
+    </div>
+    <button type="button" class="ap-button primary blue" data-obj-new>
+      <i class="ap-icon-plus" aria-hidden="true"></i><span>New objective</span>
+    </button>`;
 }
 
 function renderToolbarSelect({ value, options, attr, ariaLabel }) {

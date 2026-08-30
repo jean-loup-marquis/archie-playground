@@ -57,14 +57,26 @@
 }
 
 /* ── The single-view header (Usage & Value behind the insightsUsageValue flag).
-   Sits on the page canvas like the Playbooks header — no white fill, no rule —
-   so it doesn't add a white band above the (white) toolbar. Compact: a short
-   one-line subtitle, the way the Playbooks header reads. */
+   The Playbooks-page header shape: title + lede on the left, the reading
+   controls on the right, one row on the page canvas (no white fill, no rule).
+   align-items:flex-end sits the controls on the lede's baseline. */
 .insights-view__solohead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--ref-spacing-md);
+  flex-wrap: wrap;
+  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-sm);
+}
+
+.insights-view__head-text {
   display: flex;
   flex-direction: column;
   gap: var(--app-spacing-micro);
-  padding: var(--ref-spacing-md) var(--ref-spacing-lg) var(--ref-spacing-sm);
+  /* Grow to fill, but hold a real basis so the lede keeps its two-line width
+     instead of collapsing to its widest word when the controls are wide. */
+  flex: 1 1 340px;
+  min-width: 0;
 }
 
 .insights-view__title {
@@ -76,8 +88,11 @@
   color: var(--ref-color-grey-100);
 }
 
+/* Capped so the lede wraps to two lines rather than running the page width —
+   it gives the left column height to sit level with the controls. */
 .insights-view__subtitle {
   margin: 0;
+  max-width: 56ch;
   font-size: var(--sys-text-style-body-size);
   line-height: var(--sys-text-style-body-line-height);
   color: var(--ref-color-grey-80);

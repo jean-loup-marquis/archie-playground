@@ -3,7 +3,7 @@ import { renderTopbar } from "../../components/topbar.js?v=512";
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
 import { navigate, getPath } from "../../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";
-import { renderObjectivesTab, bindObjectivesTab } from "./objectives.js?v=4";
+import { renderObjectivesTab, bindObjectivesTab } from "./objectives.js?v=5";
 import { renderUsageTab, bindUsageTab } from "./usage.js?v=65";
 import { renderValueTab, bindValueTab } from "./value.js?v=13";
 import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=26";
@@ -24,7 +24,8 @@ import { isFlagOn } from "../../feature-flags.js?v=45";
 // The topbar leads with the way out (Back to new chat, via backTargetFor) and
 // then names the section. When all three tabs are live the page opens on a real
 // `.ap-tabs` bar — the DS's answer for switching readings of one section; when
-// only Objectives is live it opens on the H1 header instead (renderSoloHeader).
+// only Objectives is live the tab renders its own header (H1 + controls in one
+// Playbooks-style row) and the shell adds no band above the panel.
 //
 // ── The period lives on the tab bar ─────────────────────────────────────────
 // Right end of the `.ap-tabs-nav`, so one control rules whichever tab reads a
@@ -86,7 +87,10 @@ export function renderInsights(params, target) {
   const tab = TABS.find((t) => t.id === active);
 
   const paint = () => {
-    const header = showTabs ? renderTabsBar(active, tab.noPeriod ? null : period) : renderSoloHeader();
+    // Tabs live → the shell owns the tab bar. Solo → the tab owns its own header
+    // (the H1 + lede share a row with the reading controls, Playbooks-style), so
+    // the shell adds nothing above the panel.
+    const header = showTabs ? renderTabsBar(active, tab.noPeriod ? null : period) : "";
     target.innerHTML = html`<section class="screen insights-view">
       <div class="insights-view__page">
         ${raw(header)}
@@ -149,17 +153,11 @@ function renderTabsBar(active, period) {
     </div>`;
 }
 
-// The single-view header (Usage & Value behind the flag). With one reading, a
-// tab bar would switch between one thing, so the page leads with its name and a
-// line saying what it holds — the in-page H1 the tab bar had replaced, brought
-// back now that there is nothing to tab between.
-function renderSoloHeader() {
-  return `
-    <header class="insights-view__solohead">
-      <h1 class="insights-view__title">Insights and Objectives</h1>
-      <p class="insights-view__subtitle">Every objective across your Playbooks — Archie's verdict, the proof behind it, and the next move to make.</p>
-    </header>`;
-}
+// The single-view header (Usage & Value behind the flag) is rendered by the
+// Objectives tab itself — it merges the H1 + lede with the reading controls in
+// one Playbooks-style row (see renderComboHeader in objectives.js). Only
+// Objectives is ever solo, so the tab owning that header keeps the controls'
+// state and handlers where they live.
 
 // 7 / 30 / 60, and 60 is the last one on purpose: it is where Archie's memory ends,
 // not a choice about granularity. The panel says so inline when you get there.

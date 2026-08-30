@@ -33,6 +33,18 @@
   min-width: 170px;
 }
 
+/* Solo header (Playbooks-style): the reading controls ride the header's right
+   side instead of their own band. Same controls as the toolbar, one row. */
+.objv__head-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-sm);
+  flex-wrap: wrap;
+  /* Keep their size; when the row is too narrow the whole block wraps below the
+     text rather than squeezing the lede. */
+  flex: 0 0 auto;
+}
+
 /* Icon-only view switch — same 36px height as its neighbours, narrower pads. */
 .objv__viewswitch .ap-segmented-control__segment {
   padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
