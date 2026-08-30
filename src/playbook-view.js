@@ -22,8 +22,17 @@ import { isFlagOn } from "./feature-flags.js?v=44";
 import { NETWORK_ICON_BY_PLATFORM, NETWORK_LABEL } from "./social-profiles.js?v=85";
 import { open as openConfirmModal } from "./components/confirm-modal.js?v=36";
 import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-modal.js?v=15";
-import { resolveObjectives } from "./objective-measures.js?v=6";
+import {
+  resolveObjectives,
+  objectiveVerdict,
+  measureTier,
+  measureState,
+  materializeMeasureEntries,
+  windowPhrase,
+} from "./objective-measures.js?v=6";
 import { open as openObjectiveModal } from "./components/objective-modal.js?v=1";
+import { open as openObjectiveCatalog } from "./components/objective-catalog-panel.js?v=1";
+import { open as openRenameModal } from "./components/rename-modal.js?v=16";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -547,92 +556,147 @@ function renderChips(values) {
     .join("")}</div>`;
 }
 
-// ── Objectives (dedicated section) ──────────────────────────────────────
-// Each label resolves at render time — never stored — to a coupled object: its
-// proposed measures (metric + baseline) or its parked state (coming soon +
-// avowed proxy). The user's corrections live in data.objectiveMeasures[label]
-// and only store the deviation. Coming soon is `ap-badge blue`, the app's one
-// coming-soon convention — never orange.
+// ── Objectives (dedicated section) — the rows block (handoff 2b/2e) ──────
+// Each label resolves at render time — never stored — to a coupled object:
+// its measures (metric + scope + baseline → target + pace/trend), its parked
+// state (coming soon on a proxy), or its grace state (collecting, no verdict
+// yet). A living recap rather than a mute card: the status word sits on the
+// OBJECTIVE (counted roll-up of its measures — never weighted), each measure
+// line carries its own bar and its combined pace · trend chip, and the whole
+// row opens the objective modal. Section edit (the pencil) turns the block
+// into the design's 2e: rename, remove a measure, add one from the catalog,
+// delete the objective — nothing persisted before Save (see the Cancel
+// restore in the [data-recap-cancel] handler).
 
-// The measure lines / parked proxy line of one resolved objective. Span-only:
-// this fragment lives inside the card's <button>, which allows phrasing
-// content only. Each measure carries its mini gauge (progress toward target,
-// accent blue — progress, not a verdict) and its bounds; the window reads once
-// in the card head, so the per-measure lines stay bare figures.
-function renderObjectiveBody(o) {
-  if (o.status === "parked") {
-    return `<span class="recap__objective-proxy">${esc(o.soon)} Until then <strong>${esc(
-      o.proxy.metricLabel,
-    )}</strong> stands in as a proxy.</span>`;
-  }
-  return `<span class="recap__measures">${o.measures
-    .map(
-      (m) => `
-      <span class="recap__measure">
-        <span class="recap__measure-metric">${esc(m.metricLabel)}${m.scopeLabel ? ` · ${esc(m.scopeLabel)}` : ""}</span>
-        ${
-          m.progressPct != null
-            ? `<span class="recap__measure-track"><span class="recap__measure-fill" style="width: ${m.progressPct}%"></span></span>`
-            : ""
-        }
-        <span class="recap__measure-bounds">${esc(m.baselineValue)} → ${esc(m.target || "—")}</span>
-      </span>`,
-    )
-    .join("")}</span>`;
+const OBJ_STATUS_CLASS = {
+  strong: "recap__objstatus--strong",
+  watch: "recap__objstatus--watch",
+  "at-risk": "recap__objstatus--risk",
+};
+
+function objectiveCountsLine(resolved) {
+  const verdicts = resolved.map((o) => ({ o, v: objectiveVerdict(o) }));
+  const parts = [`${resolved.length} objective${resolved.length === 1 ? "" : "s"}`];
+  const risk = verdicts.filter(({ o, v }) => o.status === "measured" && v.tier === "at-risk").length;
+  const watch = verdicts.filter(({ o, v }) => o.status === "measured" && v.tier === "watch").length;
+  const strong = verdicts.filter(({ o, v }) => o.status === "measured" && v.tier === "strong").length;
+  const proxy = resolved.filter((o) => o.status === "parked").length;
+  const collecting = resolved.filter((o) => o.status === "collecting").length;
+  if (risk) parts.push(`${risk} at risk`);
+  if (watch) parts.push(`${watch} watch`);
+  if (strong) parts.push(`${strong} on track`);
+  if (proxy) parts.push(`${proxy} on proxy`);
+  if (collecting) parts.push(`${collecting} collecting`);
+  return parts.join(" · ");
 }
 
-// One objective card. `i` indexes data.objective. The whole card body is a
-// <button> opening the editor; the edit-mode remove cross is a SIBLING (a
-// button may not nest another button).
-function renderObjectiveCard(o, i, edit) {
-  const parked = o.status === "parked";
-  const name = esc(o.label);
+// One measure line: label (+ scope suffix) · bar · bounds · combined chip.
+// The chip tone follows the measure's contribution to the counted verdict
+// (on → green, soft → yellow, off → red).
+function renderObjectiveMeasureLine(m, o, i, { edit = false, proxy = false, collecting = false } = {}) {
+  const rate = m.metricType === "rate";
+  const tier = collecting ? null : measureTier(m.progressPct);
+  const bar = collecting
+    ? `<span class="recap__measure-track recap__measure-track--collecting"></span>`
+    : m.progressPct != null
+      ? `<span class="recap__measure-track"><span class="recap__measure-fill recap__measure-fill--${tier || "watch"}" style="width: ${m.progressPct}%"></span></span>`
+      : `<span class="recap__measure-track"></span>`;
+  const bounds = rate
+    ? `hold above ${esc(m.target || "—")} · currently ${esc(m.baselineValue)}`
+    : `${esc(m.baselineValue)} → ${esc(m.target || "—")}`;
+  const state = measureState(m);
+  const chipTone = state === "on" ? "green" : state === "soft" ? "yellow" : "red";
+  const tail = edit
+    ? `<button type="button" class="ap-icon-button transparent" data-recap-measure-remove="${i}::${esc(m.id)}" aria-label="Remove ${esc(m.metricLabel)}"><i class="ap-icon-close"></i></button>`
+    : collecting
+      ? ""
+      : `<span class="ap-badge ${chipTone}">${esc(m.pace?.label || "")}${m.pace && m.trend ? " · " : ""}${esc(m.trend?.label || "")}</span>`;
   return `
-    <div class="recap__objcard${parked ? " recap__objcard--parked" : ""}">
-      <button type="button" class="recap__objcard-open" data-recap-obj-open="${i}" aria-label="Edit ${name}">
-        <span class="recap__objcard-head">
-          <span class="recap__objcard-name">${name}</span>
-          ${parked ? `<span class="ap-badge blue recap__objective-soon">Coming soon</span>` : ""}
-        </span>
-        ${o.windowLabel ? `<span class="recap__objcard-window">${esc(o.windowLabel)}</span>` : ""}
-        ${renderObjectiveBody(o)}
-      </button>
-      ${
-        edit
-          ? `<button type="button" class="recap__refimg-remove recap__cmpcard-remove" data-recap-obj-remove="${i}" aria-label="Remove ${name}"><i class="ap-icon-close"></i></button>`
-          : ""
-      }
-    </div>`;
+    <span class="recap__objmeasure">
+      <span class="recap__measure-metric">${esc(m.metricLabel)}${m.scopeLabel ? ` · ${esc(m.scopeLabel)}` : ""}${
+        proxy ? ` <span class="recap__objproxy-mark">proxy</span>` : ""
+      }</span>
+      ${bar}
+      <span class="recap__measure-bounds">${bounds}</span>
+      ${tail}
+    </span>`;
+}
+
+// One objective row — 280px identity column, measures on the right.
+function renderObjectiveRow(o, i, edit) {
+  const parked = o.status === "parked";
+  const collecting = o.status === "collecting";
+  const verdict = objectiveVerdict(o);
+  const origin = cfg.getData()?.objectiveMeasures?.[o.label]?.origin;
+  const provenance = parked ? o.soon : origin === "user" ? "Added by you" : "Proposed by Archie · from your website";
+  const status = parked
+    ? `<span class="ap-badge yellow">Coming soon</span>`
+    : collecting
+      ? `<span class="recap__objstatus recap__objstatus--collecting">Collecting</span>`
+      : verdict.tier
+        ? `<span class="recap__objstatus ${OBJ_STATUS_CLASS[verdict.tier]}">${esc(verdict.label)}</span>`
+        : "";
+  const measures = parked
+    ? renderObjectiveMeasureLine(o.proxy, o, i, { edit, proxy: true })
+    : o.measures.map((m) => renderObjectiveMeasureLine(m, o, i, { edit, collecting })).join("");
+  const note = edit
+    ? `<button type="button" class="recap__objaddmeasure" data-recap-measure-add="${i}"><span>+ Add a measure</span></button>`
+    : parked
+      ? `<span class="recap__objnote">Measured via proxy until the real metric ships — then it upgrades itself.</span>`
+      : collecting
+        ? `<span class="recap__objnote">${esc(verdict.phrase)}</span>`
+        : verdict.total > 1
+          ? `<span class="recap__objnote">${esc(verdict.phrase)}</span>`
+          : "";
+  const left = `
+    <span class="recap__objrow-id">
+      <span class="recap__objrow-name">
+        <span>${esc(o.label)}</span>
+        ${edit ? `<button type="button" class="ap-icon-button transparent" data-recap-obj-rename="${i}" aria-label="Rename ${esc(o.label)}"><i class="ap-icon-pen"></i></button>` : status}
+      </span>
+      <span class="recap__objrow-prov">${esc(provenance)}</span>
+      ${!parked ? `<span class="recap__objrow-window">${esc(windowPhrase(o.window))}</span>` : ""}
+    </span>`;
+  const right = `<span class="recap__objrow-measures">${measures}${note}</span>`;
+  if (edit) {
+    return `
+      <div class="recap__objrow${parked ? " recap__objrow--soon" : ""}${collecting ? " recap__objrow--collecting" : ""}">
+        ${left}
+        ${right}
+        <button type="button" class="ap-icon-button transparent danger recap__objrow-trash" data-recap-obj-remove="${i}" aria-label="Delete ${esc(o.label)}"><i class="ap-icon-trash"></i></button>
+      </div>`;
+  }
+  // Read mode: the whole row is the affordance — it opens the objective modal.
+  return `
+    <button type="button" class="recap__objrow recap__objrow--open${parked ? " recap__objrow--soon" : ""}${collecting ? " recap__objrow--collecting" : ""}" data-recap-obj-open="${i}" aria-label="Adjust ${esc(o.label)}">
+      ${left}
+      ${right}
+    </button>`;
 }
 
 function renderObjectivesPanel(data, edit) {
   const section = sectionFor("objectives");
   const resolved = resolveObjectives(data.objective, data.id, data.objectiveMeasures);
-  const grid = resolved.length
-    ? `<div class="recap__objgrid">${resolved.map((o, i) => renderObjectiveCard(o, i, edit)).join("")}</div>`
-    : `<p class="recap__cmp-empty">No objectives yet${edit ? " — add one below." : "."}</p>`;
-  // Section edit manages the LIST of labels (add/remove); a card's measures are
-  // corrected in its own editor, available in read mode too. The adder reuses
-  // the generic chip machinery (addChip / data-recap-chip-*) untouched.
-  const adder = edit
-    ? `<div class="recap__chips recap__chips--edit recap__objadd">
-         <span class="recap__chip-add">
-           <div class="ap-input-group recap__chip-add-field">
-             <input type="text" data-recap-chip-input="objective" placeholder="Add an objective…" aria-label="Add an objective…" />
-           </div>
-           <button type="button" class="ap-icon-button stroked grey recap__chip-add-btn" data-recap-chip-add="objective" aria-label="Add">
-             <i class="ap-icon-plus"></i>
-           </button>
-         </span>
-       </div>`
-    : "";
+  const rows = resolved.length
+    ? resolved.map((o, i) => renderObjectiveRow(o, i, edit)).join("")
+    : `<p class="recap__cmp-empty">No objectives yet — add one below.</p>`;
+  const footNote = edit
+    ? "Deleting an objective keeps its history — it can be restored for 30 days."
+    : "Archie only builds on metrics from the catalog — anything else becomes coming soon.";
+  const footer = `
+    <div class="recap__objfoot">
+      <button type="button" class="recap__objaddrow" data-recap-obj-add><span>+ Add an objective</span></button>
+      <span class="recap__objfoot-note">${footNote}</span>
+    </div>`;
+  const counts = !edit ? `<span class="recap__objcount">${esc(objectiveCountsLine(resolved))}</span>` : "";
+  const editingNote = edit ? `<div class="recap__objediting">editing — nothing saved yet</div>` : "";
   const hint = edit ? renderSectionHint(SECTION_HINTS.objectives) : "";
-  const body = `${hint}<div class="recap__cmpsec">${grid}${adder}</div>`;
+  const body = `${editingNote}${hint}<div class="recap__objrows">${rows}</div>${footer}`;
   return `
-    <section class="recap__panel ${edit ? "is-editing" : ""}" id="${section.id}" ${
+    <section class="recap__panel recap__panel--objectives ${edit ? "is-editing" : ""}" id="${section.id}" ${
       edit ? "data-recap-editing-card" : ""
     }>
-      ${renderPanelHead(section, edit)}
+      ${renderPanelHead(section, edit, counts)}
       <div class="recap__panel-body">${body}</div>
     </section>
   `;
@@ -2526,6 +2590,13 @@ function onClick(event) {
   }
 
   if (event.target.closest("[data-recap-cancel]")) {
+    // objectiveMeasures never makes it through the library revert (updateContext
+    // whitelists fields) — restore both objective fields IN PLACE on the live
+    // object first; the snapshot is already a deep clone.
+    if (snapshot) {
+      data.objective = snapshot.objective;
+      data.objectiveMeasures = snapshot.objectiveMeasures;
+    }
     if (snapshot) cfg.revert?.(snapshot);
     snapshot = null;
     editScope = null;
@@ -2638,12 +2709,84 @@ function onClick(event) {
   }
 
   // ── Objectives ────────────────────────────────────────────────────────────
-  // A card opens the shared per-objective editor — available in READ mode too:
-  // a correction shouldn't require entering the section editor.
+  // A row opens the objective modal — available in READ mode too: a
+  // correction shouldn't require entering the section editor.
   const objOpen = event.target.closest("[data-recap-obj-open]");
   if (objOpen) {
     const label = (Array.isArray(data.objective) ? data.objective : [])[Number(objOpen.dataset.recapObjOpen)];
     if (label != null) openObjectiveEditorFor(label);
+    return;
+  }
+
+  if (event.target.closest("[data-recap-obj-add]")) {
+    openObjectiveModal({
+      data,
+      mode: "create",
+      onChange: () => {
+        if (!editScope) cfg.commit?.();
+        repaintPreservingScroll();
+      },
+    });
+    return;
+  }
+
+  const objRename = event.target.closest("[data-recap-obj-rename]");
+  if (objRename) {
+    const idx = Number(objRename.dataset.recapObjRename);
+    const labels = Array.isArray(data.objective) ? data.objective : [];
+    const old = labels[idx];
+    if (old == null) return;
+    openRenameModal({
+      title: "Rename objective",
+      initialName: old,
+      placeholder: "Objective name",
+      confirmLabel: "Rename",
+      onSubmit: (name) => {
+        const next = (name || "").trim();
+        if (!next || next === old) return;
+        labels[idx] = next;
+        if (data.objectiveMeasures?.[old] !== undefined) {
+          data.objectiveMeasures[next] = data.objectiveMeasures[old];
+          delete data.objectiveMeasures[old];
+        }
+        if (!editScope) cfg.commit?.();
+        repaintPreservingScroll();
+      },
+    });
+    return;
+  }
+
+  const measureRemove = event.target.closest("[data-recap-measure-remove]");
+  if (measureRemove) {
+    const [idxStr, mid] = measureRemove.dataset.recapMeasureRemove.split("::");
+    const label = (Array.isArray(data.objective) ? data.objective : [])[Number(idxStr)];
+    if (label == null) return;
+    if (!data.objectiveMeasures || typeof data.objectiveMeasures !== "object") data.objectiveMeasures = {};
+    const override = (data.objectiveMeasures[label] = data.objectiveMeasures[label] || {});
+    if (!Array.isArray(override.measures)) override.measures = materializeMeasureEntries(label, override);
+    override.measures = override.measures.filter((e) => (e.id || e.metricId) !== mid);
+    if (!editScope) cfg.commit?.();
+    repaintPreservingScroll();
+    return;
+  }
+
+  const measureAdd = event.target.closest("[data-recap-measure-add]");
+  if (measureAdd) {
+    const label = (Array.isArray(data.objective) ? data.objective : [])[Number(measureAdd.dataset.recapMeasureAdd)];
+    if (label == null) return;
+    openObjectiveCatalog({
+      contextId: data.id,
+      targetLabel: label,
+      onAdd: (entry) => {
+        const live = cfg.getData();
+        if (!live.objectiveMeasures || typeof live.objectiveMeasures !== "object") live.objectiveMeasures = {};
+        const override = (live.objectiveMeasures[label] = live.objectiveMeasures[label] || {});
+        if (!Array.isArray(override.measures)) override.measures = materializeMeasureEntries(label, override);
+        override.measures.push(entry);
+        if (!editScope) cfg.commit?.();
+        repaintPreservingScroll();
+      },
+    });
     return;
   }
 
@@ -2653,9 +2796,18 @@ function onClick(event) {
     const labels = Array.isArray(data.objective) ? data.objective : [];
     const label = labels[idx];
     if (label == null) return;
-    labels.splice(idx, 1);
-    if (data.objectiveMeasures) delete data.objectiveMeasures[label];
-    repaintPreservingScroll();
+    openConfirmModal({
+      title: `Delete "${label}"?`,
+      body: "Deleting an objective keeps its history — it can be restored for 30 days.",
+      confirmLabel: "Delete objective",
+      danger: true,
+      onConfirm: () => {
+        labels.splice(idx, 1);
+        if (data.objectiveMeasures) delete data.objectiveMeasures[label];
+        if (!editScope) cfg.commit?.();
+        repaintPreservingScroll();
+      },
+    });
     return;
   }
 

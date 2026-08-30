@@ -894,3 +894,14 @@ button.ap-link {
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
 }
+
+/* Danger icon-button — the objectives block's per-row trash. Same rationale
+   as .ap-button.danger above: the DS ships no destructive tint for icon
+   buttons, and a grey trash next to a blue add-chip reads as equivalent. */
+.ap-icon-button.danger {
+  color: var(--ref-color-red-150);
+}
+.ap-icon-button.danger:hover {
+  background-color: var(--ref-color-red-10);
+  color: var(--ref-color-red-150);
+}

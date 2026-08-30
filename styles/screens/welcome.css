@@ -584,106 +584,146 @@
   gap: var(--ref-spacing-xxs);
 }
 
-/* ── Objectives (dedicated section) ─────────────────────────────────────
-   One card per objective, on the Competitors card skeleton: the whole card
-   opens the per-objective editor; the measures (metric + baseline) or the
-   parked state read underneath the name. */
-.recap__objgrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--ref-spacing-sm);
+/* ── Objectives (dedicated section) — the rows block (handoff 2b/2e) ────
+   A living recap: 280px identity column (name + status word + provenance +
+   window), measures on the right (label · bar · bounds · pace/trend chip),
+   coming-soon rows on a soft warning surface, collecting rows hatched. In
+   edit mode the block itself signals the transaction (blue border, editing
+   note) and each row grows its remove/add affordances. */
+.recap__panel--objectives.is-editing {
+  box-shadow: inset 0 0 0 1.5px var(--ref-color-electric-blue-100);
 }
 
-.recap__objcard {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.recap__objcard-open {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-  width: 100%;
-  flex: 1;
-  padding: var(--ref-spacing-sm);
-  text-align: left;
-  border: 1px solid var(--app-border);
-  border-radius: var(--app-radius-md);
-  background: var(--app-surface);
-  cursor: pointer;
-  transition: border-color var(--ref-animation-short) var(--app-ease-out);
-}
-
-.recap__objcard-open:hover {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.recap__objcard-head {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  min-width: 0;
-}
-
-.recap__objcard-name {
-  font-size: var(--sys-text-style-body-size);
-  font-weight: var(--sys-text-style-body-bold-weight);
-  color: var(--ref-color-grey-100);
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* The objective's window ("Every month", "Ends on Dec 31, 2026") — read once in
-   the head so the measure lines below stay bare figures. */
-.recap__objcard-window {
+.recap__objcount {
   font-size: var(--sys-text-style-caption-size);
   color: var(--ref-color-grey-60);
+  margin-right: var(--ref-spacing-xs);
 }
 
-/* The adder (section edit mode) reuses the generic chip-add field. */
-.recap__objadd {
-  margin-top: var(--ref-spacing-sm);
+.recap__objediting {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-lg);
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-electric-blue-100);
 }
 
-/* Measure lines — shared by the cards and the editor modal. Span-based:
-   inside a card they live in a <button>, which allows phrasing content only. */
-.recap__measures {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.recap__objrows {
+  display: flex;
+  flex-direction: column;
+}
+
+.recap__objrow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ref-spacing-md);
+  width: 100%;
+  padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--app-border-soft);
+  font: inherit;
+  text-align: left;
+}
+
+.recap__objrow--open {
+  cursor: pointer;
+  transition: background var(--ref-animation-short) var(--app-ease-out);
+}
+
+.recap__objrow--open:hover {
+  background: var(--app-surface-subtle);
+}
+
+.recap__objrow--soon {
+  background: var(--ref-color-yellow-10);
+}
+
+.recap__objrow--collecting .recap__objrow-name > span:first-child {
+  color: var(--ref-color-grey-80);
+}
+
+.recap__objrow-id {
+  width: 280px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: var(--app-spacing-micro);
 }
 
-.recap__measure {
+.recap__objrow-name {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-100);
+}
+
+.recap__objstatus {
+  font-size: var(--sys-text-style-caption-size);
+  font-weight: var(--sys-text-style-caption-bold-weight);
+}
+
+.recap__objstatus--strong {
+  color: var(--ref-color-green-150);
+}
+.recap__objstatus--watch {
+  color: var(--ref-color-yellow-150);
+}
+.recap__objstatus--risk {
+  color: var(--ref-color-red-150);
+}
+.recap__objstatus--collecting {
+  color: var(--ref-color-grey-60);
+}
+
+.recap__objrow-prov {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
+}
+
+.recap__objrow-window {
+  font-size: var(--sys-text-style-caption-size);
+  font-variant-numeric: tabular-nums;
+  color: var(--ref-color-grey-60);
+}
+
+.recap__objrow-measures {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ref-spacing-xs);
+}
+
+.recap__objmeasure {
   display: flex;
   align-items: center;
   gap: var(--ref-spacing-xs);
   font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-60);
 }
 
 .recap__measure-metric {
+  width: 130px;
+  flex-shrink: 0;
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-grey-80);
-  max-width: 45%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* The mini gauge — progress toward the target. Accent blue on purpose: the
-   card reads progress, not a verdict (tier colours stay on Insights). */
+.recap__objproxy-mark {
+  font-size: 10px;
+  font-weight: var(--sys-text-style-caption-bold-weight);
+  text-transform: uppercase;
+  color: var(--ref-color-yellow-150);
+}
+
 .recap__measure-track {
   flex: 1;
-  min-width: 28px;
-  height: 4px;
+  min-width: 60px;
+  height: 6px;
   border-radius: var(--app-radius-pill);
   background: var(--ref-color-grey-10);
   overflow: hidden;
@@ -693,26 +733,84 @@
   display: block;
   height: 100%;
   border-radius: var(--app-radius-pill);
-  background: var(--ref-color-electric-blue-100);
+}
+
+.recap__measure-fill--strong {
+  background: var(--ref-color-green-150);
+}
+.recap__measure-fill--watch {
+  background: var(--ref-color-yellow-150);
+}
+.recap__measure-fill--at-risk {
+  background: var(--ref-color-red-150);
+}
+
+/* Collecting: the bar exists but says "no reading yet" — hatched, no fill. */
+.recap__measure-track--collecting {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ref-color-grey-10),
+    var(--ref-color-grey-10) 4px,
+    transparent 4px,
+    transparent 8px
+  );
 }
 
 .recap__measure-bounds {
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
   color: var(--ref-color-grey-80);
 }
 
-.recap__objective-proxy {
-  display: block;
-  margin: 0;
+.recap__objnote {
   font-size: var(--sys-text-style-caption-size);
-  line-height: var(--sys-text-style-caption-line-height);
   color: var(--ref-color-grey-60);
 }
 
-.recap__objective-proxy strong {
+.recap__objaddmeasure {
+  align-self: flex-start;
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  border: 1.5px dashed var(--ref-color-electric-blue-40);
+  border-radius: var(--app-radius-sm);
+  font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
+  color: var(--ref-color-electric-blue-100);
+  cursor: pointer;
 }
+
+.recap__objrow-trash {
+  flex-shrink: 0;
+}
+
+.recap__objfoot {
+  display: flex;
+  align-items: center;
+  gap: var(--ref-spacing-xs);
+  padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
+  border-top: 1px solid var(--app-border-soft);
+}
+
+.recap__objaddrow {
+  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
+  border: 1.5px dashed var(--app-border);
+  border-radius: var(--app-radius-sm);
+  font-size: var(--sys-text-style-body-size);
+  font-weight: var(--sys-text-style-body-bold-weight);
+  color: var(--ref-color-grey-80);
+  cursor: pointer;
+}
+
+.recap__objaddrow:hover,
+.recap__objaddmeasure:hover {
+  border-color: var(--ref-color-electric-blue-100);
+  color: var(--ref-color-electric-blue-100);
+}
+
+.recap__objfoot-note {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-40, var(--ref-color-grey-60));
+}
+
 /* ── Voice & style — quoted snippet lines ─────────────────────────────── */
 .recap__quotes {
   list-style: none;
