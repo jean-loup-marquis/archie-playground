@@ -611,10 +611,13 @@
   flex-direction: column;
 }
 
-.recap__objrow {
+/* One sober line per objective: pastille · name (+ coming-soon) · meta, and the
+   bridge to Insights on the right. The pastille stands in for the verdict —
+   status is ambient here, the detail is read in Insights. */
+.recap__objline {
   display: flex;
-  align-items: flex-start;
-  gap: var(--ref-spacing-md);
+  align-items: center;
+  gap: var(--ref-spacing-sm);
   width: 100%;
   padding: var(--ref-spacing-sm) var(--ref-spacing-lg);
   background: none;
@@ -624,162 +627,78 @@
   text-align: left;
 }
 
-.recap__objrow--open {
+.recap__objline--open {
   cursor: pointer;
   transition: background var(--ref-animation-short) var(--app-ease-out);
 }
 
-.recap__objrow--open:hover {
+.recap__objline--open:hover {
   background: var(--app-surface-subtle);
 }
 
-.recap__objrow--soon {
+.recap__objline--soon {
   background: var(--ref-color-yellow-10);
 }
 
-.recap__objrow--collecting .recap__objrow-name > span:first-child {
-  color: var(--ref-color-grey-80);
-}
-
-.recap__objrow-id {
-  width: 280px;
+.recap__objdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-spacing-micro);
 }
 
-.recap__objrow-name {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
+.recap__objdot--red {
+  background: var(--ref-color-red-150);
+}
+.recap__objdot--yellow {
+  background: var(--ref-color-yellow-150);
+}
+.recap__objdot--green {
+  background: var(--ref-color-green-150);
+}
+.recap__objdot--grey {
+  background: var(--ref-color-grey-40, var(--app-border));
+}
+
+.recap__objline-name {
+  flex-shrink: 0;
   font-size: var(--sys-text-style-body-size);
   font-weight: var(--sys-text-style-body-bold-weight);
   color: var(--ref-color-grey-100);
 }
 
-.recap__objstatus {
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-}
-
-.recap__objstatus--strong {
-  color: var(--ref-color-green-150);
-}
-.recap__objstatus--watch {
-  color: var(--ref-color-yellow-150);
-}
-.recap__objstatus--risk {
-  color: var(--ref-color-red-150);
-}
-.recap__objstatus--collecting {
-  color: var(--ref-color-grey-60);
-}
-
-.recap__objrow-prov {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
-}
-
-.recap__objrow-window {
-  font-size: var(--sys-text-style-caption-size);
-  font-variant-numeric: tabular-nums;
-  color: var(--ref-color-grey-60);
-}
-
-.recap__objrow-measures {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xs);
-}
-
-.recap__objmeasure {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
-}
-
-.recap__measure-metric {
-  width: 130px;
+.recap__objline-soon {
   flex-shrink: 0;
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  color: var(--ref-color-grey-80);
+}
+
+.recap__objline-meta {
+  font-size: var(--sys-text-style-caption-size);
+  color: var(--ref-color-grey-60);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.recap__objproxy-mark {
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  text-transform: uppercase;
-  color: var(--ref-color-yellow-150);
-}
-
-.recap__measure-track {
+.recap__objline-spacer {
   flex: 1;
-  min-width: 60px;
-  height: 6px;
-  border-radius: var(--app-radius-pill);
-  background: var(--ref-color-grey-10);
-  overflow: hidden;
 }
 
-.recap__measure-fill {
-  display: block;
-  height: 100%;
-  border-radius: var(--app-radius-pill);
-}
-
-.recap__measure-fill--strong {
-  background: var(--ref-color-green-150);
-}
-.recap__measure-fill--watch {
-  background: var(--ref-color-yellow-150);
-}
-.recap__measure-fill--at-risk {
-  background: var(--ref-color-red-150);
-}
-
-/* Collecting: the bar exists but says "no reading yet" — hatched, no fill. */
-.recap__measure-track--collecting {
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--ref-color-grey-10),
-    var(--ref-color-grey-10) 4px,
-    transparent 4px,
-    transparent 8px
-  );
-}
-
-.recap__measure-bounds {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  color: var(--ref-color-grey-80);
-}
-
-.recap__objnote {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
-}
-
-.recap__objaddmeasure {
-  align-self: flex-start;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-sm);
-  border: 1.5px dashed var(--ref-color-electric-blue-40);
-  border-radius: var(--app-radius-sm);
+.recap__objinsights {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ref-spacing-xxs);
+  flex-shrink: 0;
   font-size: var(--sys-text-style-caption-size);
   font-weight: var(--sys-text-style-caption-bold-weight);
   color: var(--ref-color-electric-blue-100);
-  cursor: pointer;
 }
 
-.recap__objrow-trash {
-  flex-shrink: 0;
+.recap__objinsights i {
+  font-size: var(--sys-icon-css-xs);
+}
+
+.recap__objline--open:hover .recap__objinsights {
+  text-decoration: underline;
 }
 
 .recap__objfoot {
@@ -800,8 +719,7 @@
   cursor: pointer;
 }
 
-.recap__objaddrow:hover,
-.recap__objaddmeasure:hover {
+.recap__objaddrow:hover {
   border-color: var(--ref-color-electric-blue-100);
   color: var(--ref-color-electric-blue-100);
 }

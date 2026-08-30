@@ -25,13 +25,14 @@ import { open as openAddPlaybookEntry } from "./components/add-playbook-entry-mo
 import {
   resolveObjectives,
   objectiveVerdict,
-  measureTier,
   materializeMeasureEntries,
   windowPhrase,
 } from "./objective-measures.js?v=7";
 import { open as openObjectiveModal } from "./components/objective-modal.js?v=2";
 import { open as openObjectiveCatalog } from "./components/objective-catalog-panel.js?v=1";
 import { open as openRenameModal } from "./components/rename-modal.js?v=16";
+import { navigate } from "./router.js?v=54";
+import { setHandoff } from "./handoff.js?v=34";
 
 // Audience & goals — chip fields (multi-value), in display order.
 const GOAL_FIELDS = [
@@ -567,106 +568,63 @@ function renderChips(values) {
 // delete the objective — nothing persisted before Save (see the Cancel
 // restore in the [data-recap-cancel] handler).
 
-const OBJ_STATUS_CLASS = {
-  strong: "recap__objstatus--strong",
-  watch: "recap__objstatus--watch",
-  "at-risk": "recap__objstatus--risk",
-};
+// The dot tone that stands in for the verdict — status becomes ambient here
+// (handoff 3b): the playbook is a summary, so the objective's judgment shrinks
+// to a coloured pastille and the detail is read in Insights.
+const OBJ_DOT_TONE = { strong: "green", watch: "yellow", "at-risk": "red" };
 
-function objectiveCountsLine(resolved) {
-  const verdicts = resolved.map((o) => ({ o, v: objectiveVerdict(o) }));
-  const parts = [`${resolved.length} objective${resolved.length === 1 ? "" : "s"}`];
-  const risk = verdicts.filter(({ o, v }) => o.status === "measured" && v.tier === "at-risk").length;
-  const watch = verdicts.filter(({ o, v }) => o.status === "measured" && v.tier === "watch").length;
-  const strong = verdicts.filter(({ o, v }) => o.status === "measured" && v.tier === "strong").length;
-  const proxy = resolved.filter((o) => o.status === "parked").length;
-  const collecting = resolved.filter((o) => o.status === "collecting").length;
-  if (risk) parts.push(`${risk} at risk`);
-  if (watch) parts.push(`${watch} watch`);
-  if (strong) parts.push(`${strong} on track`);
-  if (proxy) parts.push(`${proxy} on proxy`);
-  if (collecting) parts.push(`${collecting} collecting`);
-  return parts.join(" · ");
+// The section header's calm summary line — count + provenance, no verdict
+// breakdown (3b: the recap doesn't restate what Insights now owns).
+function objectiveCountsLine(resolved, data) {
+  const n = resolved.length;
+  const base = `${n} objective${n === 1 ? "" : "s"}`;
+  const origins = resolved.map((o) => data?.objectiveMeasures?.[o.label]?.origin);
+  const allArchie = n > 0 && origins.every((o) => o !== "user");
+  return allArchie ? `${base} · proposed from your website` : base;
 }
 
-// One measure line: label (+ scope suffix) · bar · bounds. No pace/trend
-// chip here — the playbook block is the recap, and the only judgment it
-// prints is the objective's own status word; the per-measure verdicts live
-// on the Insights detail.
-function renderObjectiveMeasureLine(m, o, i, { edit = false, proxy = false, collecting = false } = {}) {
-  const rate = m.metricType === "rate";
-  const tier = collecting ? null : measureTier(m.progressPct);
-  const bar = collecting
-    ? `<span class="recap__measure-track recap__measure-track--collecting"></span>`
-    : m.progressPct != null
-      ? `<span class="recap__measure-track"><span class="recap__measure-fill recap__measure-fill--${tier || "watch"}" style="width: ${m.progressPct}%"></span></span>`
-      : `<span class="recap__measure-track"></span>`;
-  const bounds = rate
-    ? `hold above ${esc(m.target || "—")} · currently ${esc(m.baselineValue)}`
-    : `${esc(m.baselineValue)} → ${esc(m.target || "—")}`;
-  const tail = edit
-    ? `<button type="button" class="ap-icon-button transparent" data-recap-measure-remove="${i}::${esc(m.id)}" aria-label="Remove ${esc(m.metricLabel)}"><i class="ap-icon-close"></i></button>`
-    : "";
-  return `
-    <span class="recap__objmeasure">
-      <span class="recap__measure-metric">${esc(m.metricLabel)}${m.scopeLabel ? ` · ${esc(m.scopeLabel)}` : ""}${
-        proxy ? ` <span class="recap__objproxy-mark">proxy</span>` : ""
-      }</span>
-      ${bar}
-      <span class="recap__measure-bounds">${bounds}</span>
-      ${tail}
-    </span>`;
+// The one-line meta each objective carries — measure count + window (or the
+// proxy / collecting qualifier). No gauges: those live on the Insights card.
+function objectiveMetaLine(o) {
+  const n = o.status === "parked" ? 1 : (o.measures?.length ?? 0);
+  const measures = `${n} measure${n === 1 ? "" : "s"}`;
+  if (o.status === "parked") return `${measures} on proxy · needs Google Analytics`;
+  if (o.status === "collecting") {
+    const g = o.grace;
+    const left = g ? Math.max(0, g.of - g.day) : null;
+    return `${measures}${left != null ? ` · verdict in ${left} day${left === 1 ? "" : "s"}` : ""}`;
+  }
+  return `${measures} · ${windowPhrase(o.window)}`;
 }
 
-// One objective row — 280px identity column, measures on the right.
-function renderObjectiveRow(o, i, edit) {
+// One sober objective line: pastille · name (+ coming-soon) · meta, and the
+// bridge to Insights on the right. Read mode: the whole line opens Insights,
+// pre-selected on this objective. Edit mode: the same line, trailing a rename
+// pencil + a delete — per-measure editing moves to the Insights card / modal.
+function renderObjectiveRow(o, i, edit, ctxId) {
   const parked = o.status === "parked";
   const collecting = o.status === "collecting";
   const verdict = objectiveVerdict(o);
-  const origin = cfg.getData()?.objectiveMeasures?.[o.label]?.origin;
-  const provenance = parked ? o.soon : origin === "user" ? "Added by you" : "Proposed by Archie · from your website";
-  const status = parked
-    ? `<span class="ap-badge yellow">Coming soon</span>`
-    : collecting
-      ? `<span class="recap__objstatus recap__objstatus--collecting">Collecting</span>`
-      : verdict.tier
-        ? `<span class="recap__objstatus ${OBJ_STATUS_CLASS[verdict.tier]}">${esc(verdict.label)}</span>`
-        : "";
-  const measures = parked
-    ? renderObjectiveMeasureLine(o.proxy, o, i, { edit, proxy: true })
-    : o.measures.map((m) => renderObjectiveMeasureLine(m, o, i, { edit, collecting })).join("");
-  const note = edit
-    ? `<button type="button" class="recap__objaddmeasure" data-recap-measure-add="${i}"><span>+ Add a measure</span></button>`
-    : parked
-      ? `<span class="recap__objnote">Measured via proxy until the real metric ships — then it upgrades itself.</span>`
-      : collecting
-        ? `<span class="recap__objnote">${esc(verdict.phrase)}</span>`
-        : verdict.total > 1
-          ? `<span class="recap__objnote">${esc(verdict.phrase)}</span>`
-          : "";
-  const left = `
-    <span class="recap__objrow-id">
-      <span class="recap__objrow-name">
-        <span>${esc(o.label)}</span>
-        ${edit ? `<button type="button" class="ap-icon-button transparent" data-recap-obj-rename="${i}" aria-label="Rename ${esc(o.label)}"><i class="ap-icon-pen"></i></button>` : status}
-      </span>
-      <span class="recap__objrow-prov">${esc(provenance)}</span>
-      ${!parked ? `<span class="recap__objrow-window">${esc(windowPhrase(o.window))}</span>` : ""}
-    </span>`;
-  const right = `<span class="recap__objrow-measures">${measures}${note}</span>`;
+  const tone = parked || collecting ? "grey" : OBJ_DOT_TONE[verdict.tier] || "grey";
+  const soon = parked ? `<span class="ap-badge yellow recap__objline-soon">Coming soon</span>` : "";
+  const inner = `
+    <span class="recap__objdot recap__objdot--${tone}" aria-hidden="true"></span>
+    <span class="recap__objline-name">${esc(o.label)}</span>
+    ${soon}
+    <span class="recap__objline-meta">${esc(objectiveMetaLine(o))}</span>
+    <span class="recap__objline-spacer"></span>`;
   if (edit) {
     return `
-      <div class="recap__objrow${parked ? " recap__objrow--soon" : ""}${collecting ? " recap__objrow--collecting" : ""}">
-        ${left}
-        ${right}
-        <button type="button" class="ap-icon-button transparent danger recap__objrow-trash" data-recap-obj-remove="${i}" aria-label="Delete ${esc(o.label)}"><i class="ap-icon-trash"></i></button>
+      <div class="recap__objline recap__objline--edit${parked ? " recap__objline--soon" : ""}">
+        ${inner}
+        <button type="button" class="ap-icon-button transparent" data-recap-obj-rename="${i}" aria-label="Rename ${esc(o.label)}"><i class="ap-icon-pen"></i></button>
+        <button type="button" class="ap-icon-button transparent danger" data-recap-obj-remove="${i}" aria-label="Delete ${esc(o.label)}"><i class="ap-icon-trash"></i></button>
       </div>`;
   }
-  // Read mode: the whole row is the affordance — it opens the objective modal.
   return `
-    <button type="button" class="recap__objrow recap__objrow--open${parked ? " recap__objrow--soon" : ""}${collecting ? " recap__objrow--collecting" : ""}" data-recap-obj-open="${i}" aria-label="Adjust ${esc(o.label)}">
-      ${left}
-      ${right}
+    <button type="button" class="recap__objline recap__objline--open${parked ? " recap__objline--soon" : ""}" data-recap-obj-insights="${i}" aria-label="Open ${esc(o.label)} in Insights">
+      ${inner}
+      <span class="recap__objinsights">Open in Insights<i class="ap-icon-arrow-right" aria-hidden="true"></i></span>
     </button>`;
 }
 
@@ -674,7 +632,7 @@ function renderObjectivesPanel(data, edit) {
   const section = sectionFor("objectives");
   const resolved = resolveObjectives(data.objective, data.id, data.objectiveMeasures);
   const rows = resolved.length
-    ? resolved.map((o, i) => renderObjectiveRow(o, i, edit)).join("")
+    ? resolved.map((o, i) => renderObjectiveRow(o, i, edit, data.id)).join("")
     : `<p class="recap__cmp-empty">No objectives yet — add one below.</p>`;
   const footNote = edit
     ? "Deleting an objective keeps its history — it can be restored for 30 days."
@@ -684,7 +642,7 @@ function renderObjectivesPanel(data, edit) {
       <button type="button" class="recap__objaddrow" data-recap-obj-add><span>+ Add an objective</span></button>
       <span class="recap__objfoot-note">${footNote}</span>
     </div>`;
-  const counts = !edit ? `<span class="recap__objcount">${esc(objectiveCountsLine(resolved))}</span>` : "";
+  const counts = !edit ? `<span class="recap__objcount">${esc(objectiveCountsLine(resolved, data))}</span>` : "";
   const editingNote = edit ? `<div class="recap__objediting">editing — nothing saved yet</div>` : "";
   const hint = edit ? renderSectionHint(SECTION_HINTS.objectives) : "";
   const body = `${editingNote}${hint}<div class="recap__objrows">${rows}</div>${footer}`;
@@ -2705,12 +2663,15 @@ function onClick(event) {
   }
 
   // ── Objectives ────────────────────────────────────────────────────────────
-  // A row opens the objective modal — available in READ mode too: a
-  // correction shouldn't require entering the section editor.
-  const objOpen = event.target.closest("[data-recap-obj-open]");
-  if (objOpen) {
-    const label = (Array.isArray(data.objective) ? data.objective : [])[Number(objOpen.dataset.recapObjOpen)];
-    if (label != null) openObjectiveEditorFor(label);
+  // The bridge to Insights (3b): a read-mode line opens the objective's Insights
+  // card, pre-selected via the single-use focus handoff the List view consumes.
+  const objInsights = event.target.closest("[data-recap-obj-insights]");
+  if (objInsights) {
+    const label = (Array.isArray(data.objective) ? data.objective : [])[Number(objInsights.dataset.recapObjInsights)];
+    if (label != null) {
+      setHandoff("focusObjective", `${data.id}::${label}`);
+      navigate("/insights/objectives");
+    }
     return;
   }
 
