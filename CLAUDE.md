@@ -189,7 +189,7 @@ An existing chat keeps whichever Playbook it was created in — a chat is a reco
 | `topics-store.js`      | **global** listening dossiers + the mock scan (flag `topics`)              | `getTopics`, `getTopicById`, `getUnseenCount`, `countBySource`, `markSeen`, `dismissTopic`, `restoreTopic`, `refreshTopics`, `hasMoreToScan`, `topicWhen`, `subscribe`                                                                                     |
 | `pillars-store.js`     | **global** content pillars (flag `contentStrategy`)                        | `getPillars`, `getPillarById`, `addPillar`, `updatePillar`, `deletePillar`, `mergePillar`, `removeSource`/`restoreSource`, `addAsset`/`removeAsset`, `unseenCount`/`unseenCountFor`/`markPillarSeen`, `pillarForBrief`, `unlinkBrief`, `subscribe`         |
 
-`sources-stream` is the only **global** store. `library.js` subscribes to sources-stream and re-emits per-session so any session's content surfaces repaint when a source lands. **No localStorage persistence of app state** — only `archie-user-mode`, the feature-flag keys, sidebar collapse state, and the single-use `sessionStorage` handoff keys.
+`sources-stream` is the only **global** store. `library.js` subscribes to sources-stream and re-emits per-session so any session's content surfaces repaint when a source lands. **No localStorage persistence of app state** — only `archie-user-mode`, the feature-flag keys, sidebar collapse state, `archie-active-playbook`, `archie-insights-view` (the Insights › Objectives view prefs: List/Board, group-by-playbook, sort, Playbook filter), and the single-use `sessionStorage` handoff keys.
 
 ### A settings surface must not aggregate
 

@@ -1057,6 +1057,23 @@ Vérifiés le 2026-08-14 dans Chrome, flags `contentStrategy` + `contentResearch
 
 ---
 
+## 21. Insights — flag `insightsHub`, défaut OFF
+
+Trois onglets sous `/insights/:tab` (`src/screens/insights/`), nav dans la sidebar. `/insights` et l'ancien `/insights/performance` redirigent vers **Objectives**.
+
+- **Objectives** (défaut) — le board du handoff « Page Insights d'Archie ». Trois vues, préférences persistées sous `archie-insights-view` :
+  - **Board (5a)** : trois colonnes At risk / Watch / On track + rail vertical replié « COLLECTING · n ». Le verdict d'un objectif est **compté** depuis ses mesures (`objectiveVerdict`, jamais pondéré, jamais un score) ; chaque carte porte le playbook en eyebrow, 1-2 micro-mesures (barre ou sparkline pour un taux) et les deux chips pace + trend de la mesure la plus faible.
+  - **Lanes (5b)** : « Group by playbook » transforme les colonnes en lanes par marque, repliables en résumé une ligne, cases vides en tirets.
+  - **List (5c)** : rail 330px trié most-at-risk + le détail rendu sur place.
+  - **Détail (6a)** — `objective-detail.js`, UN composant, deux hôtes : le panneau List et un modal 960px ouvert depuis le board (backdrop flouté, nav ↑/↓ dans l'ordre du board, Esc). Lecture rédigée, mesure faible dépliée (compteur, caption de pace nommant le chiffre qui fait le verdict, sparkline 30j, tuiles par profil — un split autorisé somme au compteur), autres mesures repliées, posts porteurs, bandeau proxy « Connect GA ».
+  - **Adjust** ouvre `objective-modal` (le 1e du Playbook) en place ; « + New objective » le même en création. Pas de sélecteur de période sur cet onglet — chaque chiffre nomme sa fenêtre.
+- **Usage** — ce qu'Archie a produit (drafts, posts, keep-rate, voix par Playbook). Garde le sélecteur de période.
+- **Value** — le ledger « worth its price ». Garde le sélecteur de période.
+
+**Il n'y a pas de page Performance** : le board l'a remplacée. Aucun score ni verdict au niveau playbook — la décision « pas d'alerte anxiogène sur le Playbook » tient ici aussi ; seuls les objectifs portent un statut, et il est compté.
+
+---
+
 ## Voir aussi
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — le _comment_ technique

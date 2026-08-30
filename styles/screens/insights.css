@@ -1,19 +1,18 @@
-/* Insights (/insights/:tab) — the master-detail: portfolio strip, ranked rail,
-   reading panel. Three tabs share every rule in here, which is the point: the
-   panel changes job between them and must not change shape.
+/* Insights (/insights/:tab) — the shared chrome: portfolio strip, ranked rail,
+   reading panel, verdict words. Usage and Value draw from every block in here;
+   Objectives brings its own board and detail in insights-objectives.css and
+   takes only the verdict colours and the view shell from this file.
 
    Verdict colours are never named twice — the tier modifier picks the same token
    the `.ap-status` pill would, so this file and the Playbook detail cannot drift.
 
-   ── What left with the redesign, 2026-08-25 ──────────────────────────────────
-   The health-card grid (.analytics-card and its chips), the objectives table
-   (.analytics-row, .analytics-trend's table variants), the tier legend
-   (.analytics-legend), the filter selects and the widget grid the old level-two
-   section drew. The rail's second line does what the legend and the status column
-   did between them, and it does it without a key. What survived: the two annuli
-   (.analytics-card__ring, .insights-gauge__dial) — they are the one shape the
-   Performance and Usage halves have in common, and converting one without the
-   other is what would break that. */
+   ── What left with Performance, 2026-08-30 ───────────────────────────────────
+   The page itself: the score ring (.analytics-card__ring), the goals block, the
+   what-worked proof cards, the cap note, and the muted/all-clear states. The
+   Objectives board replaced the page and grades nothing at playbook level, so
+   there is no score to draw. Kept: .insights-verdict--* (the board and the
+   detail print the same three words), the rail, the portfolio row, and
+   .insights-post__multiple (Value's proof cards). */
 
 .insights-view {
   overflow-y: auto;
@@ -135,11 +134,11 @@
   }
 }
 
-/* Every number on this page is monospaced. Not decoration: the rail, the strip and
-   the panel all print figures the reader is invited to check against each other,
-   and proportional digits make two columns of them impossible to compare. */
+/* Every number on this page is tabular — Averta's own tabular numerals, not a
+   monospace face. Columns of figures still align digit for digit (that is what
+   the reader checks), and the figures stop wearing a second typeface the DS
+   never shipped. The Objectives handoff prints its values the same way. */
 .insights-figure {
-  font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-weight: var(--app-font-weight-semibold);
   color: var(--sys-text-color-default);
@@ -150,7 +149,6 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ref-spacing-xxxs);
-  font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--ref-font-size-xs);
   color: var(--sys-text-color-light);
@@ -360,7 +358,6 @@
 .insights-rail__figure {
   display: inline-flex;
   align-items: baseline;
-  font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--ref-font-size-sm);
   font-weight: var(--app-font-weight-semibold);
@@ -672,58 +669,11 @@
   max-width: none;
 }
 
-/* ── The two annuli ────────────────────────────────────────────────────────
-   The score ring (Performance) and the keep-rate dial (Usage) are the same shape
-   at two sizes, and that is what makes the two halves read as one page. Both are
-   conic gradients with a punched centre: no SVG, no library, and the progress is
-   one custom property. */
-.analytics-card__ring {
-  --ring-progress: 0;
-  --ring-color: var(--ref-color-green-150);
-  position: relative;
-  flex-shrink: 0;
-  width: 52px;
-  height: 52px;
-  border-radius: var(--app-radius-circle);
-  background: conic-gradient(
-    var(--ring-color) calc(var(--ring-progress) * 1%),
-    var(--ref-color-grey-10) calc(var(--ring-progress) * 1%)
-  );
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.analytics-card__ring::after {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border-radius: var(--app-radius-circle);
-  background: var(--app-surface);
-}
-
-.analytics-card__ring--strong {
-  --ring-color: var(--ref-color-green-150);
-}
-.analytics-card__ring--watch {
-  --ring-color: var(--ref-color-yellow-150);
-}
-.analytics-card__ring--at-risk {
-  --ring-color: var(--ref-color-red-150);
-}
-
-.analytics-card__ring-value {
-  position: relative;
-  z-index: 1;
-  font-family: var(--app-font-mono);
-  font-variant-numeric: tabular-nums;
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--ref-font-weight-bold);
-  line-height: 1;
-  color: var(--sys-text-color-default);
-}
-
+/* ── The keep-rate dial ────────────────────────────────────────────────────
+   Usage's one annulus — a conic gradient with a punched centre: no SVG, no
+   library, and the progress is one custom property. Its twin, Performance's
+   score ring, left with that page: the Objectives board carries no
+   playbook-level score to draw. */
 .insights-gauge__dial {
   --gauge-progress: 0;
   position: relative;
@@ -751,7 +701,6 @@
 .insights-gauge__value {
   position: relative;
   z-index: 1;
-  font-family: var(--app-font-mono);
   font-variant-numeric: tabular-nums;
   font-size: var(--ref-font-size-md);
   font-weight: var(--ref-font-weight-bold);
