@@ -21,7 +21,7 @@
 import { escapeHtml as esc, escapeAttr } from "../../utils.js?v=45";
 import { measureState, isRateMetric, windowPhrase, profileSplit, measurePosts } from "../../objective-measures.js?v=7";
 import { NETWORK_LABEL } from "../../social-profiles.js?v=85";
-import { readingFor, weakestMeasure, paceCaption, trendCaption, sparklinePoints } from "./objectives-model.js?v=1";
+import { readingFor, weakestMeasure, paceCaption, trendCaption, sparklinePoints } from "./objectives-model.js?v=2";
 import { nextMoveFor } from "../../objective-flow.js?v=1";
 import {
   feedTopicsFor,
@@ -30,7 +30,7 @@ import {
   historyFilters,
   FEED_BADGE_TONE,
   HISTORY_DOT_CLASS,
-} from "./objective-feed.js?v=1";
+} from "./objective-feed.js?v=2";
 import { installMoreMenu } from "../../components/more-menu.js?v=15";
 
 // The ⋯ menu is the shared kebab (Action Dropdown + more-menu): one document

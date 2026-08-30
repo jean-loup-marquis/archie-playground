@@ -21,9 +21,9 @@ import {
   SORTS,
   weakestMeasure,
   sparklinePoints,
-} from "./objectives-model.js?v=1";
-import { renderObjectiveDetail } from "./objective-detail.js?v=8";
-import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=6";
+} from "./objectives-model.js?v=2";
+import { renderObjectiveDetail } from "./objective-detail.js?v=9";
+import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=7";
 import { openObjectiveInChat } from "../../objective-flow.js?v=1";
 import { open as openObjectiveModal } from "../../components/objective-modal.js?v=4";
 import { renderFirstRun } from "./parts.js?v=18";

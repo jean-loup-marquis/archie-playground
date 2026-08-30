@@ -7,7 +7,7 @@
 
 import { objectiveFeedTopics, objectiveHistory } from "../../mocks.js?v=118";
 import { isRateMetric } from "../../objective-measures.js?v=7";
-import { weakestMeasure } from "./objectives-model.js?v=1";
+import { weakestMeasure } from "./objectives-model.js?v=2";
 
 // Badge tone → the DS .ap-badge colour it reuses. `explains` is the cause of a
 // slip (red), `drives` the fuel of a run (green), `angle` a neutral opening.

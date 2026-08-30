@@ -14,7 +14,7 @@ import { resolveObjectives, objectiveVerdict, measureState, isRateMetric } from 
 const PREFS_KEY = "archie-insights-view";
 
 const DEFAULT_PREFS = {
-  viewMode: "board", // board | list — board is the default view
+  viewMode: "list", // board | list — list (master-detail) is the default view
   groupByPlaybook: false,
   sort: "playbook", // playbook | risk | progress
   playbookFilter: "", // "" = all playbooks
