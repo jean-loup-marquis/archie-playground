@@ -29,7 +29,7 @@
 import { html, raw, escapeAttr } from "../utils.js?v=45";
 import { navigate } from "../router.js?v=54";
 import { parseHashParams } from "../url-state.js?v=35";
-import { renderTopbar } from "../components/topbar.js?v=511";
+import { renderTopbar } from "../components/topbar.js?v=512";
 import { renderEmptyState } from "../components/empty-state.js?v=26";
 import { isFlagOn } from "../feature-flags.js?v=44";
 import {

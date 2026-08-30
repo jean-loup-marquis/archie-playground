@@ -12,7 +12,7 @@
 
 import { html, raw } from "../utils.js?v=45";
 import { navigate } from "../router.js?v=54";
-import { renderTopbar } from "../components/topbar.js?v=511";
+import { renderTopbar } from "../components/topbar.js?v=512";
 import { showToast } from "../components/toast.js?v=44";
 import { setHandoff } from "../handoff.js?v=34";
 import { findConnector, setConnectorStatus, subscribe as subscribeConnectors } from "../connectors-store.js?v=81";

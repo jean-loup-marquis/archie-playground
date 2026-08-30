@@ -1,5 +1,5 @@
 import { html, raw, escapeAttr } from "../../utils.js?v=45";
-import { renderTopbar } from "../../components/topbar.js?v=511";
+import { renderTopbar } from "../../components/topbar.js?v=512";
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
 import { navigate, getPath } from "../../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";
@@ -16,11 +16,11 @@ import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=7";
 // Value is "is this worth its price". They were two, and the third question was
 // being answered by whichever of the two looked best that month.
 //
-// ── The page wears the LIBRARY chrome, not the chat's ───────────────────────
-// Same shape as /contexts: the topbar leads with the way out (Back to new chat,
-// via backTargetFor), the page names itself in its own H1, and the switch is a
-// real `.ap-tabs` bar — tabs, because the three views are three readings of one
-// section, and the section header is the page's now, not the topbar's.
+// ── The chrome: back + title in the topbar, tabs first in the page ──────────
+// The topbar leads with the way out (Back to new chat, via backTargetFor) and
+// then names the section — an in-page H1 was tried and cost a full header band
+// of air above the tab bar. The switch is a real `.ap-tabs` bar, first thing in
+// the page: tabs, because the three views are three readings of one section.
 //
 // ── The period lives on the tab bar ─────────────────────────────────────────
 // Right end of the `.ap-tabs-nav`, so one control rules whichever tab reads a
@@ -72,9 +72,6 @@ export function renderInsights(params, target) {
   const paint = () => {
     target.innerHTML = html`<section class="screen insights-view">
       <div class="insights-view__page">
-        <header class="insights-view__head">
-          <h1 class="contexts-view__title">Insights</h1>
-        </header>
         ${raw(renderTabsBar(active, tab.noPeriod ? null : period))}
         <div class="insights-view__panel">${raw(tab.render(period))}</div>
       </div>

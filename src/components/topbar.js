@@ -119,7 +119,11 @@ export function renderTopbar(_options = {}) {
   // On the repurposing winner board (profile-first mode), the topbar leads with
   // a "Change profile" back — the app's standard back affordance — in place of
   // the session title.
-  const left = back ? renderBack(back) : isTopPostsBoard() ? renderTopPostsBack() : renderTitle(onSession);
+  const left = back
+    ? renderBack(back) + (back.title ? `<h1 class="app-topbar__title">${escapeHtml(back.title)}</h1>` : "")
+    : isTopPostsBoard()
+      ? renderTopPostsBack()
+      : renderTitle(onSession);
   el.innerHTML = html`
     <div class="app-topbar__left">${raw(left)}${raw(onSession ? "" : screenLead)}</div>
     <div class="app-topbar__right">${raw(rightSide)}</div>
@@ -527,10 +531,11 @@ function backTargetFor(path) {
   // is not where someone who just went to manage their Playbooks was heading. The
   // label says which of the two it is.
   if (path === "/contexts") return { to: "/session/new", label: "Back to new chat" };
-  // Insights wears the library chrome now — the page names itself in its own H1
-  // and carries its own tab bar, so the topbar's one slot is the way out, same
-  // as /contexts: a fresh chat, not whatever conversation was last open.
-  if (path.startsWith("/insights")) return { to: "/session/new", label: "Back to new chat" };
+  // Insights leads with the way out AND its name: back first (the leftmost
+  // slot is the back's everywhere in the app), then the title — the page's own
+  // H1 cost a full header band of air above the tab bar. `title` is what asks
+  // for that composition; the other backs keep replacing the title.
+  if (path.startsWith("/insights")) return { to: "/session/new", label: "Back to new chat", title: "Insights" };
   if (/^\/playbook\//.test(path)) return { to: "/contexts", label: "Back to Playbooks" };
   if (/^\/pillar\//.test(path)) return { to: "/content-strategy", label: "Back to Content strategy" };
   // A lane's own sub-pages — its SETTINGS and its ATTENTION page — go back to that

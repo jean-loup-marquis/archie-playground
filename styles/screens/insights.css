@@ -44,13 +44,8 @@
   box-sizing: border-box;
 }
 
-/* ── Library chrome: the page names itself (H1 borrowed from /contexts) and
-   carries a real .ap-tabs bar; the topbar above holds only the way out. ──── */
-.insights-view__head {
-  padding: var(--ref-spacing-lg) var(--ref-spacing-lg) var(--ref-spacing-md);
-}
-
-/* Sizing-only scoping of the DS nav: the page's horizontal rhythm, and the
+/* ── The tab bar opens the page (back + title live in the topbar). ────────
+   Sizing-only scoping of the DS nav: the page's horizontal rhythm, and the
    period selector riding the right end without breaking the bar's border. */
 .insights-view__tabs .ap-tabs-nav {
   padding: 0 var(--ref-spacing-lg);
