@@ -28,7 +28,7 @@ import {
   materializeMeasureEntries,
   windowPhrase,
 } from "./objective-measures.js?v=7";
-import { open as openObjectiveModal } from "./components/objective-modal.js?v=2";
+import { open as openObjectiveModal } from "./components/objective-modal.js?v=4";
 import { open as openObjectiveCatalog } from "./components/objective-catalog-panel.js?v=1";
 import { open as openRenameModal } from "./components/rename-modal.js?v=16";
 import { navigate } from "./router.js?v=54";

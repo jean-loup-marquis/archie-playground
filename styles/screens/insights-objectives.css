@@ -686,25 +686,50 @@
   text-overflow: ellipsis;
 }
 
+/* Pace + trend in one grid so both columns read the same: an eyebrow label
+   (Progress · Trend), a chart, a caption. Row 1 labels, row 2 charts
+   (bottom-aligned so the bar and the sparkline share a base line), row 3
+   captions (aligned). The counter sits with its bar in one cell, so the
+   figure + bar + caption stay tight instead of floating apart. */
 .objd__figures {
-  display: flex;
-  gap: var(--ref-spacing-lg);
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  column-gap: var(--ref-spacing-lg);
+  row-gap: var(--ref-spacing-xs);
+  align-items: end;
 }
 
-.objd__pacecol {
-  flex: 1.4;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+.objd__fig-progresslabel {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
 }
-
-.objd__trendcol {
-  flex: 1;
-  min-width: 0;
+.objd__fig-trendlabel {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+.objd__fig-pace {
+  grid-column: 1;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
-  gap: var(--ref-spacing-xxs);
+  gap: var(--ref-spacing-xs);
+}
+.objd__fig-spark {
+  grid-column: 2;
+  grid-row: 2;
+  width: 100%;
+}
+.objd__fig-pacecap {
+  grid-column: 1;
+  grid-row: 3;
+  align-self: start;
+}
+.objd__fig-trendcap {
+  grid-column: 2;
+  grid-row: 3;
+  align-self: start;
 }
 
 .objd__counter {
@@ -778,36 +803,6 @@
   height: 44px;
 }
 
-/* Borderless stat strip — the per-profile split reads as columns of figures,
-   grouped by whitespace, not boxed. */
-.objd__tiles {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-md) var(--ref-spacing-lg);
-}
-
-.objd__tile {
-  flex: 1 1 auto;
-  min-width: 120px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--app-spacing-micro);
-  padding: 0;
-  border: none;
-  border-radius: 0;
-}
-
-.objd__tile--out {
-  font-size: var(--sys-text-style-caption-size);
-  color: var(--ref-color-grey-60);
-}
-
-/* The one absent-networks line takes the row's full width — it is a sentence,
-   not a tile competing with the tiles that carry data. */
-.objd__tile--outline {
-  flex: 1 1 100%;
-}
-
 /* In the List panel the head is narrower than in the modal — the scope meta
    wraps under the chips there rather than truncating its tail ("windo…"). */
 .objv__detailcard .objd__mhead {
@@ -816,31 +811,6 @@
 
 .objv__detailcard .objd__mscope {
   white-space: normal;
-}
-
-.objd__tile-label {
-  font-size: var(--sys-text-style-caption-size);
-  font-weight: var(--sys-text-style-caption-bold-weight);
-  letter-spacing: 0.05em;
-  color: var(--ref-color-grey-60);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.objd__tile-value {
-  font-size: var(--ref-font-size-md);
-  font-weight: var(--app-font-weight-semibold);
-  font-variant-numeric: tabular-nums;
-  color: var(--ref-color-grey-100);
-}
-
-/* Deltas read grey on purpose — four red −9% under an already-red measure was
-   the Christmas tree; the per-profile split is detail, not verdict. */
-.objd__tile-delta {
-  font-size: var(--sys-text-style-caption-size);
-  margin-left: var(--ref-spacing-xxs);
-  color: var(--ref-color-grey-60);
 }
 
 .objd__mrow {
@@ -856,10 +826,15 @@
   white-space: nowrap;
 }
 
+/* Thin post cards — a hairline row, not a heavy card: enough to read as a
+   discrete post without a fill. */
 .objd__post {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--ref-spacing-sm);
+  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
+  border: 1px solid var(--app-border-soft);
+  border-radius: var(--app-radius-md);
   font-size: var(--sys-text-style-caption-size);
 }
 
@@ -1173,6 +1148,8 @@
   margin-top: var(--app-spacing-micro);
 }
 
+/* The whole card is one button (data-objd-feed-chat) — click anywhere opens the
+   chat; "Start a chat →" is just the visible cue. */
 .objd__topic {
   display: flex;
   flex-direction: column;
@@ -1181,6 +1158,25 @@
   padding: var(--ref-spacing-sm);
   border: 1px solid var(--app-border-soft);
   border-radius: var(--app-radius-card);
+  background: var(--app-surface);
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color var(--ref-animation-short) var(--app-ease-out);
+}
+
+.objd__topic:hover {
+  border-color: var(--ref-color-electric-blue-100);
+}
+
+.objd__topic:hover .objd__topicstart {
+  text-decoration: underline;
+}
+
+.objd__topic:focus-visible {
+  outline: 2px solid var(--ref-color-electric-blue-100);
+  outline-offset: 2px;
 }
 
 .objd__topicbadge {

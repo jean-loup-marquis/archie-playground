@@ -19,14 +19,7 @@
 // historyView, historyFilter).
 
 import { escapeHtml as esc, escapeAttr } from "../../utils.js?v=45";
-import {
-  measureState,
-  isRateMetric,
-  windowPhrase,
-  profileSplit,
-  outOfScopeNetworks,
-  measurePosts,
-} from "../../objective-measures.js?v=7";
+import { measureState, isRateMetric, windowPhrase, profileSplit, measurePosts } from "../../objective-measures.js?v=7";
 import { NETWORK_LABEL } from "../../social-profiles.js?v=85";
 import { readingFor, weakestMeasure, paceCaption, trendCaption, sparklinePoints } from "./objectives-model.js?v=1";
 import { nextMoveFor } from "../../objective-flow.js?v=1";
@@ -261,14 +254,15 @@ function renderProxyBanner(entry, parked) {
 
 // ── From your feed ───────────────────────────────────────────────────────────
 function renderTopicCard(t) {
+  // The whole card is the affordance — one click opens the chat with the topic.
   return `
-    <div class="objd__topic">
+    <button type="button" class="objd__topic" data-objd-feed-chat>
       <span class="ap-badge ${FEED_BADGE_TONE[t.badge.tone] || "grey"} objd__topicbadge">${esc(t.badge.text)}</span>
       <span class="objd__topictitle">${esc(t.title)}</span>
       <span class="objd__topicblurb">${esc(t.blurb)}</span>
       <span class="objd__topicmomentum">${esc(t.momentum)}</span>
-      <button type="button" class="ap-link standalone small objd__topicstart" data-objd-feed-chat>Start a chat →</button>
-    </div>`;
+      <span class="ap-link small objd__topicstart">Start a chat →</span>
+    </button>`;
 }
 
 // ── The posts that carry a measure — inside the expanded measure box ──────────
@@ -297,31 +291,13 @@ function renderExpandedMeasure(m, entry, parked) {
   const tone = STATE_TONE[measureState(m)] || "grey";
   const proxyBadge = parked ? `<span class="ap-badge grey">PROXY · ${esc(entry.label.toUpperCase())}</span>` : "";
   const scope = `${scopePhrase(m, entry)} · window: ${m.window.inherited ? "same as objective" : windowPhrase(m.window, { form: "short" })}`;
-  const tiles = profileSplit(m, entry.ctxId)
-    .map(
-      (p) => `
-      <div class="objd__tile">
-        <span class="objd__tile-label">${esc((p.name || "").toUpperCase())} · ${esc((NETWORK_LABEL[p.network] || p.network).toUpperCase())}</span>
-        <span class="objd__tile-value">${esc(p.value)}
-          <span class="objd__tile-delta">${p.trendPct > 0 ? "+" : p.trendPct < 0 ? "−" : ""}${Math.abs(p.trendPct)}%</span>
-        </span>
-      </div>`,
-    )
-    .join("");
-  const outNames = outOfScopeNetworks(m).map((n) => NETWORK_LABEL[n] || n);
-  const outList =
-    outNames.length > 1 ? `${outNames.slice(0, -1).join(", ")} and ${outNames[outNames.length - 1]}` : outNames[0];
-  const outTiles = outNames.length
-    ? `
-      <div class="objd__tile objd__tile--out objd__tile--outline">
-        <span>${esc(outList)} ${outNames.length > 1 ? "aren't" : "isn't"} in this measure's scope</span>
-      </div>`
-    : "";
   const counter = rate
     ? `<span class="objd__big">${esc(m.baselineValue)}</span><span class="objd__of">vs ${esc(m.target || "—")}</span>`
     : `<span class="objd__big">${esc(m.baselineValue)}</span><span class="objd__of">/ ${esc(m.target || "—")}</span>`;
   const pct =
     m.progressPct != null ? `<span class="objd__pct objd__pct--${tone}">${m.progressPct}% of target</span>` : "";
+  // Pace (left) and trend (right) share one grid so their charts sit on the same
+  // bottom line and their captions on the same row — the two columns can't drift.
   return `
     <section class="objd__section objd__measure">
       <div class="objd__mhead">
@@ -335,20 +311,18 @@ function renderExpandedMeasure(m, entry, parked) {
         <span class="objd__mscope">${esc(scope)}</span>
       </div>
       <div class="objd__figures">
-        <div class="objd__pacecol">
+        <span class="objd__seclabel objd__fig-progresslabel">Progress</span>
+        <span class="objd__seclabel objd__fig-trendlabel">Trend · 30d</span>
+        <div class="objd__fig-pace">
           <div class="objd__counter">${counter}<span class="objd__spacer"></span>${pct}</div>
           <span class="objd__bigtrack" aria-hidden="true"><span class="objd__bigfill objd__bigfill--${tone}" style="width: ${m.progressPct ?? 0}%"></span></span>
-          <span class="objd__caption">${esc(paceCaption(m))}</span>
         </div>
-        <div class="objd__trendcol">
-          <span class="objd__seclabel">Trend · 30d</span>
-          <svg class="objd__spark objd__spark--${trendTone(m)}" viewBox="0 0 200 44" aria-hidden="true">
-            <polyline points="${sparklinePoints(m.trend?.pct ?? 0)}"></polyline>
-          </svg>
-          <span class="objd__caption">${esc(trendCaption(m))}</span>
-        </div>
+        <svg class="objd__spark objd__spark--${trendTone(m)} objd__fig-spark" viewBox="0 0 200 44" preserveAspectRatio="none" aria-hidden="true">
+          <polyline points="${sparklinePoints(m.trend?.pct ?? 0)}"></polyline>
+        </svg>
+        <span class="objd__caption objd__fig-pacecap">${esc(paceCaption(m))}</span>
+        <span class="objd__caption objd__fig-trendcap">${esc(trendCaption(m))}</span>
       </div>
-      <div class="objd__tiles">${tiles}${outTiles}</div>
       ${renderMeasurePosts(m, entry)}
     </section>`;
 }

@@ -49,6 +49,7 @@ let idSeq = 0;
 // The staged draft — nothing below writes to the Playbook until Create/Save.
 let draft = null; // { mode, data, contextId, originalLabel, name, window, measures[], onChange }
 let catalogFlow = null; // the embedded 2c/2d flow, when open
+let catalogEditIndex = null; // the measure being re-picked (null = adding a new one)
 
 const SHELL = `
 <div class="app-modal-backdrop objm__backdrop" id="objmBackdrop" hidden>
@@ -140,6 +141,7 @@ export function close() {
   if (!backdrop || backdrop.hidden) return;
   catalogFlow?.dispose();
   catalogFlow = null;
+  catalogEditIndex = null;
   draft = null;
   backdrop.hidden = true;
   bodyEl.innerHTML = "";
@@ -165,7 +167,7 @@ function paint(opts = {}) {
       bodyEl.innerHTML = catalogFlow.render();
     }
     footEl.innerHTML = "";
-    titleEl.textContent = "Add a measure";
+    titleEl.textContent = catalogEditIndex != null ? "Change measure" : "Add a measure";
     return;
   }
   const nameInput = bodyEl.querySelector("[data-objm-name]");
@@ -283,6 +285,7 @@ function renderMeasureCard(entry, i) {
         <span class="ap-badge grey">${esc(metricType(entry.metricId).toUpperCase())}</span>
         <span class="objm__spacer"></span>
         <span class="objm__scope">${esc(scopeText)}</span>
+        <button type="button" class="ap-icon-button transparent" data-objm-edit="${i}" aria-label="Change ${esc(metricLabel(entry.metricId))} metric or scope"><i class="ap-icon-pen"></i></button>
         <button type="button" class="ap-icon-button transparent" data-objm-remove="${i}" aria-label="Remove ${esc(metricLabel(entry.metricId))}"><i class="ap-icon-close"></i></button>
       </div>
       <div class="objm__cardbody">${body}</div>
@@ -323,19 +326,37 @@ function seedFromName() {
   }
 }
 
-function openCatalog() {
+// editIndex null → add a new measure; a number → re-pick metric + scope for that
+// existing measure (the catalogue is the only place metric/scope are chosen, so
+// "edit" is re-run it and replace in place). The inline target input stays.
+function openCatalog(editIndex = null) {
+  catalogEditIndex = editIndex;
   catalogFlow = createCatalogFlow({
     contextId: draft.contextId,
     targetLabel: draft.name.trim() || "this objective",
     onAdd(entry) {
       catalogFlow?.dispose();
       catalogFlow = null;
-      draft.measures.push(entry);
+      catalogEditIndex = null;
+      if (editIndex != null && draft.measures[editIndex]) {
+        const prev = draft.measures[editIndex];
+        // Keep the row's id; swap metric + scope; keep the old target unless the
+        // catalogue set a new one.
+        draft.measures[editIndex] = {
+          ...prev,
+          metricId: entry.metricId,
+          scope: entry.scope,
+          target: entry.target ?? prev.target,
+        };
+      } else {
+        draft.measures.push(entry);
+      }
       paint();
     },
     onBack() {
       catalogFlow?.dispose();
       catalogFlow = null;
+      catalogEditIndex = null;
       paint();
     },
     requestRender: (opts) => paint(opts),
@@ -417,6 +438,12 @@ function onClick(event) {
     draft.data = getContexts().find((c) => c.id === draft.contextId) || null;
     seedFromName();
     paint();
+    return;
+  }
+  const editM = event.target.closest("[data-objm-edit]");
+  if (editM) {
+    if (!draft.contextId) return;
+    openCatalog(Number(editM.dataset.objmEdit));
     return;
   }
   const remove = event.target.closest("[data-objm-remove]");
