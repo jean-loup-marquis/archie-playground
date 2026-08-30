@@ -3,9 +3,9 @@ import { renderTopbar, setTopbarActions, clearTopbarActions } from "../../compon
 import { subscribe as subscribeContexts } from "../../contexts-store.js?v=97";
 import { navigate, getPath } from "../../router.js?v=54";
 import { parseHashParams, setHashQuery } from "../../url-state.js?v=25";
-import { renderPerformanceTab, bindPerformanceTab } from "./performance.js?v=59";
-import { renderUsageTab, bindUsageTab } from "./usage.js?v=64";
-import { renderValueTab, bindValueTab } from "./value.js?v=12";
+import { renderObjectivesTab, bindObjectivesTab } from "./objectives.js?v=1";
+import { renderUsageTab, bindUsageTab } from "./usage.js?v=65";
+import { renderValueTab, bindValueTab } from "./value.js?v=13";
 import { mountWidgetCharts } from "../../report-widgets/widget-card.js?v=26";
 import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=7";
 
@@ -33,17 +33,21 @@ import { PERIODS, DEFAULT_PERIOD, periodFor } from "./insights-model.js?v=7";
 // Playbook, and the rail is how you choose one.
 const TABS = [
   {
-    id: "performance",
-    label: "Performance",
-    icon: "ap-icon-bar-graph",
-    render: renderPerformanceTab,
-    bind: bindPerformanceTab,
+    id: "objectives",
+    label: "Objectives",
+    icon: "ap-icon-target",
+    render: renderObjectivesTab,
+    bind: bindObjectivesTab,
+    // The board has no page-level window: every objective carries its OWN
+    // (rolling 30d or a fixed end date), so the period selector would be a
+    // control with nothing to control. Usage and Value keep it.
+    noPeriod: true,
   },
   { id: "usage", label: "Usage", icon: "ap-icon-sparkles", render: renderUsageTab, bind: bindUsageTab },
   { id: "value", label: "Value", icon: "ap-icon-wallet", render: renderValueTab, bind: bindValueTab },
 ];
 
-const DEFAULT_TAB = "performance";
+const DEFAULT_TAB = "objectives";
 
 let unsubscribe = null;
 let unbindTab = null;
@@ -64,7 +68,8 @@ export function renderInsights(params, target) {
   const period = periodFor(parseHashParams().get("period") || DEFAULT_PERIOD).id;
 
   teardown();
-  setTopbarActions(renderPeriodSelector(period), renderSegments(active));
+  const tab = TABS.find((t) => t.id === active);
+  setTopbarActions(tab.noPeriod ? "" : renderPeriodSelector(period), renderSegments(active));
 
   const paint = () => {
     target.innerHTML = html`<section class="screen insights-view">

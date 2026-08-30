@@ -17,7 +17,7 @@ import { CLIP_SUBTITLE_ITEMS, CLIP_SUBTITLE_LABEL } from "../clip-subtitles.js?v
 import { getSessionById, getSessions, subscribe as subscribeSessions } from "../sessions-store.js?v=60";
 // The rail is repainted by hand when the composer re-scopes the chat — see the
 // [data-playbook-pick] handler for why a store notify cannot do it here.
-import { renderSidebar } from "../components/sidebar.js?v=477";
+import { renderSidebar } from "../components/sidebar.js?v=478";
 import { getContextById, getContexts, getDefaultContext, updateContext } from "../contexts-store.js?v=97";
 import { isNewUser } from "../user-mode.js?v=36";
 import {

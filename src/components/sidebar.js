@@ -862,7 +862,7 @@ const NAV = [
   // rather than five objectives in trouble. What needs attention is counted where
   // it arrives: the feed's dot, and the alert in the chat opening.
   {
-    path: "/insights/performance",
+    path: "/insights/objectives",
     icon: "ap-icon-bar-graph",
     label: "Insights",
     flag: "insightsHub",

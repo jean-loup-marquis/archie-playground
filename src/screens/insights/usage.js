@@ -15,7 +15,7 @@ import {
   renderBridge,
   renderFirstRun,
   figure,
-} from "./parts.js?v=17";
+} from "./parts.js?v=18";
 
 // Insights › Usage — the doc's screen 5a.
 //
@@ -133,7 +133,7 @@ function renderPanel(row, period) {
         before: "Usage counts my own work — nothing here needs comparing outside. Whether it",
         highlight: "performed",
         after: "is the other tab.",
-        cta: "Go to Performance",
+        cta: "Go to Objectives",
       })}
     </article>`;
 }
@@ -212,7 +212,7 @@ export function bindUsageTab(root, period) {
       return;
     }
     if (event.target.closest("[data-insights-bridge]")) {
-      navigate("/insights/performance");
+      navigate("/insights/objectives");
       return;
     }
     const row = event.target.closest("[data-insights-row]");

@@ -2,7 +2,7 @@ import { escapeText } from "../../utils.js?v=45";
 import { showToast } from "../../components/toast.js?v=44";
 import { navigate } from "../../router.js?v=54";
 import { valueLedger, winningPosts, periodLabel } from "./insights-model.js?v=7";
-import { renderPortfolioTiles, renderTrend, renderFirstRun, figure } from "./parts.js?v=17";
+import { renderPortfolioTiles, renderTrend, renderFirstRun, figure } from "./parts.js?v=18";
 
 // Insights › Value — the doc's screen 6b, and a tab this app did not have.
 //
@@ -101,7 +101,7 @@ function renderGoals(ledger, period) {
         <h2 class="insights-value__eyebrow">Goals, this window vs last</h2>
         <p class="insights-value__empty">
           No goal improved over the ${escapeText(periodLabel(period))}. Nothing to claim here —
-          where each one stands reads on Performance.
+          where each one stands reads on Objectives.
         </p>
       </section>`;
   }
@@ -143,7 +143,7 @@ function renderGoals(ledger, period) {
         <p class="insights-value__caveat">
           I compare only inside what I already see — my own posts, 60 days. No assembled baselines, no extra
           connections. Where a goal is still behind — ${ledger.behind} ${ledger.behind === 1 ? "is" : "are"} — it
-          reads on the Performance tab, not here. Longer history and native posts are an
+          reads on the Objectives tab, not here. Longer history and native posts are an
           <button type="button" class="ap-link small" data-insights-bridge>Agorapulse view</button>.
         </p>
       </div>

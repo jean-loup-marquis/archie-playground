@@ -691,13 +691,26 @@ export function profileSplit(measure, contextId) {
   const rate = isRate(measure.metricId);
   const authored = PROFILE_SPLITS[`${contextId}::${measure.metricId}`];
   const trend = trendFor(measure.metricId, contextId);
+  // An authored split IS the breakdown: one tile per authored entry, matched to
+  // a profile by network, and the shares sum to 1 so the tiles sum to the
+  // counter above them. Falling through to jitter for the unauthored profiles
+  // printed four tiles adding to 150% of the reading.
+  if (authored) {
+    return authored.map((entry) => {
+      const p = inScope.find((x) => x.platform === entry.network) || inScope[0] || {};
+      return {
+        profileId: p.id,
+        name: p.name || p.handle,
+        network: entry.network,
+        value: rate ? measure.baselineValue : formatLike(measure.baselineValue, (total || 0) * entry.share),
+        trendPct: entry.trendPct,
+      };
+    });
+  }
   return inScope.map((p, i) => {
     let value = measure.baselineValue;
     let trendPct = trend.pct;
-    if (authored && authored[i]) {
-      value = rate ? measure.baselineValue : formatLike(measure.baselineValue, (total || 0) * authored[i].share);
-      trendPct = authored[i].trendPct;
-    } else if (!rate && total != null && inScope.length > 1) {
+    if (!rate && total != null && inScope.length > 1) {
       value = formatLike(measure.baselineValue, (total / inScope.length) * PROFILE_JITTER[i % PROFILE_JITTER.length]);
       trendPct = Math.round(trend.pct * PROFILE_JITTER[(i + 1) % PROFILE_JITTER.length]);
     }

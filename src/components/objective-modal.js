@@ -34,7 +34,7 @@ import {
   scopedBaselineFor,
   scopeLabel,
   WINDOWS,
-} from "../objective-measures.js?v=6";
+} from "../objective-measures.js?v=7";
 
 const MODAL_ID = "objectiveModal";
 
@@ -374,8 +374,9 @@ function save() {
     data.objectiveMeasures[name] = { ...prev, ...override };
   }
   const cb = draft.onChange;
+  const savedCtxId = draft.contextId;
   close();
-  cb?.();
+  cb?.(savedCtxId);
 }
 
 function onClick(event) {

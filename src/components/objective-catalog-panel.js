@@ -25,7 +25,7 @@ import {
   proposeTargetFrom,
   isRateMetric,
   isAdditiveMetric,
-} from "../objective-measures.js?v=6";
+} from "../objective-measures.js?v=7";
 
 const COMPUTE_MS = 900;
 

@@ -417,26 +417,6 @@
   color: var(--ref-color-green-150);
 }
 
-/* ── E5, everything strong ──────────────────────────────────────────────────
-   Said once, above the panel. A good month should read as one. */
-.insights-allclear {
-  margin-bottom: var(--ref-spacing-sm);
-}
-
-.insights-allclear__title {
-  margin: 0;
-  font-size: var(--ref-font-size-md);
-  font-weight: var(--app-font-weight-semibold);
-  color: var(--sys-text-color-default);
-}
-
-.insights-allclear__body {
-  margin: var(--ref-spacing-xxxs) 0 0;
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-  line-height: var(--app-line-height-relaxed);
-}
-
 /* ── The reading panel ──────────────────────────────────────────────────────
    One `.ap-card` and a reading measure. Every block inside it is separated by a
    hairline rather than nested in a card of its own: the panel is one argument, and
@@ -559,122 +539,6 @@
   border-top: 1px solid var(--app-border-soft);
 }
 
-/* Its own measure, narrower than the panel. A goal row is a label, a bar and two
-   figures; past ~760px the bar is the only thing that grew and the two figures
-   drift so far right that the row stops reading as one statement. */
-.insights-goal {
-  display: grid;
-  grid-template-columns: 150px minmax(80px, 1fr) auto auto;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  max-width: 760px;
-}
-
-.insights-goal__name {
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--app-font-weight-semibold);
-  color: var(--sys-text-color-default);
-}
-
-.insights-goal__track {
-  height: 7px;
-  border-radius: var(--app-radius-pill);
-  background: var(--ref-color-grey-10);
-  overflow: hidden;
-}
-
-.insights-goal__fill {
-  display: block;
-  height: 100%;
-  border-radius: var(--app-radius-pill);
-}
-
-.insights-goal__fill--strong {
-  background: var(--ref-color-green-150);
-}
-.insights-goal__fill--watch {
-  background: var(--ref-color-yellow-150);
-}
-.insights-goal__fill--at-risk {
-  background: var(--ref-color-red-150);
-}
-
-.insights-goal__value {
-  font-size: var(--ref-font-size-xs);
-  font-weight: var(--app-font-weight-semibold);
-  color: var(--sys-text-color-default);
-  white-space: nowrap;
-}
-
-/* ── Objective cards — one per objective, one row per MEASURE ─────────────
-   The DS card (.ap-card supplies the white surface, grey-10 border, radius,
-   sm padding and sm gap — no spacing of our own), and the WHOLE card is a
-   <button>: clicking anywhere opens the objective's editor in place. The head
-   carries name, via-proxy caption, window when fixed, and the verdict word;
-   the count behind the verdict lives in its tooltip. */
-.insights-objcard {
-  font: inherit;
-  text-align: left;
-  width: 100%;
-  max-width: 760px;
-  cursor: pointer;
-  transition: border-color var(--ref-animation-short) var(--app-ease-out);
-}
-
-.insights-objcard:hover {
-  border-color: var(--ref-color-electric-blue-100);
-}
-
-.insights-objcard__head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ref-spacing-xs);
-}
-
-.insights-objcard__name {
-  font-size: var(--ref-font-size-sm);
-  font-weight: var(--app-font-weight-semibold);
-  color: var(--sys-text-color-default);
-}
-
-.insights-objcard__window {
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-60);
-}
-
-/* The verdict word, arithmetic one hover away. Visibility on the APP class,
-   never on .ap-tooltip (CLAUDE.md). */
-.insights-objcard__verdict {
-  position: relative;
-  margin-left: auto;
-  display: inline-flex;
-  font-size: var(--ref-font-size-xs);
-  white-space: nowrap;
-}
-
-.insights-objcard__verdict-tip {
-  display: none;
-  bottom: calc(100% + var(--ref-spacing-xxs));
-  right: 0;
-  width: max-content;
-}
-
-.insights-objcard__verdict:hover > .insights-objcard__verdict-tip {
-  display: block;
-}
-
-/* A goal measured through its avowed proxy says so beside its name. */
-.insights-goal__proxy {
-  font-size: var(--ref-font-size-xs);
-  font-weight: var(--ref-font-weight-regular);
-  color: var(--ref-color-grey-60);
-}
-
-.insights-goal__name--measure {
-  font-weight: var(--ref-font-weight-regular);
-  color: var(--ref-color-grey-80);
-}
-
 /* Parked objectives — declared intents the catalogue can't measure natively
    yet. Same card, no rows: name + Coming soon + the one line saying what
    unlocks the real measure. */
@@ -682,33 +546,6 @@
   border-top: none;
   padding-top: 0;
   margin-top: var(--ref-spacing-xs);
-}
-
-.insights-goal__soon {
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-60);
-}
-
-.insights-goals__adjust {
-  margin-top: var(--ref-spacing-xs);
-  align-self: flex-start;
-}
-
-/* ── Muted objectives ─────────────────────────────────────────────────────── */
-.insights-muted {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-xs);
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-}
-
-.insights-muted__item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
 }
 
 /* ── The panel's widgets ────────────────────────────────────────────────────
@@ -736,121 +573,9 @@
   }
 }
 
-/* ── One post, as evidence ────────────────────────────────────────────────── */
-.insights-post {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ref-spacing-xs);
-  font-size: var(--ref-font-size-sm);
-  color: var(--sys-text-color-light);
-}
-
-.insights-post__origin {
-  font-weight: var(--app-font-weight-semibold);
-  color: var(--sys-text-color-default);
-  white-space: nowrap;
-}
-
-.insights-post__excerpt {
-  flex: 1;
-  min-width: 0;
-}
-
-.insights-post__figure {
-  font-size: var(--ref-font-size-xs);
-  white-space: nowrap;
-}
-
+/* The "3.1×" beside a winner's views — Value's proof cards still print it. */
 .insights-post__multiple {
   color: var(--ref-color-green-150);
-}
-
-/* ── The proof block ───────────────────────────────────────────────────────
-   The one block a Strong Playbook gains. Peach, because that is what this app
-   already means by "Archie did this" — the same tint the trending surfaces use —
-   and the tint is the whole signal that this block makes a different kind of
-   claim than the diagnosis above it. */
-.insights-proof__head {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--ref-spacing-xxs);
-}
-
-.insights-proof__title {
-  color: var(--app-archie-orange-deep);
-  margin-bottom: 0;
-}
-
-.insights-proof__scope {
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-}
-
-.insights-proof__grid {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
-  gap: var(--ref-spacing-xs);
-  margin-top: var(--ref-spacing-xs);
-}
-
-@media (max-width: 1200px) {
-  .insights-proof__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-.insights-proof__card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  padding: var(--ref-spacing-xs) var(--ref-spacing-sm);
-  border: 1px solid var(--app-peach-border);
-  border-radius: var(--app-radius-lg);
-  background: var(--app-peach);
-}
-
-.insights-proof__label {
-  font-size: var(--ref-font-size-xs);
-  font-weight: var(--app-font-weight-semibold);
-  color: var(--sys-text-color-light);
-}
-
-.insights-proof__bars {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ref-spacing-xxxs);
-  margin: var(--ref-spacing-xxxs) 0;
-}
-
-.insights-proof__bar {
-  height: 8px;
-  border-radius: var(--app-radius-pill);
-}
-
-.insights-proof__bar--before {
-  background: var(--ref-color-grey-20);
-}
-
-.insights-proof__bar--after {
-  background: var(--app-archie-orange);
-}
-
-.insights-proof__value {
-  display: flex;
-  align-items: center;
-  gap: var(--ref-spacing-xxxs);
-  font-size: var(--ref-font-size-sm);
-}
-
-.insights-proof__big {
-  font-size: var(--ref-font-size-xl);
-}
-
-.insights-proof__note {
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-  line-height: var(--app-line-height-body);
 }
 
 /* ── The Report Studio bridge ──────────────────────────────────────────────
@@ -893,20 +618,6 @@
   flex-shrink: 0;
   color: var(--app-archie-orange-deep);
   font-weight: var(--ref-font-weight-bold);
-}
-
-/* ── The cap ─────────────────────────────────────────────────────────────── */
-.insights-cap {
-  margin: var(--ref-spacing-xs) 0 0;
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border-left: 2px solid var(--ref-color-electric-blue-20);
-  font-size: var(--ref-font-size-xs);
-  color: var(--ref-color-grey-80);
-  line-height: var(--app-line-height-relaxed);
-}
-
-.insights-cap__link {
-  vertical-align: baseline;
 }
 
 /* ── Network bars (Usage) ──────────────────────────────────────────────────
@@ -1290,10 +1001,5 @@
   .insights-split:not(.insights-split--single) > .insights-split__panel,
   .insights-value {
     padding: var(--ref-spacing-sm);
-  }
-
-  .insights-goal {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--ref-spacing-xxxs);
   }
 }

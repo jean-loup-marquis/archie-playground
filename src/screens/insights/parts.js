@@ -2,10 +2,7 @@ import { escapeText, escapeAttr } from "../../utils.js?v=45";
 import { renderEmptyState } from "../../components/empty-state.js?v=26";
 import { renderWidgetCard } from "../../report-widgets/widget-card.js?v=26";
 import { toOverviewData } from "../../report-widgets/widget-overview.js?v=25";
-import { TIER_LABELS } from "../../objective-scoring.js?v=25";
 import { formatGroupedNumber } from "../../report-widgets/number-formatting.js?v=25";
-import { periodLabel, isAtCap } from "./insights-model.js?v=7";
-import { objectiveVerdict, measureTier } from "../../objective-measures.js?v=6";
 
 // The pieces both master-detail tabs draw, in one place so Performance and Usage
 // cannot drift into two versions of the same rail.
@@ -13,29 +10,6 @@ import { objectiveVerdict, measureTier } from "../../objective-measures.js?v=6";
 // Nothing here decides anything: every function takes what it renders. The rules
 // it does enforce are the doc's two that hold everywhere — a verdict is a word in
 // coloured text and never a pill, and no figure is printed without its period.
-
-// ── The verdict, as a word ──────────────────────────────────────────────────
-// `.ap-status` is the app's VERDICT pill and it is deliberately not used here. The
-// doc's reason is that a rail of seven pills reads as seven alarms; the practical
-// one is that a pill next to a score next to a reason is three competing shapes on
-// one line. Coloured text, and the colour is the same token the pill would use.
-export function verdictWord(tier) {
-  return `<span class="insights-verdict insights-verdict--${escapeAttr(tier)}">${TIER_LABELS[tier]}</span>`;
-}
-
-// Annular gauge, not a filled disc: the hole is what stops it reading as a pie
-// chart of parts when it is one score out of 100.
-export function renderRing(score, tier) {
-  return `
-    <div
-      class="analytics-card__ring analytics-card__ring--${escapeAttr(tier)}"
-      style="--ring-progress: ${Math.round(score)}"
-      role="img"
-      aria-label="Health score ${Math.round(score)} out of 100"
-    >
-      <span class="analytics-card__ring-value">${Math.round(score)}</span>
-    </div>`;
-}
 
 // ── The portfolio row ──────────────────────────────────────────────────────
 // Four real Report Studio tiles, the same component the reading panel puts its
@@ -184,113 +158,6 @@ export function renderRail({ header, rows, selected, footer = "" }) {
     </nav>`;
 }
 
-// ── The panel's objective cards ─────────────────────────────────────────────
-// One card per objective — the DS card, and the WHOLE card is the edit
-// affordance (it opens the per-objective editor in place, no trip to the
-// Playbook): a pen glued to the title read as "rename me", when the click
-// edits the objective. Head: the objective, its window when fixed, and its
-// VERDICT — a COUNT over the measures (the PP's own definition), computed on
-// render, never stored, shown as the word alone; the "2 of 3 measures on
-// track" arithmetic lives in a tooltip on the verdict. No variation percent
-// and no window mention: the objective carries no score of its own. One row
-// per MEASURE below (bar toward target + bounds), each bar wearing its own
-// measure's tier — the rows read from the same catalogue the editor writes,
-// so an edit here repaints here. Span-only children: the card is a <button>.
-export function renderGoals(objectives, resolvedList = []) {
-  if (objectives.length === 0) return "";
-  const byLabel = new Map(resolvedList.map((r) => [r.label, r]));
-  const cards = objectives
-    .map((o) => {
-      const resolved = byLabel.get(o.objective);
-      const measures = !resolved ? [] : resolved.status === "measured" ? resolved.measures : [resolved.proxy];
-      const verdict = resolved ? objectiveVerdict(resolved) : null;
-      const rows = measures
-        .map((m) => {
-          const tier = measureTier(m.progressPct);
-          return `
-          <span class="insights-goal">
-            <span class="insights-goal__name insights-goal__name--measure">${escapeText(m.metricLabel)}${
-              m.scopeLabel ? ` · ${escapeText(m.scopeLabel)}` : ""
-            }</span>
-            <span class="insights-goal__track">${
-              m.progressPct == null || !tier
-                ? ""
-                : `<span class="insights-goal__fill insights-goal__fill--${escapeAttr(tier)}" style="width: ${m.progressPct}%"></span>`
-            }</span>
-            <span class="insights-figure insights-goal__value">${escapeText(m.baselineValue)} → ${escapeText(m.target || "—")}</span>
-          </span>`;
-        })
-        .join("");
-      return `
-        <button type="button" class="ap-card insights-objcard" data-insights-objective="${escapeAttr(o.objective)}" aria-label="Edit ${escapeAttr(o.objective)}">
-          <span class="insights-objcard__head">
-            <span class="insights-objcard__name">${escapeText(o.objective)}</span>
-            ${
-              // The measure catalogue parks this intent — the numbers below are
-              // its avowed social proxy, and the card says so rather than
-              // letting "CTA clicks" pass as the real on-site measure.
-              o.viaProxy ? `<span class="insights-goal__proxy">via proxy · ${escapeText(o.metric)}</span>` : ""
-            }
-            ${resolved?.windowLabel ? `<span class="insights-objcard__window">${escapeText(resolved.windowLabel)}</span>` : ""}
-            ${
-              verdict?.tier
-                ? `<span class="insights-objcard__verdict">
-                     <span class="insights-verdict insights-verdict--${escapeAttr(verdict.tier)}">${escapeText(verdict.label)}</span>
-                     <span class="ap-tooltip top-right insights-objcard__verdict-tip" aria-hidden="true">${verdict.onTrack} of ${verdict.total} measure${verdict.total > 1 ? "s" : ""} on track</span>
-                   </span>`
-                : ""
-            }
-          </span>
-          ${rows}
-        </button>`;
-    })
-    .join("");
-
-  return `<div class="insights-panel__goals">${cards}</div>`;
-}
-
-// The Playbook's parked objectives — intents the catalogue can't measure
-// natively yet. They used to be silently filtered out of this panel; an
-// objective the reader declared deserves a row saying WHY it has no number,
-// not an absence. No bar, no tier, no trend: nothing here is on pace or off
-// it. The name opens the objective's editor in place, like the groups above.
-export function renderParkedGoals(parked) {
-  if (!parked?.length) return "";
-  const cards = parked
-    .map(
-      (p) => `
-      <button type="button" class="ap-card insights-objcard insights-objcard--parked" data-insights-objective="${escapeAttr(
-        p.label,
-      )}" aria-label="Edit ${escapeAttr(p.label)}">
-        <span class="insights-objcard__head">
-          <span class="insights-objcard__name">${escapeText(p.label)}</span>
-          <span class="ap-badge blue">Coming soon</span>
-        </span>
-        <span class="insights-goal__soon">${escapeText(p.soon)} Meanwhile: ${escapeText(p.proxy.metricLabel)}.</span>
-      </button>`,
-    )
-    .join("");
-  return `<div class="insights-panel__goals insights-panel__goals--parked">${cards}</div>`;
-}
-
-// ── "What worked here" ──────────────────────────────────────────────────────
-// One post, as evidence for the paragraph above it. Never a list: the panel's job
-// is a diagnosis, and a second post is a second argument.
-export function renderWhatWorked(worked, { title = "What worked here" } = {}) {
-  if (!worked) return "";
-  return `
-    <div class="insights-panel__block">
-      <h3 class="insights-panel__block-title">${escapeText(title)}</h3>
-      <div class="insights-post">
-        <span class="insights-post__origin">${escapeText(worked.network)} · ${escapeText(worked.date)}</span>
-        <span class="insights-post__excerpt">${escapeText(worked.excerpt)}</span>
-        <span class="insights-figure insights-post__figure">
-          ${escapeText(worked.views)} · <span class="insights-post__multiple">${escapeText(worked.multiple)}</span> median
-        </span>
-      </div>
-    </div>`;
-}
-
 // ── The Report Studio bridge ────────────────────────────────────────────────
 // The only bridge out, and conditional rather than a wall: it appears where the
 // limit actually bites and says which limit. Never an export button — the
@@ -313,18 +180,6 @@ export function renderBridge({ before, highlight, after, cta }) {
     </div>`;
 }
 
-// ── The cap ─────────────────────────────────────────────────────────────────
-// Stated once, at 60 days, where the window ends — not on every widget. This is
-// the one honest upsell moment on Performance.
-export function renderCapNote(period, { startedOn }) {
-  if (!isAtCap(period)) return "";
-  return `
-    <p class="insights-cap">
-      60 days is all Archie keeps — this reads from ${escapeText(startedOn)}. A year of this curve is an
-      <button type="button" class="ap-link small insights-cap__link" data-insights-bridge>Agorapulse view</button>.
-    </p>`;
-}
-
 /** Grouped thousands, the way every figure on this page reads. */
 export function figure(n) {
   return formatGroupedNumber(n);
@@ -341,8 +196,8 @@ export function figure(n) {
 // beside an authored "19 signals turned into work", which is the one thing a tab
 // about being worth its price must never do.
 const FIRST_RUN = {
-  performance: {
-    icon: "ap-icon-bar-graph",
+  objectives: {
+    icon: "ap-icon-target",
     title: "No numbers yet — and that's correct.",
     body: "Insights fills itself from what I publish. Publish your first post and reach, engagement and verdicts appear here — each with its period.",
   },
@@ -359,7 +214,7 @@ const FIRST_RUN = {
 };
 
 export function renderFirstRun(tab) {
-  const copy = FIRST_RUN[tab] || FIRST_RUN.performance;
+  const copy = FIRST_RUN[tab] || FIRST_RUN.objectives;
   return renderEmptyState({
     icon: copy.icon,
     title: copy.title,

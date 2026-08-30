@@ -1,9 +1,9 @@
 import { navigate, route, setAfterRender, start } from "./router.js?v=54";
-import { renderInsights } from "./screens/insights/shell.js?v=29";
+import { renderInsights } from "./screens/insights/shell.js?v=30";
 import { isFlagOn } from "./feature-flags.js?v=44";
 import { initArchieLoader } from "./archie-loader.js?v=16";
 import { initTopbar, renderTopbar } from "./components/topbar.js?v=510";
-import { initSidebar, renderSidebar } from "./components/sidebar.js?v=477";
+import { initSidebar, renderSidebar } from "./components/sidebar.js?v=478";
 import { init as initRightPanel } from "./components/right-panel.js?v=644";
 import { init as initScheduleModal } from "./components/schedule-modal.js?v=115";
 import { init as initBugReportModal } from "./components/bug-report-modal.js?v=38";
@@ -20,8 +20,9 @@ import { init as initTopicModal } from "./components/topic-modal.js?v=68";
 import { init as initSocialPostCards } from "./components/social-post-card.js?v=59";
 import { init as initResearchModals } from "./components/research-modals.js?v=197";
 import { init as initAddPlaybookEntryModal } from "./components/add-playbook-entry-modal.js?v=15";
-import { init as initObjectiveModal } from "./components/objective-modal.js?v=1";
+import { init as initObjectiveModal } from "./components/objective-modal.js?v=2";
 import { init as initObjectiveCatalogPanel } from "./components/objective-catalog-panel.js?v=1";
+import { init as initObjectiveDetailModal } from "./components/objective-detail-modal.js?v=1";
 import { init as initPillarModal } from "./components/pillar-modal.js?v=97";
 import { init as initPillarHistoryModal } from "./components/pillar-history-modal.js?v=33";
 import { init as initPillarPickerModal } from "./components/pillar-picker-modal.js?v=89";
@@ -111,7 +112,7 @@ route("/content-strategy", renderContentStrategy);
 // /insights alone redirects rather than 404s: it is what a bookmark or a typed URL
 // lands on, and the tab list is the shell's business, not the router's.
 route("/insights", () => {
-  navigate("/insights/performance");
+  navigate("/insights/objectives");
 });
 route("/insights/:tab", renderInsights);
 route("/pillar/:id", renderPillar);
@@ -149,6 +150,7 @@ initResearchModals();
 initAddPlaybookEntryModal();
 initObjectiveModal();
 initObjectiveCatalogPanel();
+initObjectiveDetailModal();
 initPillarModal();
 initPillarHistoryModal();
 initPillarPickerModal();
