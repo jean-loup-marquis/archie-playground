@@ -611,6 +611,12 @@
   flex-direction: column;
 }
 
+/* The panel head (read) or the hint box (edit) already draws the divider above
+   the first row — its own border-top would double it. */
+.recap__objrows .recap__objline:first-child {
+  border-top: none;
+}
+
 /* One sober line per objective: pastille · name (+ coming-soon) · meta, and the
    bridge to Insights on the right. The pastille stands in for the verdict —
    status is ambient here, the detail is read in Insights. */
@@ -636,8 +642,11 @@
   background: var(--app-surface-subtle);
 }
 
+/* Parked ("Coming soon") rows: a barely-there neutral tint, not a saturated
+   yellow — the "Coming soon" badge + grey dot carry the state, and a loud
+   yellow clashed with the edit-mode hint's butter callout. */
 .recap__objline--soon {
-  background: var(--ref-color-yellow-10);
+  background: var(--app-surface-subtle);
 }
 
 .recap__objdot {

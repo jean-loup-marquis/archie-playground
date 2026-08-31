@@ -6,7 +6,7 @@
 
 import { navigate } from "../router.js?v=54";
 import { getDraft, isAnalysisReady, save, patchDraft, restoreDraft } from "../context-builder.js?v=477";
-import { mount } from "../playbook-view.js?v=129";
+import { mount } from "../playbook-view.js?v=130";
 import { open as openRenameModal } from "../components/rename-modal.js?v=16";
 
 const WELCOME_ALT_KEY = "welcomeAltSessionId";

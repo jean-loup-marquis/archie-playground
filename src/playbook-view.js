@@ -28,9 +28,8 @@ import {
   materializeMeasureEntries,
   windowPhrase,
 } from "./objective-measures.js?v=7";
-import { open as openObjectiveModal } from "./components/objective-modal.js?v=4";
+import { open as openObjectiveModal } from "./components/objective-modal.js?v=5";
 import { open as openObjectiveCatalog } from "./components/objective-catalog-panel.js?v=1";
-import { open as openRenameModal } from "./components/rename-modal.js?v=16";
 import { navigate } from "./router.js?v=54";
 import { setHandoff } from "./handoff.js?v=34";
 
@@ -617,7 +616,7 @@ function renderObjectiveRow(o, i, edit, ctxId) {
     return `
       <div class="recap__objline recap__objline--edit${parked ? " recap__objline--soon" : ""}">
         ${inner}
-        <button type="button" class="ap-icon-button transparent" data-recap-obj-rename="${i}" aria-label="Rename ${esc(o.label)}"><i class="ap-icon-pen"></i></button>
+        <button type="button" class="ap-icon-button transparent" data-recap-obj-edit="${i}" aria-label="Edit ${esc(o.label)}"><i class="ap-icon-pen"></i></button>
         <button type="button" class="ap-icon-button transparent danger" data-recap-obj-remove="${i}" aria-label="Delete ${esc(o.label)}"><i class="ap-icon-trash"></i></button>
       </div>`;
   }
@@ -2534,12 +2533,14 @@ function onClick(event) {
     snapshot = snapshotEditable(data);
     editScope = penBtn.dataset.recapEditCard;
     audienceCustom = false;
-    repaint();
+    // Keep the reader where they were — a plain repaint reset the scroller to the
+    // top, forcing a re-scroll back down to the section they just clicked into.
+    repaintPreservingScroll();
     mountTarget
       ?.querySelector(
         "[data-recap-editing-card] input, [data-recap-editing-card] textarea, [data-recap-editing-card] select",
       )
-      ?.focus();
+      ?.focus({ preventScroll: true });
     return;
   }
 
@@ -2687,29 +2688,13 @@ function onClick(event) {
     return;
   }
 
-  const objRename = event.target.closest("[data-recap-obj-rename]");
-  if (objRename) {
-    const idx = Number(objRename.dataset.recapObjRename);
-    const labels = Array.isArray(data.objective) ? data.objective : [];
-    const old = labels[idx];
-    if (old == null) return;
-    openRenameModal({
-      title: "Rename objective",
-      initialName: old,
-      placeholder: "Objective name",
-      confirmLabel: "Rename",
-      onSubmit: (name) => {
-        const next = (name || "").trim();
-        if (!next || next === old) return;
-        labels[idx] = next;
-        if (data.objectiveMeasures?.[old] !== undefined) {
-          data.objectiveMeasures[next] = data.objectiveMeasures[old];
-          delete data.objectiveMeasures[old];
-        }
-        if (!editScope) cfg.commit?.();
-        repaintPreservingScroll();
-      },
-    });
+  // The pencil opens the FULL objective editor (name + window + measures, each
+  // measure's metric/scope/target), not just a rename — "edit this objective"
+  // should reach everything the objective is made of.
+  const objEdit = event.target.closest("[data-recap-obj-edit]");
+  if (objEdit) {
+    const label = (Array.isArray(data.objective) ? data.objective : [])[Number(objEdit.dataset.recapObjEdit)];
+    if (label != null) openObjectiveEditorFor(label);
     return;
   }
 

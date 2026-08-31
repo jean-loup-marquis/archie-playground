@@ -262,7 +262,9 @@ function renderInlineSelect({ value, options, attr, placeholder = "" }) {
 // One compact measure card — the target input matches the metric's type.
 function renderMeasureCard(entry, i) {
   const rate = isRateMetric(entry.metricId);
-  const baseline = scopedBaselineFor(entry.metricId, draft.contextId, entry.scope);
+  // The baseline is suggested from the catalogue but editable — the current
+  // value is the user's to correct.
+  const baseline = entry.baseline ?? scopedBaselineFor(entry.metricId, draft.contextId, entry.scope);
   const target = entry.target || "";
   const suggestedPct = pctDelta(baseline, target);
   const scopeText = entry.scope?.network ? scopeLabel(entry.scope) : "All networks";
@@ -270,10 +272,12 @@ function renderMeasureCard(entry, i) {
     ? `
       <span class="objm__word">hold above</span>
       <div class="ap-input-group objm__target"><input type="text" data-objm-target data-objm-i="${i}" value="${esc(target)}" aria-label="Target" /></div>
-      <span class="objm__cardhint">currently ${esc(baseline)} — a rate has no "from", only a bar to clear</span>`
+      <span class="objm__word">currently</span>
+      <div class="ap-input-group objm__from"><input type="text" data-objm-baseline data-objm-i="${i}" value="${esc(baseline)}" aria-label="Current value" /></div>`
     : `
       <span class="objm__word">from</span>
-      <span class="objm__from">${esc(baseline)} <span class="objm__now">now</span></span>
+      <div class="ap-input-group objm__from"><input type="text" data-objm-baseline data-objm-i="${i}" value="${esc(baseline)}" aria-label="Current value" /></div>
+      <span class="objm__now">now</span>
       <span class="objm__word">to</span>
       <div class="ap-input-group objm__target"><input type="text" data-objm-target data-objm-i="${i}" value="${esc(target)}" aria-label="Target" /></div>
       ${entry.target == null && target === "" ? "" : entry.targetEdited ? "" : `<span class="ap-badge orange">Archie suggested${suggestedPct != null ? ` · +${suggestedPct}%` : ""}</span>`}
@@ -488,5 +492,12 @@ function onInput(event) {
       entry.target = t.value;
       entry.targetEdited = true;
     }
+    return;
+  }
+  if (t.matches("[data-objm-baseline]")) {
+    const entry = draft.measures[Number(t.dataset.objmI)];
+    // Don't re-render on keystroke (it would drop focus) — the derived hints
+    // ("Archie suggested", "that's N/day") recompute on the next paint.
+    if (entry) entry.baseline = t.value;
   }
 }

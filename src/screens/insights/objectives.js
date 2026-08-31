@@ -25,7 +25,7 @@ import {
 import { renderObjectiveDetail } from "./objective-detail.js?v=9";
 import { open as openDetailModal } from "../../components/objective-detail-modal.js?v=7";
 import { openObjectiveInChat } from "../../objective-flow.js?v=1";
-import { open as openObjectiveModal } from "../../components/objective-modal.js?v=4";
+import { open as openObjectiveModal } from "../../components/objective-modal.js?v=5";
 import { renderFirstRun } from "./parts.js?v=18";
 import { consumeHandoff } from "../../handoff.js?v=34";
 import { isFlagOn } from "../../feature-flags.js?v=45";

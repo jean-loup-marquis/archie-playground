@@ -112,13 +112,15 @@
   color: var(--ref-color-grey-80);
 }
 
+/* Baseline is now an editable field (same shape as the target). */
 .objm__from {
-  padding: var(--ref-spacing-xxs) var(--ref-spacing-xs);
-  border-radius: var(--app-radius-sm);
-  background: var(--app-surface-subtle);
+  width: 110px;
+}
+
+.objm__from input {
+  width: 100%;
   font-variant-numeric: tabular-nums;
-  color: var(--ref-color-grey-100);
-  white-space: nowrap;
+  font-weight: var(--sys-text-style-body-bold-weight);
 }
 
 .objm__now {
